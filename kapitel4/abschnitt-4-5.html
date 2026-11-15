@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>4.5 Vertiefung: Erregbarkeit in der Phasenebene – Dynamische Systeme in den Lebenswissenschaften</title>
+<meta name="description" content="Programme in Julia, MATLAB, Python und R zu Abschnitt 4.5 des Buchs Dynamische Systeme in den Lebenswissenschaften">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamische Systeme in den Lebenswissenschaften</a>
+  <nav aria-label="Kapitel"><a href="../index.html">Start</a> <a href="../kapitel1/index.html">Kapitel 1</a> <a href="../kapitel2/index.html">Kapitel 2</a> <a href="../kapitel3/index.html">Kapitel 3</a> <a href="../kapitel4/index.html" aria-current="page">Kapitel 4</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Abschnitte"><h2><a href="index.html">Kapitel 4</a></h2><ol><li><a href="abschnitt-4-1.html"><span class="nr">4.1</span><span>Systeme von Differentialgleichungen</span></a></li><li><a href="abschnitt-4-2.html"><span class="nr">4.2</span><span>Lineare Systeme</span></a></li><li><a href="abschnitt-4-3.html"><span class="nr">4.3</span><span>Michaelis-Menten-Kinetik</span></a></li><li><a href="abschnitt-4-4.html"><span class="nr">4.4</span><span>Stationäre Zustände und Stabilität</span></a></li><li><a href="abschnitt-4-5.html" aria-current="page"><span class="nr">4.5</span><span>Vertiefung: Erregbarkeit in der Phasenebene</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Kapitel 4 · Kontinuierliche dynamische Systeme mit mehreren Variablen</p>
+      <h1><span class="num">4.5</span>Vertiefung: Erregbarkeit in der Phasenebene</h1>
+      <p>Mit h als zweiter Variable wird das Mitchell-Schaeffer-Modell aus Abschnitt 3.5 zu einem System in der Phasenebene. Nullklinen und Richtungsfeld erklären Schwelle, Aktionspotential und Erholung. Ein konstanter Einwärtsstrom J<sub>0</sub> lässt den Ruhezustand verschwinden: Es entsteht ein Grenzzyklus, das Modell einer Schrittmacherzelle.</p>
+      <p>Zu jeder Abbildung des Abschnitts finden Sie das Programm, das sie erzeugt. Ändern Sie Parameter und Startwerte und beobachten Sie, was passiert. Abbildungs- und Gleichungsnummern beziehen sich auf das Buch.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programmiersprache</legend>
+  <div class="seg" role="radiogroup" aria-label="Programmiersprache">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Gilt für alle Seiten. MATLAB-Programme laufen auch im kostenlosen GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>Auf dieser Seite</b><ul><li><a href="#ms-phasenebene"><span class="abb">Abb. 4.24</span>Aktionspotential in der Phasenebene</a></li><li><a href="#ms-schrittmacher"><span class="abb">Abb. 4.25</span>Schrittmacher und Grenzzyklus</a></li></ul></div>
+  
+<section class="fig" id="ms-phasenebene">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 4.24</p>
+    <h2>Aktionspotential in der Phasenebene</h2>
+    <p class="formel">dv/dt = h v<sup>2</sup> (1 − v)/τ<sub>in</sub> − v/τ<sub>out</sub> + J<sub>0</sub>,&ensp; J<sub>0</sub> = 0</p>
+    <p class="lead">Nach dem Reiz springt v nach oben, h sinkt langsam, bis die v-Nullkline endet; dann fällt v zurück und h erholt sich.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/ms_phasenebene.png" alt="Ergebnis des Programms ms_phasenebene.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="ms_phasenebene.jl" data-m="ms_phasenebene.m" data-py="ms_phasenebene.py" data-r="ms_phasenebene.R">ms_phasenebene.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/ms_phasenebene.py" data-jl="code/ms_phasenebene.jl" data-m="code/ms_phasenebene.m" data-py="code/ms_phasenebene.py" data-r="code/ms_phasenebene.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 4.24: Phasenebene des Mitchell-Schaeffer-Modells (Buch, Abschnitt 4.5, Gl. 4.20)</span>
+<span class="k"># dv/dt = h v^2 (1 - v)/tin - v/tout + J0,  dh/dt = (1 - h)/topen für v &lt; vgate, -h/tclose sonst;  J0 = 0</span>
+<span class="k"># Nullklinen, Richtungsfeld, Ruhezustand (1, 0), Schwelle und das Aktionspotential nach einem Reiz bei t = 1 ms</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+tin = 0.3; tout = 6.0; topen = 100.0; tclose = 115.0; vgate = 0.13   <span class="k"># Parameter in ms</span>
+hc = 4 * tin / tout
+
+function simuliere(T; J0 = 0.0, reize = (), J = 0.2, dauer = 2.0, dt = 0.01)
+    <span class="k"># Euler-Verfahren für das Mitchell-Schaeffer-Modell mit konstantem Strom J0 und Reizen der Stärke J</span>
+    N = round(Int, T / dt); t = dt .* (0:N)
+    Jt = fill(J0, N + 1)
+    for s in reize
+        Jt[(t .&gt;= s - 1e-9) .&amp; (t .&lt; s + dauer - 1e-9)] .+= J
+    end
+    v = zeros(N + 1); h = ones(N + 1)
+    for n in 1:N
+        dv = h[n] * v[n]^2 * (1 - v[n]) / tin - v[n] / tout + Jt[n]
+        dh = v[n] &lt; vgate ? (1 - h[n]) / topen : -h[n] / tclose
+        v[n + 1] = v[n] + dt * dv; h[n + 1] = h[n] + dt * dh
+    end
+    return t, v, h
+end
+
+function nullklinen!(p, J0)
+    v = range(0.003, 0.997, length = 2000)
+    H = (v ./ tout .- J0) ./ (v .^ 2 .* (1 .- v) ./ tin)   <span class="k"># dv/dt = 0 nach h aufgelöst</span>
+    m = (H .&gt;= -0.05) .&amp; (H .&lt;= 1.1)
+    plot!(p, H[m], v[m], color = BL, lw = 2.5, label = &quot;dv/dt = 0&quot;)
+    J0 == 0 &amp;&amp; plot!(p, [-0.05, 1.1], [0, 0], color = BL, lw = 2.5, label = &quot;&quot;)
+    plot!(p, [1, 1], [-0.05, vgate], color = HB, lw = 2.5, label = &quot;dh/dt = 0&quot;)
+    plot!(p, [0, 0], [vgate, 1.05], color = HB, lw = 2.5, label = &quot;&quot;)
+end
+
+function feld!(p, J0)
+    hg = [h for h in range(0.05, 1.05, length = 12), v in range(0.05, 1.0, length = 11)][:]
+    vg = [v for h in range(0.05, 1.05, length = 12), v in range(0.05, 1.0, length = 11)][:]
+    dv = hg .* vg .^ 2 .* (1 .- vg) ./ tin .- vg ./ tout .+ J0
+    dh = ifelse.(vg .&lt; vgate, (1 .- hg) ./ topen, -hg ./ tclose)
+    L = hypot.(dh, dv) ./ 0.052
+    quiver!(p, hg, vg, quiver = (dh ./ L, dv ./ L), color = GR, label = &quot;&quot;)
+end
+
+t, v, h = simuliere(500, reize = [1.0])
+vs = (1 - sqrt(1 - hc)) / 2
+@printf(&quot;Ruhezustand (h, v) = (1, 0),  Schwelle (1, %.4f),  Spitze des Aktionspotentials v = %.4f\n&quot;, vs, maximum(v))
+@printf(&quot;nach 500 ms: (h, v) = (%.4f, %.4f)\n&quot;, h[end], v[end])
+p = plot(xlims = (-0.05, 1.1), ylims = (-0.05, 1.05), xlabel = &quot;h&quot;, ylabel = &quot;v&quot;, legend = :right)
+feld!(p, 0); nullklinen!(p, 0)
+plot!(p, h, v, color = R2, lw = 2, label = &quot;Aktionspotential&quot;)
+scatter!(p, [1], [0], color = :black, ms = 7, label = &quot;&quot;); scatter!(p, [1], [vs], color = :white, msc = :black, ms = 7, label = &quot;&quot;)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 4.24: Phasenebene des Mitchell-Schaeffer-Modells (Buch, Abschnitt 4.5, Gl. 4.20)</span>
+<span class="k">% dv/dt = h v^2 (1 - v)/tin - v/tout + J0,  dh/dt = (1 - h)/topen für v &lt; vgate, -h/tclose sonst;  J0 = 0</span>
+<span class="k">% Nullklinen, Richtungsfeld, Ruhezustand (1, 0), Schwelle und das Aktionspotential nach einem Reiz bei t = 1 ms</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+tin = 0.3; tout = 6; topen = 100; tclose = 115; vgate = 0.13;   <span class="k">% Parameter in ms</span>
+hc = 4 * tin / tout;
+J = 0.2; dauer = 2; dt = 0.01;
+J0 = 0; T = 500; reize = 1;
+N = round(T / dt); t = dt * (0:N);
+Jt = J0 * ones(1, N + 1);
+for s = reize
+    Jt(t &gt;= s - 1e-9 &amp; t &lt; s + dauer - 1e-9) = J0 + J;   <span class="k">% Reiz der Stärke J für &#x27;dauer&#x27; ms</span>
+end
+v = zeros(1, N + 1); h = ones(1, N + 1);
+for n = 1:N                                         <span class="k">% Euler-Verfahren</span>
+    dv = h(n) * v(n)^2 * (1 - v(n)) / tin - v(n) / tout + Jt(n);
+    if v(n) &lt; vgate, dh = (1 - h(n)) / topen; else, dh = -h(n) / tclose; end
+    v(n + 1) = v(n) + dt * dv; h(n + 1) = h(n) + dt * dh;
+end
+vs = (1 - sqrt(1 - hc)) / 2;
+fprintf(&#x27;Ruhezustand (h, v) = (1, 0),  Schwelle (1, %.4f),  Spitze des Aktionspotentials v = %.4f\n&#x27;, vs, max(v));
+fprintf(&#x27;nach 500 ms: (h, v) = (%.4f, %.4f)\n&#x27;, h(end), v(end));
+<span class="k">% Richtungsfeld (Pfeile gleicher Länge) und Nullklinen</span>
+[hg, vg] = meshgrid(linspace(0.05, 1.05, 12), linspace(0.05, 1.0, 11));
+dvg = hg .* vg.^2 .* (1 - vg) / tin - vg / tout + J0;
+dhg = (vg &lt; vgate) .* (1 - hg) / topen - (vg &gt;= vgate) .* hg / tclose;
+L = sqrt(dvg.^2 + dhg.^2);
+quiver(hg, vg, dhg ./ L, dvg ./ L, 0.4, &#x27;Color&#x27;, [0.2 0.6 0.25]); hold on
+vv = linspace(0.003, 0.997, 2000);
+H = (vv / tout - J0) ./ (vv.^2 .* (1 - vv) / tin);      <span class="k">% dv/dt = 0 nach h aufgelöst</span>
+m = H &gt;= -0.05 &amp; H &lt;= 1.1;
+plot(H(m), vv(m), &#x27;Color&#x27;, [0 0.447 0.741], &#x27;LineWidth&#x27;, 2.5);
+if J0 == 0, plot([-0.05 1.1], [0 0], &#x27;Color&#x27;, [0 0.447 0.741], &#x27;LineWidth&#x27;, 2.5); end
+plot([1 1], [-0.05 vgate], &#x27;Color&#x27;, [0.45 0.70 0.90], &#x27;LineWidth&#x27;, 2.5);
+plot([0 0], [vgate 1.05], &#x27;Color&#x27;, [0.45 0.70 0.90], &#x27;LineWidth&#x27;, 2.5);
+plot(h, v, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2);
+plot(1, 0, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;, &#x27;MarkerSize&#x27;, 9); plot(1, vs, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;w&#x27;, &#x27;MarkerSize&#x27;, 9); hold off
+xlim([-0.05 1.1]); ylim([-0.05 1.05]); xlabel(&#x27;h&#x27;); ylabel(&#x27;v&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 4.24: Phasenebene des Mitchell-Schaeffer-Modells (Buch, Abschnitt 4.5, Gl. 4.20)</span>
+<span class="k"># dv/dt = h v^2 (1 - v)/tin - v/tout + J0,  dh/dt = (1 - h)/topen für v &lt; vgate, -h/tclose sonst;  J0 = 0</span>
+<span class="k"># Nullklinen, Richtungsfeld, Ruhezustand (1, 0), Schwelle und das Aktionspotential nach einem Reiz bei t = 1 ms</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+tin, tout, topen, tclose, vgate = 0.3, 6.0, 100.0, 115.0, 0.13      <span class="k"># Parameter in ms</span>
+hc = 4 * tin / tout
+
+def simuliere(T, J0=0.0, reize=(), J=0.2, dauer=2.0, dt=0.01):
+    &quot;&quot;&quot;Euler-Verfahren für das Mitchell-Schaeffer-Modell mit konstantem Strom J0 und Reizen der Stärke J.&quot;&quot;&quot;
+    N = int(round(T / dt)); t = dt * np.arange(N + 1)
+    Jt = np.full(N + 1, J0)
+    for s in reize:
+        Jt[(t &gt;= s - 1e-9) &amp; (t &lt; s + dauer - 1e-9)] += J
+    v = np.zeros(N + 1); h = np.ones(N + 1)
+    for n in range(N):
+        dv = h[n] * v[n]**2 * (1 - v[n]) / tin - v[n] / tout + Jt[n]
+        dh = (1 - h[n]) / topen if v[n] &lt; vgate else -h[n] / tclose
+        v[n + 1] = v[n] + dt * dv; h[n + 1] = h[n] + dt * dh
+    return t, v, h
+
+def nullklinen(ax, J0):
+    v = np.linspace(0.003, 0.997, 2000)
+    H = (v / tout - J0) / (v**2 * (1 - v) / tin)          <span class="k"># dv/dt = 0 nach h aufgelöst</span>
+    m = (H &gt;= -0.05) &amp; (H &lt;= 1.1)
+    ax.plot(H[m], v[m], color=(0, 0.447, 0.741), lw=2.5, label=&quot;dv/dt = 0&quot;)
+    if J0 == 0: ax.plot([-0.05, 1.1], [0, 0], color=(0, 0.447, 0.741), lw=2.5)
+    ax.plot([1, 1], [-0.05, vgate], color=(0.45, 0.70, 0.90), lw=2.5, label=&quot;dh/dt = 0&quot;)
+    ax.plot([0, 0], [vgate, 1.05], color=(0.45, 0.70, 0.90), lw=2.5)
+
+def feld(ax, J0):
+    hg, vg = np.meshgrid(np.linspace(0.05, 1.05, 12), np.linspace(0.05, 1.0, 11))
+    dv = hg * vg**2 * (1 - vg) / tin - vg / tout + J0
+    dh = np.where(vg &lt; vgate, (1 - hg) / topen, -hg / tclose)
+    L = np.hypot(dh, dv)
+    ax.quiver(hg, vg, dh / L, dv / L, color=(0.2, 0.6, 0.25), angles=&quot;xy&quot;, scale_units=&quot;xy&quot;, scale=22, width=0.004)
+
+t, v, h = simuliere(500, reize=[1.0])
+vs = (1 - np.sqrt(1 - hc)) / 2
+print(f&quot;Ruhezustand (h, v) = (1, 0),  Schwelle (1, {vs:.4f}),  Spitze des Aktionspotentials v = {v.max():.4f}&quot;)
+print(f&quot;nach 500 ms: (h, v) = ({h[-1]:.4f}, {v[-1]:.4f})&quot;)
+fig, ax = plt.subplots()
+feld(ax, 0); nullklinen(ax, 0)
+ax.plot(h, v, color=(0.64, 0.08, 0.18), lw=2, label=&quot;Aktionspotential&quot;)
+ax.plot(1, 0, &quot;ko&quot;, ms=9); ax.plot(1, vs, &quot;o&quot;, mfc=&quot;w&quot;, mec=&quot;k&quot;, ms=9)
+ax.set_xlim(-0.05, 1.1); ax.set_ylim(-0.05, 1.05); ax.set_xlabel(&quot;h&quot;); ax.set_ylabel(&quot;v&quot;); ax.legend(loc=&quot;center right&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 4.24: Phasenebene des Mitchell-Schaeffer-Modells (Buch, Abschnitt 4.5, Gl. 4.20)</span>
+<span class="k"># dv/dt = h v^2 (1 - v)/tin - v/tout + J0,  dh/dt = (1 - h)/topen für v &lt; vgate, -h/tclose sonst;  J0 = 0</span>
+<span class="k"># Nullklinen, Richtungsfeld, Ruhezustand (1, 0), Schwelle und das Aktionspotential nach einem Reiz bei t = 1 ms</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+tin &lt;- 0.3; tout &lt;- 6; topen &lt;- 100; tclose &lt;- 115; vgate &lt;- 0.13   <span class="k"># Parameter in ms</span>
+hc &lt;- 4 * tin / tout
+
+simuliere &lt;- function(T, J0 = 0, reize = c(), J = 0.2, dauer = 2, dt = 0.01) {
+  <span class="k"># Euler-Verfahren für das Mitchell-Schaeffer-Modell mit konstantem Strom J0 und Reizen der Stärke J</span>
+  N &lt;- round(T / dt); t &lt;- dt * (0:N)
+  Jt &lt;- rep(J0, N + 1)
+  for (s in reize) Jt[t &gt;= s - 1e-9 &amp; t &lt; s + dauer - 1e-9] &lt;- J0 + J
+  v &lt;- numeric(N + 1); h &lt;- rep(1, N + 1)
+  for (n in 1:N) {
+    dv &lt;- h[n] * v[n]^2 * (1 - v[n]) / tin - v[n] / tout + Jt[n]
+    dh &lt;- if (v[n] &lt; vgate) (1 - h[n]) / topen else -h[n] / tclose
+    v[n + 1] &lt;- v[n] + dt * dv; h[n + 1] &lt;- h[n] + dt * dh
+  }
+  list(t = t, v = v, h = h)
+}
+nullklinen &lt;- function(J0) {
+  v &lt;- seq(0.003, 0.997, length.out = 2000)
+  H &lt;- (v / tout - J0) / (v^2 * (1 - v) / tin)       <span class="k"># dv/dt = 0 nach h aufgelöst</span>
+  m &lt;- H &gt;= -0.05 &amp; H &lt;= 1.1
+  lines(H[m], v[m], col = rgb(0, 0.447, 0.741), lwd = 2.5)
+  if (J0 == 0) lines(c(-0.05, 1.1), c(0, 0), col = rgb(0, 0.447, 0.741), lwd = 2.5)
+  lines(c(1, 1), c(-0.05, vgate), col = rgb(0.45, 0.70, 0.90), lwd = 2.5); lines(c(0, 0), c(vgate, 1.05), col = rgb(0.45, 0.70, 0.90), lwd = 2.5)
+}
+feld &lt;- function(J0) {
+  g &lt;- expand.grid(h = seq(0.05, 1.05, length.out = 12), v = seq(0.05, 1.0, length.out = 11))
+  dv &lt;- g$h * g$v^2 * (1 - g$v) / tin - g$v / tout + J0
+  dh &lt;- ifelse(g$v &lt; vgate, (1 - g$h) / topen, -g$h / tclose)
+  L &lt;- sqrt(dh^2 + dv^2)
+  arrows(g$h, g$v, g$h + dh / L * 0.045, g$v + dv / L * 0.045, length = 0.03, col = rgb(0.2, 0.6, 0.25))
+}
+
+x &lt;- simuliere(500, reize = 1)
+vs &lt;- (1 - sqrt(1 - hc)) / 2
+cat(sprintf(&quot;Ruhezustand (h, v) = (1, 0),  Schwelle (1, %.4f),  Spitze des Aktionspotentials v = %.4f\n&quot;, vs, max(x$v)))
+cat(sprintf(&quot;nach 500 ms: (h, v) = (%.4f, %.4f)\n&quot;, x$h[length(x$h)], x$v[length(x$v)]))
+plot(NULL, xlim = c(-0.05, 1.1), ylim = c(-0.05, 1.05), xlab = &quot;h&quot;, ylab = &quot;v&quot;)
+feld(0); nullklinen(0)
+lines(x$h, x$v, col = rgb(0.64, 0.08, 0.18), lwd = 2)
+points(1, 0, pch = 16, cex = 1.3); points(1, vs, pch = 21, bg = &quot;white&quot;, cex = 1.3)
+legend(&quot;right&quot;, legend = c(&quot;dv/dt = 0&quot;, &quot;dh/dt = 0&quot;, &quot;Aktionspotential&quot;), col = c(rgb(0, 0.447, 0.741), rgb(0.45, 0.70, 0.90), rgb(0.64, 0.08, 0.18)), lwd = 2)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>Ruhezustand (h, v) = (1, 0),  Schwelle (1, 0.0528),  Spitze des Aktionspotentials v = 0.9451
+nach 500 ms: (h, v) = (0.9445, 0.0000)</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="ms-schrittmacher">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 4.25</p>
+    <h2>Schrittmacher und Grenzzyklus</h2>
+    <p class="formel">J<sub>0</sub> &gt; J<sub>c</sub> ≈ 0.00214</p>
+    <p class="lead">Oberhalb von J<sub>c</sub> gibt es keinen stationären Zustand mehr, und die Zelle erregt sich periodisch. Je größer J<sub>0</sub>, desto kürzer die Periode.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/ms_schrittmacher.png" alt="Ergebnis des Programms ms_schrittmacher.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="ms_schrittmacher.jl" data-m="ms_schrittmacher.m" data-py="ms_schrittmacher.py" data-r="ms_schrittmacher.R">ms_schrittmacher.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/ms_schrittmacher.py" data-jl="code/ms_schrittmacher.jl" data-m="code/ms_schrittmacher.m" data-py="code/ms_schrittmacher.py" data-r="code/ms_schrittmacher.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 4.25: Mitchell-Schaeffer-Modell mit Schrittmacherstrom (Buch, Abschnitt 4.5, Gl. 4.20)</span>
+<span class="k"># konstanter Einwärtsstrom J0 &gt; J_c: links periodische Aktionspotentiale für J0 = 0.0022 und 0.003,</span>
+<span class="k"># rechts der Grenzzyklus für J0 = 0.0022 mit den Nullklinen (es gibt keinen stationären Zustand mehr)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+tin = 0.3; tout = 6.0; topen = 100.0; tclose = 115.0; vgate = 0.13   <span class="k"># Parameter in ms</span>
+hc = 4 * tin / tout
+
+function simuliere(T; J0 = 0.0, reize = (), J = 0.2, dauer = 2.0, dt = 0.01)
+    <span class="k"># Euler-Verfahren für das Mitchell-Schaeffer-Modell mit konstantem Strom J0 und Reizen der Stärke J</span>
+    N = round(Int, T / dt); t = dt .* (0:N)
+    Jt = fill(J0, N + 1)
+    for s in reize
+        Jt[(t .&gt;= s - 1e-9) .&amp; (t .&lt; s + dauer - 1e-9)] .+= J
+    end
+    v = zeros(N + 1); h = ones(N + 1)
+    for n in 1:N
+        dv = h[n] * v[n]^2 * (1 - v[n]) / tin - v[n] / tout + Jt[n]
+        dh = v[n] &lt; vgate ? (1 - h[n]) / topen : -h[n] / tclose
+        v[n + 1] = v[n] + dt * dv; h[n + 1] = h[n] + dt * dh
+    end
+    return t, v, h
+end
+
+function nullklinen!(p, J0)
+    v = range(0.003, 0.997, length = 2000)
+    H = (v ./ tout .- J0) ./ (v .^ 2 .* (1 .- v) ./ tin)   <span class="k"># dv/dt = 0 nach h aufgelöst</span>
+    m = (H .&gt;= -0.05) .&amp; (H .&lt;= 1.1)
+    plot!(p, H[m], v[m], color = BL, lw = 2.5, label = &quot;dv/dt = 0&quot;)
+    J0 == 0 &amp;&amp; plot!(p, [-0.05, 1.1], [0, 0], color = BL, lw = 2.5, label = &quot;&quot;)
+    plot!(p, [1, 1], [-0.05, vgate], color = HB, lw = 2.5, label = &quot;dh/dt = 0&quot;)
+    plot!(p, [0, 0], [vgate, 1.05], color = HB, lw = 2.5, label = &quot;&quot;)
+end
+
+function feld!(p, J0)
+    hg = [h for h in range(0.05, 1.05, length = 12), v in range(0.05, 1.0, length = 11)][:]
+    vg = [v for h in range(0.05, 1.05, length = 12), v in range(0.05, 1.0, length = 11)][:]
+    dv = hg .* vg .^ 2 .* (1 .- vg) ./ tin .- vg ./ tout .+ J0
+    dh = ifelse.(vg .&lt; vgate, (1 .- hg) ./ topen, -hg ./ tclose)
+    L = hypot.(dh, dv) ./ 0.052
+    quiver!(p, hg, vg, quiver = (dh ./ L, dv ./ L), color = GR, label = &quot;&quot;)
+end
+
+f(v) = v^2 * (1 - v) / tin - v / tout
+Jc = -minimum(f.(range(0, 0.2, length = 200001)))
+@printf(&quot;J_c = %.5f\n&quot;, Jc)
+p1 = plot(xlims = (0, 2000), xlabel = &quot;t (ms)&quot;, ylabel = &quot;v(t)&quot;, legend = :topright)
+p2 = plot(xlims = (-0.05, 1.1), ylims = (-0.05, 1.05), xlabel = &quot;h&quot;, ylabel = &quot;v&quot;, legend = :right)
+for (J0, farbe) in [(0.0022, R1), (0.003, R3)]
+    t, v, h = simuliere(3000, J0 = J0)
+    hoch = t[2:end][(v[1:end - 1] .&lt; 0.5) .&amp; (v[2:end] .&gt;= 0.5)]   <span class="k"># Beginn jedes Aktionspotentials</span>
+    @printf(&quot;J0 = %g: Periode %.0f ms\n&quot;, J0, hoch[end] - hoch[end - 1])
+    m = t .&gt;= 400
+    plot!(p1, t[m] .- 400, v[m], color = farbe, lw = 2, label = &quot;J0 = $J0&quot;)
+    if J0 == 0.0022
+        m = t .&gt;= 1500
+        feld!(p2, J0); nullklinen!(p2, J0)
+        plot!(p2, h[m], v[m], color = R2, lw = 2, label = &quot;Grenzzyklus&quot;)
+    end
+end
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 4.25: Mitchell-Schaeffer-Modell mit Schrittmacherstrom (Buch, Abschnitt 4.5, Gl. 4.20)</span>
+<span class="k">% konstanter Einwärtsstrom J0 &gt; J_c: links periodische Aktionspotentiale für J0 = 0.0022 und 0.003,</span>
+<span class="k">% rechts der Grenzzyklus für J0 = 0.0022 mit den Nullklinen (es gibt keinen stationären Zustand mehr)</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+tin = 0.3; tout = 6; topen = 100; tclose = 115; vgate = 0.13;   <span class="k">% Parameter in ms</span>
+hc = 4 * tin / tout;
+J = 0.2; dauer = 2; dt = 0.01;
+vv = linspace(0, 0.2, 200001);
+Jc = -min(vv.^2 .* (1 - vv) / tin - vv / tout);
+fprintf(&#x27;J_c = %.5f\n&#x27;, Jc);
+J0s = [0.0022 0.003]; farben = [0.43 0.04 0.12; 0.89 0.44 0.49];
+for j = 1:2
+    J0 = J0s(j); T = 3000; reize = [];
+    N = round(T / dt); t = dt * (0:N);
+    Jt = J0 * ones(1, N + 1);
+    for s = reize
+        Jt(t &gt;= s - 1e-9 &amp; t &lt; s + dauer - 1e-9) = J0 + J;   <span class="k">% Reiz der Stärke J für &#x27;dauer&#x27; ms</span>
+    end
+    v = zeros(1, N + 1); h = ones(1, N + 1);
+    for n = 1:N                                         <span class="k">% Euler-Verfahren</span>
+        dv = h(n) * v(n)^2 * (1 - v(n)) / tin - v(n) / tout + Jt(n);
+        if v(n) &lt; vgate, dh = (1 - h(n)) / topen; else, dh = -h(n) / tclose; end
+        v(n + 1) = v(n) + dt * dv; h(n + 1) = h(n) + dt * dh;
+    end
+    hoch = t(find(v(1:end-1) &lt; 0.5 &amp; v(2:end) &gt;= 0.5) + 1);   <span class="k">% Beginn jedes Aktionspotentials</span>
+    fprintf(&#x27;J0 = %g: Periode %.0f ms\n&#x27;, J0, hoch(end) - hoch(end - 1));
+    subplot(1, 2, 1); hold on
+    m = t &gt;= 400;
+    plot(t(m) - 400, v(m), &#x27;Color&#x27;, farben(j, :), &#x27;LineWidth&#x27;, 2);
+    if j == 1
+        subplot(1, 2, 2);
+        <span class="k">% Richtungsfeld (Pfeile gleicher Länge) und Nullklinen</span>
+        [hg, vg] = meshgrid(linspace(0.05, 1.05, 12), linspace(0.05, 1.0, 11));
+        dvg = hg .* vg.^2 .* (1 - vg) / tin - vg / tout + J0;
+        dhg = (vg &lt; vgate) .* (1 - hg) / topen - (vg &gt;= vgate) .* hg / tclose;
+        L = sqrt(dvg.^2 + dhg.^2);
+        quiver(hg, vg, dhg ./ L, dvg ./ L, 0.4, &#x27;Color&#x27;, [0.2 0.6 0.25]); hold on
+        vv = linspace(0.003, 0.997, 2000);
+        H = (vv / tout - J0) ./ (vv.^2 .* (1 - vv) / tin);      <span class="k">% dv/dt = 0 nach h aufgelöst</span>
+        m = H &gt;= -0.05 &amp; H &lt;= 1.1;
+        plot(H(m), vv(m), &#x27;Color&#x27;, [0 0.447 0.741], &#x27;LineWidth&#x27;, 2.5);
+        if J0 == 0, plot([-0.05 1.1], [0 0], &#x27;Color&#x27;, [0 0.447 0.741], &#x27;LineWidth&#x27;, 2.5); end
+        plot([1 1], [-0.05 vgate], &#x27;Color&#x27;, [0.45 0.70 0.90], &#x27;LineWidth&#x27;, 2.5);
+        plot([0 0], [vgate 1.05], &#x27;Color&#x27;, [0.45 0.70 0.90], &#x27;LineWidth&#x27;, 2.5);
+        m = t &gt;= 1500;
+        plot(h(m), v(m), &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2); hold off
+        xlim([-0.05 1.1]); ylim([-0.05 1.05]); xlabel(&#x27;h&#x27;); ylabel(&#x27;v&#x27;);
+    end
+end
+subplot(1, 2, 1); hold off
+xlim([0 2000]); xlabel(&#x27;t (ms)&#x27;); ylabel(&#x27;v(t)&#x27;); legend(&#x27;J0 = 0.0022&#x27;, &#x27;J0 = 0.003&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 4.25: Mitchell-Schaeffer-Modell mit Schrittmacherstrom (Buch, Abschnitt 4.5, Gl. 4.20)</span>
+<span class="k"># konstanter Einwärtsstrom J0 &gt; J_c: links periodische Aktionspotentiale für J0 = 0.0022 und 0.003,</span>
+<span class="k"># rechts der Grenzzyklus für J0 = 0.0022 mit den Nullklinen (es gibt keinen stationären Zustand mehr)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+tin, tout, topen, tclose, vgate = 0.3, 6.0, 100.0, 115.0, 0.13      <span class="k"># Parameter in ms</span>
+hc = 4 * tin / tout
+
+def simuliere(T, J0=0.0, reize=(), J=0.2, dauer=2.0, dt=0.01):
+    &quot;&quot;&quot;Euler-Verfahren für das Mitchell-Schaeffer-Modell mit konstantem Strom J0 und Reizen der Stärke J.&quot;&quot;&quot;
+    N = int(round(T / dt)); t = dt * np.arange(N + 1)
+    Jt = np.full(N + 1, J0)
+    for s in reize:
+        Jt[(t &gt;= s - 1e-9) &amp; (t &lt; s + dauer - 1e-9)] += J
+    v = np.zeros(N + 1); h = np.ones(N + 1)
+    for n in range(N):
+        dv = h[n] * v[n]**2 * (1 - v[n]) / tin - v[n] / tout + Jt[n]
+        dh = (1 - h[n]) / topen if v[n] &lt; vgate else -h[n] / tclose
+        v[n + 1] = v[n] + dt * dv; h[n + 1] = h[n] + dt * dh
+    return t, v, h
+
+def nullklinen(ax, J0):
+    v = np.linspace(0.003, 0.997, 2000)
+    H = (v / tout - J0) / (v**2 * (1 - v) / tin)          <span class="k"># dv/dt = 0 nach h aufgelöst</span>
+    m = (H &gt;= -0.05) &amp; (H &lt;= 1.1)
+    ax.plot(H[m], v[m], color=(0, 0.447, 0.741), lw=2.5, label=&quot;dv/dt = 0&quot;)
+    if J0 == 0: ax.plot([-0.05, 1.1], [0, 0], color=(0, 0.447, 0.741), lw=2.5)
+    ax.plot([1, 1], [-0.05, vgate], color=(0.45, 0.70, 0.90), lw=2.5, label=&quot;dh/dt = 0&quot;)
+    ax.plot([0, 0], [vgate, 1.05], color=(0.45, 0.70, 0.90), lw=2.5)
+
+def feld(ax, J0):
+    hg, vg = np.meshgrid(np.linspace(0.05, 1.05, 12), np.linspace(0.05, 1.0, 11))
+    dv = hg * vg**2 * (1 - vg) / tin - vg / tout + J0
+    dh = np.where(vg &lt; vgate, (1 - hg) / topen, -hg / tclose)
+    L = np.hypot(dh, dv)
+    ax.quiver(hg, vg, dh / L, dv / L, color=(0.2, 0.6, 0.25), angles=&quot;xy&quot;, scale_units=&quot;xy&quot;, scale=22, width=0.004)
+
+f = lambda v: v**2 * (1 - v) / tin - v / tout
+vv = np.linspace(0, 0.2, 200001); Jc = -f(vv).min()
+print(f&quot;J_c = {Jc:.5f}&quot;)
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+for J0, farbe in [(0.0022, (0.43, 0.04, 0.12)), (0.003, (0.89, 0.44, 0.49))]:
+    t, v, h = simuliere(3000, J0=J0)
+    hoch = t[1:][(v[:-1] &lt; 0.5) &amp; (v[1:] &gt;= 0.5)]          <span class="k"># Beginn jedes Aktionspotentials</span>
+    print(f&quot;J0 = {J0}: Periode {hoch[-1] - hoch[-2]:.0f} ms&quot;)
+    m = t &gt;= 400
+    axs[0].plot(t[m] - 400, v[m], color=farbe, lw=2, label=f&quot;J0 = {J0}&quot;)
+    if J0 == 0.0022:
+        m = t &gt;= 1500
+        feld(axs[1], J0); nullklinen(axs[1], J0)
+        axs[1].plot(h[m], v[m], color=(0.64, 0.08, 0.18), lw=2, label=&quot;Grenzzyklus&quot;)
+axs[0].set_xlim(0, 2000); axs[0].set_xlabel(&quot;t (ms)&quot;); axs[0].set_ylabel(&quot;v(t)&quot;); axs[0].legend(loc=&quot;upper right&quot;)
+axs[1].set_xlim(-0.05, 1.1); axs[1].set_ylim(-0.05, 1.05); axs[1].set_xlabel(&quot;h&quot;); axs[1].set_ylabel(&quot;v&quot;); axs[1].legend(loc=&quot;center right&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 4.25: Mitchell-Schaeffer-Modell mit Schrittmacherstrom (Buch, Abschnitt 4.5, Gl. 4.20)</span>
+<span class="k"># konstanter Einwärtsstrom J0 &gt; J_c: links periodische Aktionspotentiale für J0 = 0.0022 und 0.003,</span>
+<span class="k"># rechts der Grenzzyklus für J0 = 0.0022 mit den Nullklinen (es gibt keinen stationären Zustand mehr)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+tin &lt;- 0.3; tout &lt;- 6; topen &lt;- 100; tclose &lt;- 115; vgate &lt;- 0.13   <span class="k"># Parameter in ms</span>
+hc &lt;- 4 * tin / tout
+
+simuliere &lt;- function(T, J0 = 0, reize = c(), J = 0.2, dauer = 2, dt = 0.01) {
+  <span class="k"># Euler-Verfahren für das Mitchell-Schaeffer-Modell mit konstantem Strom J0 und Reizen der Stärke J</span>
+  N &lt;- round(T / dt); t &lt;- dt * (0:N)
+  Jt &lt;- rep(J0, N + 1)
+  for (s in reize) Jt[t &gt;= s - 1e-9 &amp; t &lt; s + dauer - 1e-9] &lt;- J0 + J
+  v &lt;- numeric(N + 1); h &lt;- rep(1, N + 1)
+  for (n in 1:N) {
+    dv &lt;- h[n] * v[n]^2 * (1 - v[n]) / tin - v[n] / tout + Jt[n]
+    dh &lt;- if (v[n] &lt; vgate) (1 - h[n]) / topen else -h[n] / tclose
+    v[n + 1] &lt;- v[n] + dt * dv; h[n + 1] &lt;- h[n] + dt * dh
+  }
+  list(t = t, v = v, h = h)
+}
+nullklinen &lt;- function(J0) {
+  v &lt;- seq(0.003, 0.997, length.out = 2000)
+  H &lt;- (v / tout - J0) / (v^2 * (1 - v) / tin)       <span class="k"># dv/dt = 0 nach h aufgelöst</span>
+  m &lt;- H &gt;= -0.05 &amp; H &lt;= 1.1
+  lines(H[m], v[m], col = rgb(0, 0.447, 0.741), lwd = 2.5)
+  if (J0 == 0) lines(c(-0.05, 1.1), c(0, 0), col = rgb(0, 0.447, 0.741), lwd = 2.5)
+  lines(c(1, 1), c(-0.05, vgate), col = rgb(0.45, 0.70, 0.90), lwd = 2.5); lines(c(0, 0), c(vgate, 1.05), col = rgb(0.45, 0.70, 0.90), lwd = 2.5)
+}
+feld &lt;- function(J0) {
+  g &lt;- expand.grid(h = seq(0.05, 1.05, length.out = 12), v = seq(0.05, 1.0, length.out = 11))
+  dv &lt;- g$h * g$v^2 * (1 - g$v) / tin - g$v / tout + J0
+  dh &lt;- ifelse(g$v &lt; vgate, (1 - g$h) / topen, -g$h / tclose)
+  L &lt;- sqrt(dh^2 + dv^2)
+  arrows(g$h, g$v, g$h + dh / L * 0.045, g$v + dv / L * 0.045, length = 0.03, col = rgb(0.2, 0.6, 0.25))
+}
+
+vv &lt;- seq(0, 0.2, length.out = 200001)
+Jc &lt;- -min(vv^2 * (1 - vv) / tin - vv / tout)
+cat(sprintf(&quot;J_c = %.5f\n&quot;, Jc))
+par(mfrow = c(1, 2))
+plot(NULL, xlim = c(0, 2000), ylim = c(0, 1), xlab = &quot;t (ms)&quot;, ylab = &quot;v(t)&quot;)
+farben &lt;- c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49))
+J0s &lt;- c(0.0022, 0.003)
+for (j in 1:2) {
+  x &lt;- simuliere(3000, J0 = J0s[j])
+  hoch &lt;- x$t[which(x$v[-length(x$v)] &lt; 0.5 &amp; x$v[-1] &gt;= 0.5) + 1]   <span class="k"># Beginn jedes Aktionspotentials</span>
+  cat(sprintf(&quot;J0 = %g: Periode %.0f ms\n&quot;, J0s[j], hoch[length(hoch)] - hoch[length(hoch) - 1]))
+  m &lt;- x$t &gt;= 400
+  lines(x$t[m] - 400, x$v[m], col = farben[j], lwd = 2)
+  if (j == 1) zyklus &lt;- x
+}
+legend(&quot;topright&quot;, legend = sprintf(&quot;J0 = %g&quot;, J0s), col = farben, lwd = 2)
+plot(NULL, xlim = c(-0.05, 1.1), ylim = c(-0.05, 1.05), xlab = &quot;h&quot;, ylab = &quot;v&quot;)
+feld(0.0022); nullklinen(0.0022)
+m &lt;- zyklus$t &gt;= 1500
+lines(zyklus$h[m], zyklus$v[m], col = rgb(0.64, 0.08, 0.18), lwd = 2)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>J_c = 0.00214
+J0 = 0.0022: Periode 791 ms
+J0 = 0.003: Periode 398 ms</code></pre></details>
+    </div>
+  </div>
+</section>
+  
+  <section class="matlab-apps"><h3>MATLAB-Apps aus der Vorlesung</h3><p>Herunterladen, in einen Ordner legen und in MATLAB den Namen ohne Endung eingeben, z. B. <code>lr1_app</code>. Die Apps nutzen die grafische Oberfläche von MATLAB und laufen nicht in GNU Octave.</p><ul><li><a href="apps/lr1_app.m" download>lr1_app.m</a><span>Luo-Rudy-I-Modell einer Herzmuskelzelle</span></li></ul></section>
+  <nav class="weiter" aria-label="Weiterblättern"><a href="abschnitt-4-4.html"><small>Zurück</small>4.4 Stationäre Zustände und Stabilität</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Begleitmaterial zum Buch „Dynamische Systeme in den Lebenswissenschaften“ von Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programme unter <a href="../LICENSE.txt">MIT-Lizenz</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

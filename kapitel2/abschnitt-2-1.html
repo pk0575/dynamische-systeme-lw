@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>2.1 Beispiele: Fibonacci und Räuber-Beute – Dynamische Systeme in den Lebenswissenschaften</title>
+<meta name="description" content="Programme in Julia, MATLAB, Python und R zu Abschnitt 2.1 des Buchs Dynamische Systeme in den Lebenswissenschaften">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamische Systeme in den Lebenswissenschaften</a>
+  <nav aria-label="Kapitel"><a href="../index.html">Start</a> <a href="../kapitel1/index.html">Kapitel 1</a> <a href="../kapitel2/index.html" aria-current="page">Kapitel 2</a> <a href="../kapitel3/index.html">Kapitel 3</a> <a href="../kapitel4/index.html">Kapitel 4</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Abschnitte"><h2><a href="index.html">Kapitel 2</a></h2><ol><li><a href="abschnitt-2-1.html" aria-current="page"><span class="nr">2.1</span><span>Beispiele: Fibonacci und Räuber-Beute</span></a></li><li><a href="abschnitt-2-2.html"><span class="nr">2.2</span><span>Matrix-Modelle</span></a></li><li><a href="abschnitt-2-3.html"><span class="nr">2.3</span><span>Eigenwerte und Langzeitverhalten</span></a></li><li><a href="abschnitt-2-4.html"><span class="nr">2.4</span><span>Nichtlineare Systeme: SIR-Modell</span></a></li><li><a href="abschnitt-2-5.html"><span class="nr">2.5</span><span>Vertiefung: Ausbreitung des Aktionspotentials</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Kapitel 2 · Diskrete dynamische Systeme mit mehreren Variablen</p>
+      <h1><span class="num">2.1</span>Beispiele: Fibonacci und Räuber-Beute</h1>
+      <p>Viele Vorgänge lassen sich nur mit mehreren Größen zugleich beschreiben: junge und erwachsene Hasenpaare, Beute und Räuber. Jede Größe erhält eine eigene Rekursionsvorschrift, und die Vorschriften hängen voneinander ab. So entsteht ein System von Differenzengleichungen.</p>
+      <p>Zu jeder Abbildung des Abschnitts finden Sie das Programm, das sie erzeugt. Ändern Sie Parameter und Startwerte und beobachten Sie, was passiert. Abbildungs- und Gleichungsnummern beziehen sich auf das Buch.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programmiersprache</legend>
+  <div class="seg" role="radiogroup" aria-label="Programmiersprache">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Gilt für alle Seiten. MATLAB-Programme laufen auch im kostenlosen GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>Auf dieser Seite</b><ul><li><a href="#luchs-hase"><span class="abb">Abb. 2.2</span>Luchse und Schneeschuhhasen</a></li><li><a href="#raeuber-beute-a"><span class="abb">Abb. 2.4</span>Räuber-Beute-Modell: beide überleben</a></li><li><a href="#raeuber-beute-b"><span class="abb">Abb. 2.5</span>Räuber-Beute-Modell: die Räuber sterben aus</a></li><li><a href="#app-raeuber-beute"><span class="abb">App</span>im Browser ausprobieren</a></li></ul></div>
+  
+<section class="fig" id="luchs-hase">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 2.2</p>
+    <h2>Luchse und Schneeschuhhasen</h2>
+    <p class="formel">Felle in Tausend, 1900–1920</p>
+    <p class="lead">Die Daten der Hudson's Bay Company zeigen gegeneinander versetzte Schwingungen: Die Zahl der Luchse erreicht ihr Maximum ein bis zwei Jahre nach der Zahl der Hasen. Das Programm bestimmt die Maxima für jedes Jahrzehnt.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/luchs_hase.png" alt="Ergebnis des Programms luchs_hase.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="luchs_hase.jl" data-m="luchs_hase.m" data-py="luchs_hase.py" data-r="luchs_hase.R">luchs_hase.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/luchs_hase.py" data-jl="code/luchs_hase.jl" data-m="code/luchs_hase.m" data-py="code/luchs_hase.py" data-r="code/luchs_hase.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 2.2: Luchse und Schneeschuhhasen (Buch, Abschnitt 2.1)</span>
+<span class="k"># Anzahl der von der Hudson&#x27;s Bay Company angekauften Felle (in Tausend), 1900-1920, nach Odum (1953)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots, LinearAlgebra
+
+jahr = 1900:1920
+hasen = [30, 47.2, 70.2, 77.4, 36.3, 20.6, 18.1, 21.4, 22, 25.4, 27.1, 40.3, 57, 76.6, 52.3, 19.5, 11.2, 7.6, 14.6, 16.2, 24.7]
+luchse = [4, 6.1, 9.8, 35.2, 59.4, 41.7, 19, 13, 8.3, 9.1, 7.4, 8, 12.3, 19.5, 45.7, 51.1, 29.7, 15.8, 9.7, 10.1, 8.6]
+
+for (von, bis) in [(1900, 1909), (1910, 1920)]          <span class="k"># Maxima je Jahrzehnt: die Luchse folgen den Hasen</span>
+    m = (jahr .&gt;= von) .&amp; (jahr .&lt;= bis)
+    @printf(&quot;%d-%d: meiste Hasen %d, meiste Luchse %d\n&quot;, von, bis, jahr[m][argmax(hasen[m])], jahr[m][argmax(luchse[m])])
+end
+
+p = plot(jahr, hasen, ls = :dash, marker = :circle, color = RGB(0.43, 0.04, 0.12), label = &quot;Schneeschuhhasen&quot;,
+         xlabel = &quot;Jahr&quot;, ylabel = &quot;Felle (Tausend)&quot;)
+plot!(p, jahr, luchse, ls = :dash, marker = :rect, color = RGB(0.89, 0.44, 0.49), label = &quot;Luchse&quot;)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 2.2: Luchse und Schneeschuhhasen (Buch, Abschnitt 2.1)</span>
+<span class="k">% Anzahl der von der Hudson&#x27;s Bay Company angekauften Felle (in Tausend), 1900-1920, nach Odum (1953)</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+jahr = 1900:1920;
+hasen = [30 47.2 70.2 77.4 36.3 20.6 18.1 21.4 22 25.4 27.1 40.3 57 76.6 52.3 19.5 11.2 7.6 14.6 16.2 24.7];
+luchse = [4 6.1 9.8 35.2 59.4 41.7 19 13 8.3 9.1 7.4 8 12.3 19.5 45.7 51.1 29.7 15.8 9.7 10.1 8.6];
+
+grenzen = [1900 1909; 1910 1920];             <span class="k">% Maxima je Jahrzehnt: die Luchse folgen den Hasen</span>
+for i = 1:2
+    m = jahr &gt;= grenzen(i, 1) &amp; jahr &lt;= grenzen(i, 2);
+    j = jahr(m);
+    [~, ih] = max(hasen(m)); [~, il] = max(luchse(m));
+    fprintf(&#x27;%d-%d: meiste Hasen %d, meiste Luchse %d\n&#x27;, grenzen(i, 1), grenzen(i, 2), j(ih), j(il));
+end
+
+plot(jahr, hasen, &#x27;--o&#x27;, &#x27;Color&#x27;, [0.43 0.04 0.12]); hold on
+plot(jahr, luchse, &#x27;--s&#x27;, &#x27;Color&#x27;, [0.89 0.44 0.49]); hold off
+xlabel(&#x27;Jahr&#x27;); ylabel(&#x27;Felle (Tausend)&#x27;); legend(&#x27;Schneeschuhhasen&#x27;, &#x27;Luchse&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 2.2: Luchse und Schneeschuhhasen (Buch, Abschnitt 2.1)</span>
+<span class="k"># Anzahl der von der Hudson&#x27;s Bay Company angekauften Felle (in Tausend), 1900-1920, nach Odum (1953)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+jahr = np.arange(1900, 1921)
+hasen = [30, 47.2, 70.2, 77.4, 36.3, 20.6, 18.1, 21.4, 22, 25.4, 27.1, 40.3, 57, 76.6, 52.3, 19.5, 11.2, 7.6, 14.6, 16.2, 24.7]
+luchse = [4, 6.1, 9.8, 35.2, 59.4, 41.7, 19, 13, 8.3, 9.1, 7.4, 8, 12.3, 19.5, 45.7, 51.1, 29.7, 15.8, 9.7, 10.1, 8.6]
+
+for von, bis in [(1900, 1909), (1910, 1920)]:              <span class="k"># Maxima je Jahrzehnt: die Luchse folgen den Hasen</span>
+    m = (jahr &gt;= von) &amp; (jahr &lt;= bis)
+    print(f&quot;{von}-{bis}: meiste Hasen {jahr[m][np.argmax(np.array(hasen)[m])]}, meiste Luchse {jahr[m][np.argmax(np.array(luchse)[m])]}&quot;)
+
+plt.plot(jahr, hasen, &quot;o--&quot;, color=(0.43, 0.04, 0.12), label=&quot;Schneeschuhhasen&quot;)
+plt.plot(jahr, luchse, &quot;s--&quot;, color=(0.89, 0.44, 0.49), label=&quot;Luchse&quot;)
+plt.xlabel(&quot;Jahr&quot;); plt.ylabel(&quot;Felle (Tausend)&quot;); plt.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 2.2: Luchse und Schneeschuhhasen (Buch, Abschnitt 2.1)</span>
+<span class="k"># Anzahl der von der Hudson&#x27;s Bay Company angekauften Felle (in Tausend), 1900-1920, nach Odum (1953)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+jahr &lt;- 1900:1920
+hasen &lt;- c(30, 47.2, 70.2, 77.4, 36.3, 20.6, 18.1, 21.4, 22, 25.4, 27.1, 40.3, 57, 76.6, 52.3, 19.5, 11.2, 7.6, 14.6, 16.2, 24.7)
+luchse &lt;- c(4, 6.1, 9.8, 35.2, 59.4, 41.7, 19, 13, 8.3, 9.1, 7.4, 8, 12.3, 19.5, 45.7, 51.1, 29.7, 15.8, 9.7, 10.1, 8.6)
+
+for (g in list(c(1900, 1909), c(1910, 1920))) {      <span class="k"># Maxima je Jahrzehnt: die Luchse folgen den Hasen</span>
+  m &lt;- jahr &gt;= g[1] &amp; jahr &lt;= g[2]
+  cat(sprintf(&quot;%d-%d: meiste Hasen %d, meiste Luchse %d\n&quot;, g[1], g[2], jahr[m][which.max(hasen[m])], jahr[m][which.max(luchse[m])]))
+}
+
+plot(jahr, hasen, type = &quot;o&quot;, lty = 2, pch = 16, col = rgb(0.43, 0.04, 0.12), ylim = c(0, 80), xlab = &quot;Jahr&quot;, ylab = &quot;Felle (Tausend)&quot;)
+lines(jahr, luchse, type = &quot;o&quot;, lty = 2, pch = 15, col = rgb(0.89, 0.44, 0.49))
+legend(&quot;topright&quot;, legend = c(&quot;Schneeschuhhasen&quot;, &quot;Luchse&quot;), col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)), pch = c(16, 15), lty = 2)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>1900-1909: meiste Hasen 1903, meiste Luchse 1904
+1910-1920: meiste Hasen 1913, meiste Luchse 1915</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="raeuber-beute-a">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 2.4</p>
+    <h2>Räuber-Beute-Modell: beide überleben</h2>
+    <p class="formel">u<sub>n+1</sub> = (1 + r) u<sub>n</sub> − r u<sub>n</sub><sup>2</sup> − γ u<sub>n</sub> v<sub>n</sub>,&ensp; v<sub>n+1</sub> = γ u<sub>n</sub> v<sub>n</sub></p>
+    <p class="lead">Mit r = 3.1 und γ = 2.1 schwingen Beute und Räuber gegeneinander versetzt wie in den Felldaten. In der Phasenebene (rechts) kreisen die Zustände um den stationären Zustand (1/γ, r(1 − 1/γ)/γ).</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/raeuber_beute_a.png" alt="Ergebnis des Programms raeuber_beute_a.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="raeuber_beute_a.jl" data-m="raeuber_beute_a.m" data-py="raeuber_beute_a.py" data-r="raeuber_beute_a.R">raeuber_beute_a.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/raeuber_beute_a.py" data-jl="code/raeuber_beute_a.jl" data-m="code/raeuber_beute_a.m" data-py="code/raeuber_beute_a.py" data-r="code/raeuber_beute_a.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 2.4: Räuber-Beute-Modell, Räuber und Beute überleben (Buch, Abschnitt 2.1, Gl. 2.3)</span>
+<span class="k"># u_{n+1} = (1 + r) u_n - r u_n^2 - gamma u_n v_n,  v_{n+1} = gamma u_n v_n  mit r = 3.1, gamma = 2.1, u_0 = 0.5, v_0 = 0.2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots, LinearAlgebra
+r = 3.1; gamma = 2.1
+N = 40
+u = zeros(N + 1); v = zeros(N + 1)
+u[1] = 0.5; v[1] = 0.2                   <span class="k"># Julia zählt ab 1: u[1] ist u_0</span>
+for k in 1:N
+    u[k + 1] = (1 + r) * u[k] - r * u[k]^2 - gamma * u[k] * v[k]
+    v[k + 1] = gamma * u[k] * v[k]
+end
+@printf(&quot;stationärer Zustand (1/gamma, r(1 - 1/gamma)/gamma) = (%.4f, %.4f)\n&quot;, 1/gamma, r * (1 - 1/gamma) / gamma)
+println(&quot;u_36 ... u_40 = &quot;, join([@sprintf(&quot;%.3f&quot;, x) for x in u[37:41]], &quot;  &quot;))
+
+n = 0:N
+p1 = plot(n, u, ls = :dash, marker = :circle, color = RGB(0.43, 0.04, 0.12), label = &quot;Beute u_n&quot;, xlabel = &quot;n&quot;)
+plot!(p1, n, v, ls = :dash, marker = :rect, color = RGB(0.89, 0.44, 0.49), label = &quot;Räuber v_n&quot;)
+p2 = scatter(u, v, zcolor = n, color = cgrad([RGB(1, 0.85, 0.85), RGB(0.43, 0.04, 0.12)]), legend = false, colorbar = false,
+             xlabel = &quot;Beute u_n&quot;, ylabel = &quot;Räuber v_n&quot;)       <span class="k"># hell: früh, dunkel: spät</span>
+scatter!(p2, [u[1]], [v[1]], color = :black, ms = 6)
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 2.4: Räuber-Beute-Modell, Räuber und Beute überleben (Buch, Abschnitt 2.1, Gl. 2.3)</span>
+<span class="k">% u_{n+1} = (1 + r) u_n - r u_n^2 - gamma u_n v_n,  v_{n+1} = gamma u_n v_n  mit r = 3.1, gamma = 2.1, u_0 = 0.5, v_0 = 0.2</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+r = 3.1; gamma = 2.1; N = 40;
+u = zeros(1, N + 1); v = zeros(1, N + 1);
+u(1) = 0.5; v(1) = 0.2;                       <span class="k">% MATLAB zählt ab 1: u(1) ist u_0</span>
+for k = 1:N
+    u(k + 1) = (1 + r) * u(k) - r * u(k)^2 - gamma * u(k) * v(k);
+    v(k + 1) = gamma * u(k) * v(k);
+end
+fprintf(&#x27;stationärer Zustand (1/gamma, r(1 - 1/gamma)/gamma) = (%.4f, %.4f)\n&#x27;, 1/gamma, r * (1 - 1/gamma) / gamma);
+fprintf(&#x27;u_36 ... u_40 = &#x27;); fprintf(&#x27;%.3f  &#x27;, u(37:41)); fprintf(&#x27;\n&#x27;);
+
+n = 0:N;
+subplot(1, 2, 1);
+plot(n, u, &#x27;--o&#x27;, &#x27;Color&#x27;, [0.43 0.04 0.12]); hold on
+plot(n, v, &#x27;--s&#x27;, &#x27;Color&#x27;, [0.89 0.44 0.49]); hold off
+xlabel(&#x27;n&#x27;); legend(&#x27;Beute u_n&#x27;, &#x27;Räuber v_n&#x27;);
+subplot(1, 2, 2);
+rot = [linspace(1, 0.43, 64)&#x27; linspace(0.85, 0.04, 64)&#x27; linspace(0.85, 0.12, 64)&#x27;];
+colormap(rot); scatter(u, v, 30, n, &#x27;filled&#x27;); hold on              <span class="k">% hell: früh, dunkel: spät</span>
+plot(u(1), v(1), &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+xlabel(&#x27;Beute u_n&#x27;); ylabel(&#x27;Räuber v_n&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 2.4: Räuber-Beute-Modell, Räuber und Beute überleben (Buch, Abschnitt 2.1, Gl. 2.3)</span>
+<span class="k"># u_{n+1} = (1 + r) u_n - r u_n^2 - gamma u_n v_n,  v_{n+1} = gamma u_n v_n  mit r = 3.1, gamma = 2.1, u_0 = 0.5, v_0 = 0.2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+r, gamma, N = 3.1, 2.1, 40
+u = np.zeros(N + 1); v = np.zeros(N + 1)
+u[0], v[0] = 0.5, 0.2
+for n in range(N):
+    u[n + 1] = (1 + r) * u[n] - r * u[n]**2 - gamma * u[n] * v[n]
+    v[n + 1] = gamma * u[n] * v[n]
+print(f&quot;stationärer Zustand (1/gamma, r(1 - 1/gamma)/gamma) = ({1 / gamma:.4f}, {r * (1 - 1 / gamma) / gamma:.4f})&quot;)
+print(&quot;u_36 ... u_40 =&quot;, &quot;  &quot;.join(f&quot;{x:.3f}&quot; for x in u[36:]))
+
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+n = np.arange(N + 1)
+axs[0].plot(n, u, &quot;o--&quot;, color=(0.43, 0.04, 0.12), label=&quot;Beute u_n&quot;)
+axs[0].plot(n, v, &quot;s--&quot;, color=(0.89, 0.44, 0.49), label=&quot;Räuber v_n&quot;)
+axs[0].set_xlabel(&quot;n&quot;); axs[0].legend()
+axs[1].scatter(u, v, c=n, cmap=&quot;Reds&quot;, vmin=-15)          <span class="k"># hell: früh, dunkel: spät</span>
+axs[1].plot(u[0], v[0], &quot;ko&quot;)
+axs[1].set_xlabel(&quot;Beute u_n&quot;); axs[1].set_ylabel(&quot;Räuber v_n&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 2.4: Räuber-Beute-Modell, Räuber und Beute überleben (Buch, Abschnitt 2.1, Gl. 2.3)</span>
+<span class="k"># u_{n+1} = (1 + r) u_n - r u_n^2 - gamma u_n v_n,  v_{n+1} = gamma u_n v_n  mit r = 3.1, gamma = 2.1, u_0 = 0.5, v_0 = 0.2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+r &lt;- 3.1; gamma &lt;- 2.1
+N &lt;- 40
+u &lt;- numeric(N + 1); v &lt;- numeric(N + 1)
+u[1] &lt;- 0.5; v[1] &lt;- 0.2                 <span class="k"># R zählt ab 1: u[1] ist u_0</span>
+for (k in 1:N) {
+  u[k + 1] &lt;- (1 + r) * u[k] - r * u[k]^2 - gamma * u[k] * v[k]
+  v[k + 1] &lt;- gamma * u[k] * v[k]
+}
+cat(sprintf(&quot;stationärer Zustand (1/gamma, r(1 - 1/gamma)/gamma) = (%.4f, %.4f)\n&quot;, 1/gamma, r * (1 - 1/gamma) / gamma))
+cat(&quot;u_36 ... u_40 =&quot;, sprintf(&quot;%.3f&quot;, u[37:41]), &quot;\n&quot;)
+
+n &lt;- 0:N
+par(mfrow = c(1, 2))
+plot(n, u, type = &quot;o&quot;, lty = 2, pch = 16, col = rgb(0.43, 0.04, 0.12), ylim = range(c(u, v)), xlab = &quot;n&quot;, ylab = &quot;&quot;)
+lines(n, v, type = &quot;o&quot;, lty = 2, pch = 15, col = rgb(0.89, 0.44, 0.49))
+legend(&quot;topright&quot;, legend = c(&quot;Beute u_n&quot;, &quot;Räuber v_n&quot;), col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)), pch = c(16, 15), lty = 2)
+hell_dunkel &lt;- colorRampPalette(c(rgb(1, 0.85, 0.85), rgb(0.43, 0.04, 0.12)))(N + 1)   <span class="k"># hell: früh, dunkel: spät</span>
+plot(u, v, pch = 16, col = hell_dunkel, xlab = &quot;Beute u_n&quot;, ylab = &quot;Räuber v_n&quot;)
+points(u[1], v[1], pch = 16, cex = 1.5)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>stationärer Zustand (1/gamma, r(1 - 1/gamma)/gamma) = (0.4762, 0.7732)
+u_36 ... u_40 = 0.579  0.621  0.420  0.354  0.453</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="raeuber-beute-b">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 2.5</p>
+    <h2>Räuber-Beute-Modell: die Räuber sterben aus</h2>
+    <p class="formel">r = 2.5,&ensp; γ = 1.1</p>
+    <p class="lead">Jetzt nimmt v<sub>n</sub> stetig ab. Ohne Räuber folgt die Beute dem logistischen Modell mit a = 1 + r = 3.5 und springt am Ende zwischen den Werten eines Zyklus hin und her.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/raeuber_beute_b.png" alt="Ergebnis des Programms raeuber_beute_b.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="raeuber_beute_b.jl" data-m="raeuber_beute_b.m" data-py="raeuber_beute_b.py" data-r="raeuber_beute_b.R">raeuber_beute_b.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/raeuber_beute_b.py" data-jl="code/raeuber_beute_b.jl" data-m="code/raeuber_beute_b.m" data-py="code/raeuber_beute_b.py" data-r="code/raeuber_beute_b.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 2.5: Räuber-Beute-Modell, die Räuber sterben aus (Buch, Abschnitt 2.1, Gl. 2.3)</span>
+<span class="k"># u_{n+1} = (1 + r) u_n - r u_n^2 - gamma u_n v_n,  v_{n+1} = gamma u_n v_n  mit r = 2.5, gamma = 1.1, u_0 = 0.5, v_0 = 0.2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots, LinearAlgebra
+r = 2.5; gamma = 1.1
+N = 40
+u = zeros(N + 1); v = zeros(N + 1)
+u[1] = 0.5; v[1] = 0.2                   <span class="k"># Julia zählt ab 1: u[1] ist u_0</span>
+for k in 1:N
+    u[k + 1] = (1 + r) * u[k] - r * u[k]^2 - gamma * u[k] * v[k]
+    v[k + 1] = gamma * u[k] * v[k]
+end
+println(&quot;v_0, v_10, v_20, v_40 = &quot;, join([@sprintf(&quot;%.4f&quot;, v[i]) for i in (1, 11, 21, 41)], &quot;  &quot;), &quot;  -&gt; die Räuber sterben aus&quot;)
+println(&quot;u_36 ... u_40 = &quot;, join([@sprintf(&quot;%.3f&quot;, x) for x in u[37:41]], &quot;  &quot;))
+
+n = 0:N
+p1 = plot(n, u, ls = :dash, marker = :circle, color = RGB(0.43, 0.04, 0.12), label = &quot;Beute u_n&quot;, xlabel = &quot;n&quot;)
+plot!(p1, n, v, ls = :dash, marker = :rect, color = RGB(0.89, 0.44, 0.49), label = &quot;Räuber v_n&quot;)
+p2 = scatter(u, v, zcolor = n, color = cgrad([RGB(1, 0.85, 0.85), RGB(0.43, 0.04, 0.12)]), legend = false, colorbar = false,
+             xlabel = &quot;Beute u_n&quot;, ylabel = &quot;Räuber v_n&quot;)       <span class="k"># hell: früh, dunkel: spät</span>
+scatter!(p2, [u[1]], [v[1]], color = :black, ms = 6)
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 2.5: Räuber-Beute-Modell, die Räuber sterben aus (Buch, Abschnitt 2.1, Gl. 2.3)</span>
+<span class="k">% u_{n+1} = (1 + r) u_n - r u_n^2 - gamma u_n v_n,  v_{n+1} = gamma u_n v_n  mit r = 2.5, gamma = 1.1, u_0 = 0.5, v_0 = 0.2</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+r = 2.5; gamma = 1.1; N = 40;
+u = zeros(1, N + 1); v = zeros(1, N + 1);
+u(1) = 0.5; v(1) = 0.2;                       <span class="k">% MATLAB zählt ab 1: u(1) ist u_0</span>
+for k = 1:N
+    u(k + 1) = (1 + r) * u(k) - r * u(k)^2 - gamma * u(k) * v(k);
+    v(k + 1) = gamma * u(k) * v(k);
+end
+fprintf(&#x27;v_0, v_10, v_20, v_40 = %.4f  %.4f  %.4f  %.4f  -&gt; die Räuber sterben aus\n&#x27;, v([1 11 21 41]));
+fprintf(&#x27;u_36 ... u_40 = &#x27;); fprintf(&#x27;%.3f  &#x27;, u(37:41)); fprintf(&#x27;\n&#x27;);
+
+n = 0:N;
+subplot(1, 2, 1);
+plot(n, u, &#x27;--o&#x27;, &#x27;Color&#x27;, [0.43 0.04 0.12]); hold on
+plot(n, v, &#x27;--s&#x27;, &#x27;Color&#x27;, [0.89 0.44 0.49]); hold off
+xlabel(&#x27;n&#x27;); legend(&#x27;Beute u_n&#x27;, &#x27;Räuber v_n&#x27;);
+subplot(1, 2, 2);
+rot = [linspace(1, 0.43, 64)&#x27; linspace(0.85, 0.04, 64)&#x27; linspace(0.85, 0.12, 64)&#x27;];
+colormap(rot); scatter(u, v, 30, n, &#x27;filled&#x27;); hold on              <span class="k">% hell: früh, dunkel: spät</span>
+plot(u(1), v(1), &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+xlabel(&#x27;Beute u_n&#x27;); ylabel(&#x27;Räuber v_n&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 2.5: Räuber-Beute-Modell, die Räuber sterben aus (Buch, Abschnitt 2.1, Gl. 2.3)</span>
+<span class="k"># u_{n+1} = (1 + r) u_n - r u_n^2 - gamma u_n v_n,  v_{n+1} = gamma u_n v_n  mit r = 2.5, gamma = 1.1, u_0 = 0.5, v_0 = 0.2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+r, gamma, N = 2.5, 1.1, 40
+u = np.zeros(N + 1); v = np.zeros(N + 1)
+u[0], v[0] = 0.5, 0.2
+for n in range(N):
+    u[n + 1] = (1 + r) * u[n] - r * u[n]**2 - gamma * u[n] * v[n]
+    v[n + 1] = gamma * u[n] * v[n]
+print(&quot;v_0, v_10, v_20, v_40 =&quot;, &quot;  &quot;.join(f&quot;{v[k]:.4f}&quot; for k in (0, 10, 20, 40)), &quot; -&gt; die Räuber sterben aus&quot;)
+print(&quot;u_36 ... u_40 =&quot;, &quot;  &quot;.join(f&quot;{x:.3f}&quot; for x in u[36:]))
+
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+n = np.arange(N + 1)
+axs[0].plot(n, u, &quot;o--&quot;, color=(0.43, 0.04, 0.12), label=&quot;Beute u_n&quot;)
+axs[0].plot(n, v, &quot;s--&quot;, color=(0.89, 0.44, 0.49), label=&quot;Räuber v_n&quot;)
+axs[0].set_xlabel(&quot;n&quot;); axs[0].legend()
+axs[1].scatter(u, v, c=n, cmap=&quot;Reds&quot;, vmin=-15)          <span class="k"># hell: früh, dunkel: spät</span>
+axs[1].plot(u[0], v[0], &quot;ko&quot;)
+axs[1].set_xlabel(&quot;Beute u_n&quot;); axs[1].set_ylabel(&quot;Räuber v_n&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 2.5: Räuber-Beute-Modell, die Räuber sterben aus (Buch, Abschnitt 2.1, Gl. 2.3)</span>
+<span class="k"># u_{n+1} = (1 + r) u_n - r u_n^2 - gamma u_n v_n,  v_{n+1} = gamma u_n v_n  mit r = 2.5, gamma = 1.1, u_0 = 0.5, v_0 = 0.2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+r &lt;- 2.5; gamma &lt;- 1.1
+N &lt;- 40
+u &lt;- numeric(N + 1); v &lt;- numeric(N + 1)
+u[1] &lt;- 0.5; v[1] &lt;- 0.2                 <span class="k"># R zählt ab 1: u[1] ist u_0</span>
+for (k in 1:N) {
+  u[k + 1] &lt;- (1 + r) * u[k] - r * u[k]^2 - gamma * u[k] * v[k]
+  v[k + 1] &lt;- gamma * u[k] * v[k]
+}
+cat(&quot;v_0, v_10, v_20, v_40 =&quot;, sprintf(&quot;%.4f&quot;, v[c(1, 11, 21, 41)]), &quot; -&gt; die Räuber sterben aus\n&quot;)
+cat(&quot;u_36 ... u_40 =&quot;, sprintf(&quot;%.3f&quot;, u[37:41]), &quot;\n&quot;)
+
+n &lt;- 0:N
+par(mfrow = c(1, 2))
+plot(n, u, type = &quot;o&quot;, lty = 2, pch = 16, col = rgb(0.43, 0.04, 0.12), ylim = range(c(u, v)), xlab = &quot;n&quot;, ylab = &quot;&quot;)
+lines(n, v, type = &quot;o&quot;, lty = 2, pch = 15, col = rgb(0.89, 0.44, 0.49))
+legend(&quot;topright&quot;, legend = c(&quot;Beute u_n&quot;, &quot;Räuber v_n&quot;), col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)), pch = c(16, 15), lty = 2)
+hell_dunkel &lt;- colorRampPalette(c(rgb(1, 0.85, 0.85), rgb(0.43, 0.04, 0.12)))(N + 1)   <span class="k"># hell: früh, dunkel: spät</span>
+plot(u, v, pch = 16, col = hell_dunkel, xlab = &quot;Beute u_n&quot;, ylab = &quot;Räuber v_n&quot;)
+points(u[1], v[1], pch = 16, cex = 1.5)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>v_0, v_10, v_20, v_40 = 0.2000  0.1175  0.0663  0.0183  -&gt; die Räuber sterben aus
+u_36 ... u_40 = 0.609  1.188  0.608  1.190  0.607</code></pre></details>
+    </div>
+  </div>
+</section>
+  <section class="apps" id="app-raeuber-beute">
+  <div class="fig-head"><p class="eyebrow">Im Browser ausprobieren · ohne Installation</p><h2>Räuber-Beute-Modell</h2><p class="lead">Ändern Sie die Wachstumsrate r der Beute und den Parameter γ. Für γ ≤ 1 sterben die Räuber aus; für größere γ pendeln Räuber und Beute um einen stationären Zustand oder schwingen dauerhaft.</p></div>
+  <div class="app" data-app="raeuber-beute">
+    <canvas width="720" height="560" aria-label="Räuber-Beute-Modell"></canvas>
+    <div class="regler"><label><span>Darstellung</span><select aria-label="Darstellung"><option value="zeit">Zeitverlauf</option><option value="phase">Phasenebene (u<sub>n</sub>, v<sub>n</sub>)</option></select></label><label><span>Wachstumsrate r</span> <output data-o="r"></output><input type="range" data-r="r" min="0.5" max="3.5" step="0.05" value="3.1" aria-label="Wachstumsrate r"></label><label><span>Parameter γ</span> <output data-o="g"></output><input type="range" data-r="g" min="0.5" max="3" step="0.05" value="2.1" aria-label="Parameter γ"></label><label><span>Beute u<sub>0</sub></span> <output data-o="u0"></output><input type="range" data-r="u0" min="0.05" max="1" step="0.05" value="0.5" aria-label="Beute u0"></label><label><span>Räuber v<sub>0</sub></span> <output data-o="v0"></output><input type="range" data-r="v0" min="0.05" max="1" step="0.05" value="0.2" aria-label="Räuber v0"></label><label><span>Schritte</span> <output data-o="n"></output><input type="range" data-r="n" min="5" max="200" step="1" value="40" aria-label="Schritte"></label><p class="zustand"></p><pre class="werte"></pre></div>
+  </div>
+</section>
+  <section class="matlab-apps"><h3>MATLAB-Apps aus der Vorlesung</h3><p>Herunterladen, in einen Ordner legen und in MATLAB den Namen ohne Endung eingeben, z. B. <code>raeuber_beute_app</code>. Die Apps nutzen die grafische Oberfläche von MATLAB und laufen nicht in GNU Octave.</p><ul><li><a href="apps/raeuber_beute_app.m" download>raeuber_beute_app.m</a><span>Diskretes Räuber-Beute-Modell</span></li></ul></section>
+  <nav class="weiter" aria-label="Weiterblättern"><a href="abschnitt-2-2.html"><small>Weiter</small>2.2 Matrix-Modelle</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Begleitmaterial zum Buch „Dynamische Systeme in den Lebenswissenschaften“ von Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programme unter <a href="../LICENSE.txt">MIT-Lizenz</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

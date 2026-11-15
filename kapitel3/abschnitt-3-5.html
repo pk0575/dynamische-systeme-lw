@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>3.5 Vertiefung: Erregbarkeit von Herzzellen – Dynamische Systeme in den Lebenswissenschaften</title>
+<meta name="description" content="Programme in Julia, MATLAB, Python und R zu Abschnitt 3.5 des Buchs Dynamische Systeme in den Lebenswissenschaften">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamische Systeme in den Lebenswissenschaften</a>
+  <nav aria-label="Kapitel"><a href="../index.html">Start</a> <a href="../kapitel1/index.html">Kapitel 1</a> <a href="../kapitel2/index.html">Kapitel 2</a> <a href="../kapitel3/index.html" aria-current="page">Kapitel 3</a> <a href="../kapitel4/index.html">Kapitel 4</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Abschnitte"><h2><a href="index.html">Kapitel 3</a></h2><ol><li><a href="abschnitt-3-1.html"><span class="nr">3.1</span><span>Differentialgleichungen und Anfangswertprobleme</span></a></li><li><a href="abschnitt-3-2.html"><span class="nr">3.2</span><span>Exponentielles und logistisches Wachstum</span></a></li><li><a href="abschnitt-3-3.html"><span class="nr">3.3</span><span>Stationäre Lösungen und Stabilität</span></a></li><li><a href="abschnitt-3-4.html"><span class="nr">3.4</span><span>Euler-Verfahren</span></a></li><li><a href="abschnitt-3-5.html" aria-current="page"><span class="nr">3.5</span><span>Vertiefung: Erregbarkeit von Herzzellen</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Kapitel 3 · Kontinuierliche dynamische Systeme mit einer Variablen</p>
+      <h1><span class="num">3.5</span>Vertiefung: Erregbarkeit von Herzzellen</h1>
+      <p>Das Mitchell-Schaeffer-Modell beschreibt das Aktionspotential einer Herzmuskelzelle mit einer Differentialgleichung für das Membranpotential v. Hält man die Kanalvariable h fest, hat sie einen Ruhezustand, eine Schwelle und einen erregten Zustand. Lässt man h langsam mitlaufen, entsteht ein vollständiges Aktionspotential, und man kann seine Dauer und die Restitutionskurve berechnen. Die Programme verwenden das Euler-Verfahren mit h = 0.01 ms.</p>
+      <p>Zu jeder Abbildung des Abschnitts finden Sie das Programm, das sie erzeugt. Ändern Sie Parameter und Startwerte und beobachten Sie, was passiert. Abbildungs- und Gleichungsnummern beziehen sich auf das Buch.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programmiersprache</legend>
+  <div class="seg" role="radiogroup" aria-label="Programmiersprache">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Gilt für alle Seiten. MATLAB-Programme laufen auch im kostenlosen GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>Auf dieser Seite</b><ul><li><a href="#ms-schwelle"><span class="abb">Abb. 3.23</span>Ruhe, Schwelle und Erregung</a></li><li><a href="#ms-aktionspotential"><span class="abb">Abb. 3.24</span>Aktionspotential</a></li><li><a href="#ms-restitution"><span class="abb">Abb. 3.25</span>Restitutionskurve</a></li></ul></div>
+  
+<section class="fig" id="ms-schwelle">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 3.23</p>
+    <h2>Ruhe, Schwelle und Erregung</h2>
+    <p class="formel">dv/dt = h v<sup>2</sup> (1 − v)/τ<sub>in</sub> − v/τ<sub>out</sub> + J(t),&ensp; h = 1</p>
+    <p class="lead">Ein Reiz, der v über die Schwelle v<sub>s</sub>* ≈ 0.053 hebt, löst die Erregung aus; ein schwächerer Reiz klingt ab.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/ms_schwelle.png" alt="Ergebnis des Programms ms_schwelle.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="ms_schwelle.jl" data-m="ms_schwelle.m" data-py="ms_schwelle.py" data-r="ms_schwelle.R">ms_schwelle.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/ms_schwelle.py" data-jl="code/ms_schwelle.jl" data-m="code/ms_schwelle.m" data-py="code/ms_schwelle.py" data-r="code/ms_schwelle.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 3.23: schnelle Dynamik des Mitchell-Schaeffer-Modells (Buch, Abschnitt 3.5, Gl. 3.29 und 3.31)</span>
+<span class="k"># dv/dt = h v^2 (1 - v)/tin - v/tout + J(t) mit festem h = 1; links f(v) mit Ruhe, Schwelle und erregtem Zustand,</span>
+<span class="k"># rechts Antwort auf einen Reiz der Dauer 2 ms unter (J = 0.02) und über (J = 0.04) der Schwelle</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+tin = 0.3; tout = 6.0; topen = 100.0; tclose = 115.0; vgate = 0.13   <span class="k"># Parameter in ms</span>
+hc = 4 * tin / tout
+
+function simuliere(T, reize; J = 0.2, dauer = 2.0, dt = 0.01, h_fest = false)
+    <span class="k"># Euler-Verfahren für das Mitchell-Schaeffer-Modell; Reizstrom J für &#x27;dauer&#x27; ms ab jedem Zeitpunkt in &#x27;reize&#x27;</span>
+    N = round(Int, T / dt); t = dt .* (0:N)
+    Jt = zeros(N + 1)
+    for s in reize
+        Jt[(t .&gt;= s - 1e-9) .&amp; (t .&lt; s + dauer - 1e-9)] .= J
+    end
+    v = zeros(N + 1); h = ones(N + 1)
+    for n in 1:N
+        dv = h[n] * v[n]^2 * (1 - v[n]) / tin - v[n] / tout + Jt[n]
+        dh = h_fest ? 0.0 : (v[n] &lt; vgate ? (1 - h[n]) / topen : -h[n] / tclose)
+        v[n + 1] = v[n] + dt * dv; h[n + 1] = h[n] + dt * dh
+    end
+    return t, v, h
+end
+durchgaenge(t, v; schwelle = 0.1) = t[findall(diff(sign.(v .- schwelle)) .!= 0)]   <span class="k"># Beginn und Ende der Aktionspotentiale</span>
+
+f(v) = v^2 * (1 - v) / tin - v / tout
+w = sqrt(1 - hc); vs = (1 - w) / 2; ve = (1 + w) / 2   <span class="k"># Schwelle und erregter Zustand</span>
+@printf(&quot;h_c = %.2f,  Schwelle v_s* = %.4f,  erregt v_e* = %.4f\n&quot;, hc, vs, ve)
+v = range(-0.05, 1.05, length = 500)
+p1 = plot(v, f.(v), color = RGB(0, 0.447, 0.741), lw = 2.5, label = &quot;f(v), h = 1&quot;, legend = :topleft, xlabel = &quot;v&quot;)
+hline!(p1, [0], color = :black, label = &quot;&quot;); scatter!(p1, [0, ve], [0, 0], color = :black, label = &quot;&quot;)
+scatter!(p1, [vs], [0], color = :white, msc = :black, label = &quot;&quot;)
+p2 = plot(xlabel = &quot;t (ms)&quot;, ylabel = &quot;v(t)&quot;, legend = :right)
+vspan!(p2, [1, 3], color = :gray90, label = &quot;&quot;)
+for (J, farbe) in [(0.02, RGB(0.89, 0.44, 0.49)), (0.04, RGB(0.43, 0.04, 0.12))]
+    t, v, _ = simuliere(15, [1.0], J = J, h_fest = true)
+    plot!(p2, t, v, color = farbe, lw = 2, label = &quot;J = $J&quot;)
+    @printf(&quot;J = %g: v(15) = %.3f\n&quot;, J, v[end])
+end
+hline!(p2, [vs], ls = :dot, color = :gray, label = &quot;&quot;)
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 3.23: schnelle Dynamik des Mitchell-Schaeffer-Modells (Buch, Abschnitt 3.5, Gl. 3.29 und 3.31)</span>
+<span class="k">% dv/dt = h v^2 (1 - v)/tin - v/tout + J(t) mit festem h = 1; links f(v) mit Ruhe, Schwelle und erregtem Zustand,</span>
+<span class="k">% rechts Antwort auf einen Reiz der Dauer 2 ms unter (J = 0.02) und über (J = 0.04) der Schwelle</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+tin = 0.3; tout = 6; topen = 100; tclose = 115; vgate = 0.13;   <span class="k">% Parameter in ms</span>
+hc = 4 * tin / tout;
+J = 0.2; dauer = 2; dt = 0.01;
+
+f = @(v) v.^2 .* (1 - v) / tin - v / tout;
+w = sqrt(1 - hc); vs = (1 - w) / 2; ve = (1 + w) / 2;    <span class="k">% Schwelle und erregter Zustand</span>
+fprintf(&#x27;h_c = %.2f,  Schwelle v_s* = %.4f,  erregt v_e* = %.4f\n&#x27;, hc, vs, ve);
+subplot(1, 2, 1);
+vv = linspace(-0.05, 1.05, 500);
+plot(vv, f(vv), &#x27;Color&#x27;, [0 0.447 0.741], &#x27;LineWidth&#x27;, 2.5); hold on
+plot([-0.05 1.05], [0 0], &#x27;k&#x27;);
+plot([0 ve], [0 0], &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); plot(vs, 0, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;w&#x27;); hold off
+xlabel(&#x27;v&#x27;); legend(&#x27;f(v), h = 1&#x27;, &#x27;Location&#x27;, &#x27;northwest&#x27;);
+subplot(1, 2, 2);
+fill([1 3 3 1], [0 0 1 1], [0.88 0.88 0.88], &#x27;EdgeColor&#x27;, &#x27;none&#x27;); hold on
+Js = [0.02 0.04]; farben = [0.89 0.44 0.49; 0.43 0.04 0.12];
+for i = 1:2
+    J = Js(i); T = 15; reize = 1; h_fest = true;
+    N = round(T / dt); t = dt * (0:N);
+    Jt = zeros(1, N + 1);
+    for s = reize
+        Jt(t &gt;= s - 1e-9 &amp; t &lt; s + dauer - 1e-9) = J;  <span class="k">% Reizstrom J für &#x27;dauer&#x27; ms ab jedem Reiz</span>
+    end
+    v = zeros(1, N + 1); h = ones(1, N + 1);
+    for n = 1:N                                         <span class="k">% Euler-Verfahren</span>
+        dv = h(n) * v(n)^2 * (1 - v(n)) / tin - v(n) / tout + Jt(n);
+        if h_fest, dh = 0;
+        elseif v(n) &lt; vgate, dh = (1 - h(n)) / topen;
+        else, dh = -h(n) / tclose;
+        end
+        v(n + 1) = v(n) + dt * dv; h(n + 1) = h(n) + dt * dh;
+    end
+    d = t(find(diff(sign(v - 0.1)) ~= 0));              <span class="k">% Beginn und Ende der Aktionspotentiale (v = 0.1)</span>
+    plot(t, v, &#x27;Color&#x27;, farben(i, :), &#x27;LineWidth&#x27;, 2);
+    fprintf(&#x27;J = %g: v(15) = %.3f\n&#x27;, J, v(end));
+end
+plot([0 15], [vs vs], &#x27;:&#x27;, &#x27;Color&#x27;, [0.4 0.4 0.4]); hold off
+xlabel(&#x27;t (ms)&#x27;); ylabel(&#x27;v(t)&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 3.23: schnelle Dynamik des Mitchell-Schaeffer-Modells (Buch, Abschnitt 3.5, Gl. 3.29 und 3.31)</span>
+<span class="k"># dv/dt = h v^2 (1 - v)/tin - v/tout + J(t) mit festem h = 1; links f(v) mit Ruhe, Schwelle und erregtem Zustand,</span>
+<span class="k"># rechts Antwort auf einen Reiz der Dauer 2 ms unter (J = 0.02) und über (J = 0.04) der Schwelle</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+tin, tout, topen, tclose, vgate = 0.3, 6.0, 100.0, 115.0, 0.13      <span class="k"># Parameter in ms</span>
+hc = 4 * tin / tout
+
+def simuliere(T, reize, J=0.2, dauer=2.0, dt=0.01, h_fest=None):
+    &quot;&quot;&quot;Euler-Verfahren für das Mitchell-Schaeffer-Modell; Reizstrom J für &#x27;dauer&#x27; ms ab jedem Zeitpunkt in &#x27;reize&#x27;.&quot;&quot;&quot;
+    N = int(round(T / dt)); t = dt * np.arange(N + 1)
+    Jt = np.zeros(N + 1)
+    for s in reize:
+        Jt[(t &gt;= s - 1e-9) &amp; (t &lt; s + dauer - 1e-9)] = J
+    v = np.zeros(N + 1); h = np.ones(N + 1)
+    for n in range(N):
+        dv = h[n] * v[n]**2 * (1 - v[n]) / tin - v[n] / tout + Jt[n]
+        if h_fest is not None: dh = 0.0
+        elif v[n] &lt; vgate: dh = (1 - h[n]) / topen
+        else: dh = -h[n] / tclose
+        v[n + 1] = v[n] + dt * dv; h[n + 1] = h[n] + dt * dh
+    return t, v, h
+
+def durchgaenge(t, v, schwelle=0.1):
+    &quot;&quot;&quot;Zeitpunkte, zu denen v die Schwelle über- oder unterschreitet (Beginn und Ende eines Aktionspotentials).&quot;&quot;&quot;
+    i = np.where(np.diff(np.sign(v - schwelle)) != 0)[0]
+    return t[i]
+
+f = lambda v: v**2 * (1 - v) / tin - v / tout
+w = np.sqrt(1 - hc); vs, ve = (1 - w) / 2, (1 + w) / 2       <span class="k"># Schwelle und erregter Zustand</span>
+print(f&quot;h_c = {hc:.2f},  Schwelle v_s* = {vs:.4f},  erregt v_e* = {ve:.4f}&quot;)
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+v = np.linspace(-0.05, 1.05, 500)
+axs[0].plot(v, f(v), color=(0, 0.447, 0.741), lw=2.5, label=&quot;f(v), h = 1&quot;); axs[0].axhline(0, color=&quot;k&quot;, lw=1)
+axs[0].plot([0, ve], [0, 0], &quot;ko&quot;, ms=9); axs[0].plot(vs, 0, &quot;o&quot;, mfc=&quot;w&quot;, mec=&quot;k&quot;, ms=9)
+axs[0].set_xlabel(&quot;v&quot;); axs[0].legend(loc=&quot;upper left&quot;)
+for J, farbe in [(0.02, (0.89, 0.44, 0.49)), (0.04, (0.43, 0.04, 0.12))]:
+    t, v, _ = simuliere(15, [1.0], J=J, h_fest=1.0)
+    axs[1].plot(t, v, color=farbe, lw=2, label=f&quot;J = {J}&quot;)
+    print(f&quot;J = {J}: v(15) = {v[-1]:.3f}&quot;)
+axs[1].axhline(vs, color=&quot;0.4&quot;, ls=&quot;:&quot;); axs[1].axvspan(1, 3, color=&quot;0.88&quot;)
+axs[1].set_xlabel(&quot;t (ms)&quot;); axs[1].set_ylabel(&quot;v(t)&quot;); axs[1].legend(loc=&quot;center right&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 3.23: schnelle Dynamik des Mitchell-Schaeffer-Modells (Buch, Abschnitt 3.5, Gl. 3.29 und 3.31)</span>
+<span class="k"># dv/dt = h v^2 (1 - v)/tin - v/tout + J(t) mit festem h = 1; links f(v) mit Ruhe, Schwelle und erregtem Zustand,</span>
+<span class="k"># rechts Antwort auf einen Reiz der Dauer 2 ms unter (J = 0.02) und über (J = 0.04) der Schwelle</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+tin &lt;- 0.3; tout &lt;- 6; topen &lt;- 100; tclose &lt;- 115; vgate &lt;- 0.13   <span class="k"># Parameter in ms</span>
+hc &lt;- 4 * tin / tout
+
+simuliere &lt;- function(T, reize, J = 0.2, dauer = 2, dt = 0.01, h_fest = FALSE) {
+  <span class="k"># Euler-Verfahren für das Mitchell-Schaeffer-Modell; Reizstrom J für &#x27;dauer&#x27; ms ab jedem Zeitpunkt in &#x27;reize&#x27;</span>
+  N &lt;- round(T / dt); t &lt;- dt * (0:N)
+  Jt &lt;- numeric(N + 1)
+  for (s in reize) Jt[t &gt;= s - 1e-9 &amp; t &lt; s + dauer - 1e-9] &lt;- J
+  v &lt;- numeric(N + 1); h &lt;- rep(1, N + 1)
+  for (n in 1:N) {
+    dv &lt;- h[n] * v[n]^2 * (1 - v[n]) / tin - v[n] / tout + Jt[n]
+    dh &lt;- if (h_fest) 0 else if (v[n] &lt; vgate) (1 - h[n]) / topen else -h[n] / tclose
+    v[n + 1] &lt;- v[n] + dt * dv; h[n + 1] &lt;- h[n] + dt * dh
+  }
+  list(t = t, v = v, h = h)
+}
+durchgaenge &lt;- function(t, v, schwelle = 0.1) t[which(diff(sign(v - schwelle)) != 0)]   <span class="k"># Beginn und Ende der Aktionspotentiale</span>
+
+f &lt;- function(v) v^2 * (1 - v) / tin - v / tout
+w &lt;- sqrt(1 - hc); vs &lt;- (1 - w) / 2; ve &lt;- (1 + w) / 2   <span class="k"># Schwelle und erregter Zustand</span>
+cat(sprintf(&quot;h_c = %.2f,  Schwelle v_s* = %.4f,  erregt v_e* = %.4f\n&quot;, hc, vs, ve))
+par(mfrow = c(1, 2))
+v &lt;- seq(-0.05, 1.05, length.out = 500)
+plot(v, f(v), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2.5, xlab = &quot;v&quot;, ylab = &quot;&quot;)
+abline(h = 0); points(c(0, ve), c(0, 0), pch = 16); points(vs, 0, pch = 21, bg = &quot;white&quot;)
+legend(&quot;topleft&quot;, legend = &quot;f(v), h = 1&quot;, col = rgb(0, 0.447, 0.741), lwd = 2.5)
+plot(NULL, xlim = c(0, 15), ylim = c(0, 1), xlab = &quot;t (ms)&quot;, ylab = &quot;v(t)&quot;)
+rect(1, -1, 3, 2, col = &quot;grey88&quot;, border = NA)
+Js &lt;- c(0.02, 0.04); farben &lt;- c(rgb(0.89, 0.44, 0.49), rgb(0.43, 0.04, 0.12))
+for (i in 1:2) {
+  x &lt;- simuliere(15, 1, J = Js[i], h_fest = TRUE)
+  lines(x$t, x$v, col = farben[i], lwd = 2)
+  cat(sprintf(&quot;J = %g: v(15) = %.3f\n&quot;, Js[i], x$v[length(x$v)]))
+}
+abline(h = vs, lty = 3)
+legend(&quot;right&quot;, legend = sprintf(&quot;J = %g&quot;, Js), col = farben, lwd = 2)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>h_c = 0.20,  Schwelle v_s* = 0.0528,  erregt v_e* = 0.9472
+J = 0.02: v(15) = 0.013
+J = 0.04: v(15) = 0.947</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="ms-aktionspotential">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 3.24</p>
+    <h2>Aktionspotential</h2>
+    <p class="formel">dh/dt = (1 − h)/τ<sub>open</sub> für v &lt; v<sub>gate</sub>, sonst −h/τ<sub>close</sub></p>
+    <p class="lead">Während der Erregung schließen sich die Kanäle langsam. Sinkt h unter h<sub>c</sub>, verschwindet der erregte Zustand, und v fällt in die Ruhe zurück. Rechts der Weg in der (h, v)-Ebene über dem Bifurkationsdiagramm.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/ms_aktionspotential.png" alt="Ergebnis des Programms ms_aktionspotential.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="ms_aktionspotential.jl" data-m="ms_aktionspotential.m" data-py="ms_aktionspotential.py" data-r="ms_aktionspotential.R">ms_aktionspotential.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/ms_aktionspotential.py" data-jl="code/ms_aktionspotential.jl" data-m="code/ms_aktionspotential.m" data-py="code/ms_aktionspotential.py" data-r="code/ms_aktionspotential.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 3.24: Aktionspotential des Mitchell-Schaeffer-Modells (Buch, Abschnitt 3.5, Gl. 3.29 und 3.30)</span>
+<span class="k"># Reiz bei t = 0; links v(t) und h(t), rechts stationäre Zustände von v in Abhängigkeit von h und der Weg des Aktionspotentials</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+tin = 0.3; tout = 6.0; topen = 100.0; tclose = 115.0; vgate = 0.13   <span class="k"># Parameter in ms</span>
+hc = 4 * tin / tout
+
+function simuliere(T, reize; J = 0.2, dauer = 2.0, dt = 0.01, h_fest = false)
+    <span class="k"># Euler-Verfahren für das Mitchell-Schaeffer-Modell; Reizstrom J für &#x27;dauer&#x27; ms ab jedem Zeitpunkt in &#x27;reize&#x27;</span>
+    N = round(Int, T / dt); t = dt .* (0:N)
+    Jt = zeros(N + 1)
+    for s in reize
+        Jt[(t .&gt;= s - 1e-9) .&amp; (t .&lt; s + dauer - 1e-9)] .= J
+    end
+    v = zeros(N + 1); h = ones(N + 1)
+    for n in 1:N
+        dv = h[n] * v[n]^2 * (1 - v[n]) / tin - v[n] / tout + Jt[n]
+        dh = h_fest ? 0.0 : (v[n] &lt; vgate ? (1 - h[n]) / topen : -h[n] / tclose)
+        v[n + 1] = v[n] + dt * dv; h[n + 1] = h[n] + dt * dh
+    end
+    return t, v, h
+end
+durchgaenge(t, v; schwelle = 0.1) = t[findall(diff(sign.(v .- schwelle)) .!= 0)]   <span class="k"># Beginn und Ende der Aktionspotentiale</span>
+
+t, v, h = simuliere(500, [0.0])
+d = durchgaenge(t, v); apd = d[2] - d[1]
+tf = tclose * log(1 / hc)
+@printf(&quot;APD = %.1f ms,  h = h_c nach tclose ln(1/h_c) = %.1f ms\n&quot;, apd, tf)
+p1 = plot(t, v, color = RGB(0.43, 0.04, 0.12), lw = 2, label = &quot;v(t)&quot;, xlabel = &quot;t (ms)&quot;)
+plot!(p1, t, h, color = RGB(0.89, 0.44, 0.49), lw = 2, label = &quot;h(t)&quot;)
+hline!(p1, [hc], ls = :dot, color = :gray, label = &quot;&quot;); vline!(p1, [tf], ls = :dashdot, color = :gray, label = &quot;&quot;)
+gruen = RGB(0, 0.39, 0)
+H = range(hc, 1.05, length = 400); W = sqrt.(1 .- hc ./ H)
+p2 = plot(H, (1 .+ W) ./ 2, color = gruen, lw = 2.5, label = &quot;stabil&quot;, xlabel = &quot;h&quot;, ylabel = &quot;v*&quot;, legend = :right)
+plot!(p2, H, (1 .- W) ./ 2, ls = :dash, color = gruen, lw = 2.5, label = &quot;instabil&quot;)
+plot!(p2, [0, 1.05], [0, 0], color = gruen, lw = 2.5, label = &quot;&quot;)
+plot!(p2, h, v, color = RGB(0.64, 0.08, 0.18), lw = 1.5, label = &quot;Aktionspotential&quot;)
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 3.24: Aktionspotential des Mitchell-Schaeffer-Modells (Buch, Abschnitt 3.5, Gl. 3.29 und 3.30)</span>
+<span class="k">% Reiz bei t = 0; links v(t) und h(t), rechts stationäre Zustände von v in Abhängigkeit von h und der Weg des Aktionspotentials</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+tin = 0.3; tout = 6; topen = 100; tclose = 115; vgate = 0.13;   <span class="k">% Parameter in ms</span>
+hc = 4 * tin / tout;
+J = 0.2; dauer = 2; dt = 0.01;
+
+T = 500; reize = 0; h_fest = false;
+N = round(T / dt); t = dt * (0:N);
+Jt = zeros(1, N + 1);
+for s = reize
+    Jt(t &gt;= s - 1e-9 &amp; t &lt; s + dauer - 1e-9) = J;  <span class="k">% Reizstrom J für &#x27;dauer&#x27; ms ab jedem Reiz</span>
+end
+v = zeros(1, N + 1); h = ones(1, N + 1);
+for n = 1:N                                         <span class="k">% Euler-Verfahren</span>
+    dv = h(n) * v(n)^2 * (1 - v(n)) / tin - v(n) / tout + Jt(n);
+    if h_fest, dh = 0;
+    elseif v(n) &lt; vgate, dh = (1 - h(n)) / topen;
+    else, dh = -h(n) / tclose;
+    end
+    v(n + 1) = v(n) + dt * dv; h(n + 1) = h(n) + dt * dh;
+end
+d = t(find(diff(sign(v - 0.1)) ~= 0));              <span class="k">% Beginn und Ende der Aktionspotentiale (v = 0.1)</span>
+apd = d(2) - d(1);
+tf = tclose * log(1 / hc);
+fprintf(&#x27;APD = %.1f ms,  h = h_c nach tclose ln(1/h_c) = %.1f ms\n&#x27;, apd, tf);
+subplot(1, 2, 1);
+plot(t, v, &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2); hold on
+plot(t, h, &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;LineWidth&#x27;, 2);
+plot([0 500], [hc hc], &#x27;:&#x27;, &#x27;Color&#x27;, [0.4 0.4 0.4]); plot([tf tf], [0 1], &#x27;-.&#x27;, &#x27;Color&#x27;, [0.4 0.4 0.4]); hold off
+xlabel(&#x27;t (ms)&#x27;); legend(&#x27;v(t)&#x27;, &#x27;h(t)&#x27;);
+subplot(1, 2, 2);
+gruen = [0 0.39 0];
+H = linspace(hc, 1.05, 400); W = sqrt(1 - hc ./ H);
+plot(H, (1 + W) / 2, &#x27;Color&#x27;, gruen, &#x27;LineWidth&#x27;, 2.5); hold on
+plot(H, (1 - W) / 2, &#x27;--&#x27;, &#x27;Color&#x27;, gruen, &#x27;LineWidth&#x27;, 2.5);
+plot([0 1.05], [0 0], &#x27;Color&#x27;, gruen, &#x27;LineWidth&#x27;, 2.5);
+plot(h, v, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 1.5); hold off
+xlabel(&#x27;h&#x27;); ylabel(&#x27;v*&#x27;); legend(&#x27;stabil&#x27;, &#x27;instabil&#x27;, &#x27;&#x27;, &#x27;Aktionspotential&#x27;, &#x27;Location&#x27;, &#x27;east&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 3.24: Aktionspotential des Mitchell-Schaeffer-Modells (Buch, Abschnitt 3.5, Gl. 3.29 und 3.30)</span>
+<span class="k"># Reiz bei t = 0; links v(t) und h(t), rechts stationäre Zustände von v in Abhängigkeit von h und der Weg des Aktionspotentials</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+tin, tout, topen, tclose, vgate = 0.3, 6.0, 100.0, 115.0, 0.13      <span class="k"># Parameter in ms</span>
+hc = 4 * tin / tout
+
+def simuliere(T, reize, J=0.2, dauer=2.0, dt=0.01, h_fest=None):
+    &quot;&quot;&quot;Euler-Verfahren für das Mitchell-Schaeffer-Modell; Reizstrom J für &#x27;dauer&#x27; ms ab jedem Zeitpunkt in &#x27;reize&#x27;.&quot;&quot;&quot;
+    N = int(round(T / dt)); t = dt * np.arange(N + 1)
+    Jt = np.zeros(N + 1)
+    for s in reize:
+        Jt[(t &gt;= s - 1e-9) &amp; (t &lt; s + dauer - 1e-9)] = J
+    v = np.zeros(N + 1); h = np.ones(N + 1)
+    for n in range(N):
+        dv = h[n] * v[n]**2 * (1 - v[n]) / tin - v[n] / tout + Jt[n]
+        if h_fest is not None: dh = 0.0
+        elif v[n] &lt; vgate: dh = (1 - h[n]) / topen
+        else: dh = -h[n] / tclose
+        v[n + 1] = v[n] + dt * dv; h[n + 1] = h[n] + dt * dh
+    return t, v, h
+
+def durchgaenge(t, v, schwelle=0.1):
+    &quot;&quot;&quot;Zeitpunkte, zu denen v die Schwelle über- oder unterschreitet (Beginn und Ende eines Aktionspotentials).&quot;&quot;&quot;
+    i = np.where(np.diff(np.sign(v - schwelle)) != 0)[0]
+    return t[i]
+
+t, v, h = simuliere(500, [0.0])
+d = durchgaenge(t, v); apd = d[1] - d[0]
+tf = tclose * np.log(1 / hc)
+print(f&quot;APD = {apd:.1f} ms,  h = h_c nach tclose ln(1/h_c) = {tf:.1f} ms&quot;)
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+axs[0].plot(t, v, color=(0.43, 0.04, 0.12), lw=2, label=&quot;v(t)&quot;)
+axs[0].plot(t, h, color=(0.89, 0.44, 0.49), lw=2, label=&quot;h(t)&quot;)
+axs[0].axhline(hc, color=&quot;0.4&quot;, ls=&quot;:&quot;); axs[0].axvline(tf, color=&quot;0.4&quot;, ls=&quot;-.&quot;)
+axs[0].set_xlabel(&quot;t (ms)&quot;); axs[0].legend()
+gruen = (0, 0.39, 0)
+H = np.linspace(hc, 1.05, 400); W = np.sqrt(1 - hc / H)
+axs[1].plot(H, (1 + W) / 2, color=gruen, lw=2.5, label=&quot;stabil&quot;)
+axs[1].plot(H, (1 - W) / 2, &quot;--&quot;, color=gruen, lw=2.5, label=&quot;instabil&quot;)
+axs[1].plot([0, 1.05], [0, 0], color=gruen, lw=2.5)
+axs[1].plot(h, v, color=(0.64, 0.08, 0.18), lw=1.5, label=&quot;Aktionspotential&quot;)
+axs[1].set_xlabel(&quot;h&quot;); axs[1].set_ylabel(&quot;v*&quot;); axs[1].legend(loc=&quot;center right&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 3.24: Aktionspotential des Mitchell-Schaeffer-Modells (Buch, Abschnitt 3.5, Gl. 3.29 und 3.30)</span>
+<span class="k"># Reiz bei t = 0; links v(t) und h(t), rechts stationäre Zustände von v in Abhängigkeit von h und der Weg des Aktionspotentials</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+tin &lt;- 0.3; tout &lt;- 6; topen &lt;- 100; tclose &lt;- 115; vgate &lt;- 0.13   <span class="k"># Parameter in ms</span>
+hc &lt;- 4 * tin / tout
+
+simuliere &lt;- function(T, reize, J = 0.2, dauer = 2, dt = 0.01, h_fest = FALSE) {
+  <span class="k"># Euler-Verfahren für das Mitchell-Schaeffer-Modell; Reizstrom J für &#x27;dauer&#x27; ms ab jedem Zeitpunkt in &#x27;reize&#x27;</span>
+  N &lt;- round(T / dt); t &lt;- dt * (0:N)
+  Jt &lt;- numeric(N + 1)
+  for (s in reize) Jt[t &gt;= s - 1e-9 &amp; t &lt; s + dauer - 1e-9] &lt;- J
+  v &lt;- numeric(N + 1); h &lt;- rep(1, N + 1)
+  for (n in 1:N) {
+    dv &lt;- h[n] * v[n]^2 * (1 - v[n]) / tin - v[n] / tout + Jt[n]
+    dh &lt;- if (h_fest) 0 else if (v[n] &lt; vgate) (1 - h[n]) / topen else -h[n] / tclose
+    v[n + 1] &lt;- v[n] + dt * dv; h[n + 1] &lt;- h[n] + dt * dh
+  }
+  list(t = t, v = v, h = h)
+}
+durchgaenge &lt;- function(t, v, schwelle = 0.1) t[which(diff(sign(v - schwelle)) != 0)]   <span class="k"># Beginn und Ende der Aktionspotentiale</span>
+
+x &lt;- simuliere(500, 0)
+d &lt;- durchgaenge(x$t, x$v); apd &lt;- d[2] - d[1]
+tf &lt;- tclose * log(1 / hc)
+cat(sprintf(&quot;APD = %.1f ms,  h = h_c nach tclose ln(1/h_c) = %.1f ms\n&quot;, apd, tf))
+par(mfrow = c(1, 2))
+plot(x$t, x$v, type = &quot;l&quot;, col = rgb(0.43, 0.04, 0.12), lwd = 2, ylim = c(0, 1), xlab = &quot;t (ms)&quot;, ylab = &quot;&quot;)
+lines(x$t, x$h, col = rgb(0.89, 0.44, 0.49), lwd = 2)
+abline(h = hc, lty = 3); abline(v = tf, lty = 4)
+legend(&quot;topright&quot;, legend = c(&quot;v(t)&quot;, &quot;h(t)&quot;), col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)), lwd = 2)
+gruen &lt;- rgb(0, 0.39, 0)
+H &lt;- seq(hc, 1.05, length.out = 400); W &lt;- sqrt(1 - hc / H)
+plot(H, (1 + W) / 2, type = &quot;l&quot;, col = gruen, lwd = 2.5, xlim = c(0, 1.05), ylim = c(0, 1), xlab = &quot;h&quot;, ylab = &quot;v*&quot;)
+lines(H, (1 - W) / 2, lty = 2, col = gruen, lwd = 2.5); lines(c(0, 1.05), c(0, 0), col = gruen, lwd = 2.5)
+lines(x$h, x$v, col = rgb(0.64, 0.08, 0.18), lwd = 1.5)
+legend(&quot;right&quot;, legend = c(&quot;stabil&quot;, &quot;instabil&quot;, &quot;Aktionspotential&quot;), col = c(gruen, gruen, rgb(0.64, 0.08, 0.18)), lty = c(1, 2, 1), lwd = 2)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>APD = 227.0 ms,  h = h_c nach tclose ln(1/h_c) = 185.1 ms</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="ms-restitution">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 3.25</p>
+    <h2>Restitutionskurve</h2>
+    <p class="formel">r<sub>MS</sub>(DI) = Δ + τ<sub>close</sub> ln((1 − (1 − h<sub>e</sub>) e<sup>−DI/τ<sub>open</sub></sup>)/h<sub>c</sub>)</p>
+    <p class="lead">Die simulierte S1-S2-Messung bestätigt die Formel. Zum Vergleich die Restitutionskurve aus Kapitel 1. Die Rechnung dauert einige Sekunden.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/ms_restitution.png" alt="Ergebnis des Programms ms_restitution.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="ms_restitution.jl" data-m="ms_restitution.m" data-py="ms_restitution.py" data-r="ms_restitution.R">ms_restitution.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/ms_restitution.py" data-jl="code/ms_restitution.jl" data-m="code/ms_restitution.m" data-py="code/ms_restitution.py" data-r="code/ms_restitution.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 3.25: Restitutionskurve des Mitchell-Schaeffer-Modells (Buch, Abschnitt 3.5, Gl. 3.33)</span>
+<span class="k"># Formel r_MS(DI), simulierte S1-S2-Messung (drei S1-Reize im Abstand von 400 ms, dann S2 nach der Pause DI) und r(DI) aus Kapitel 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+tin = 0.3; tout = 6.0; topen = 100.0; tclose = 115.0; vgate = 0.13   <span class="k"># Parameter in ms</span>
+hc = 4 * tin / tout
+
+function simuliere(T, reize; J = 0.2, dauer = 2.0, dt = 0.01, h_fest = false)
+    <span class="k"># Euler-Verfahren für das Mitchell-Schaeffer-Modell; Reizstrom J für &#x27;dauer&#x27; ms ab jedem Zeitpunkt in &#x27;reize&#x27;</span>
+    N = round(Int, T / dt); t = dt .* (0:N)
+    Jt = zeros(N + 1)
+    for s in reize
+        Jt[(t .&gt;= s - 1e-9) .&amp; (t .&lt; s + dauer - 1e-9)] .= J
+    end
+    v = zeros(N + 1); h = ones(N + 1)
+    for n in 1:N
+        dv = h[n] * v[n]^2 * (1 - v[n]) / tin - v[n] / tout + Jt[n]
+        dh = h_fest ? 0.0 : (v[n] &lt; vgate ? (1 - h[n]) / topen : -h[n] / tclose)
+        v[n + 1] = v[n] + dt * dv; h[n + 1] = h[n] + dt * dh
+    end
+    return t, v, h
+end
+durchgaenge(t, v; schwelle = 0.1) = t[findall(diff(sign.(v .- schwelle)) .!= 0)]   <span class="k"># Beginn und Ende der Aktionspotentiale</span>
+
+t, v, h = simuliere(500, [0.0])
+d = durchgaenge(t, v); apd = d[2] - d[1]
+he = h[findfirst(t .&gt;= d[2])]                              <span class="k"># h am Ende des Aktionspotentials</span>
+Delta = apd - tclose * log(1 / hc)
+r_ms(DI) = Delta + tclose * log((1 - (1 - he) * exp(-DI / topen)) / hc)
+r_k1(DI) = 220 - 180 * exp(-DI / 60)
+t, v, _ = simuliere(1250, [0, 400, 800])
+ende = first(filter(s -&gt; s &gt; 805, durchgaenge(t, v)))     <span class="k"># Ende des dritten Aktionspotentials</span>
+DIs = [10, 20, 40, 60, 80, 100, 150, 200, 250, 300]
+sim = map(DIs) do DI
+    s2 = ende + DI
+    t, v, _ = simuliere(s2 + 400, [0, 400, 800, s2])
+    d = filter(s -&gt; s &gt; s2 - 1, durchgaenge(t, v))
+    d[2] - d[1]
+end
+@printf(&quot;h_e = %.4f,  Delta = %.2f ms\n&quot;, he, Delta)
+println(&quot;DI:         &quot;, join([@sprintf(&quot;%5d&quot;, x) for x in DIs], &quot;  &quot;))
+println(&quot;Simulation: &quot;, join([@sprintf(&quot;%5.1f&quot;, x) for x in sim], &quot;  &quot;))
+println(&quot;Formel:     &quot;, join([@sprintf(&quot;%5.1f&quot;, r_ms(x)) for x in DIs], &quot;  &quot;))
+DI = range(4.8, 300, length = 400)
+p = plot(DI, r_ms.(DI), color = RGB(0, 0.447, 0.741), lw = 2.5, label = &quot;r_MS(DI)&quot;, ylims = (40, 235),
+         xlabel = &quot;DI (ms)&quot;, ylabel = &quot;APD (ms)&quot;, legend = :bottomright)
+plot!(p, DI, r_k1.(DI), color = RGB(0.45, 0.70, 0.90), lw = 2, label = &quot;r(DI) aus Kapitel 1&quot;)
+scatter!(p, DIs, sim, color = :black, label = &quot;S1-S2-Simulation&quot;)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 3.25: Restitutionskurve des Mitchell-Schaeffer-Modells (Buch, Abschnitt 3.5, Gl. 3.33)</span>
+<span class="k">% Formel r_MS(DI), simulierte S1-S2-Messung (drei S1-Reize im Abstand von 400 ms, dann S2 nach der Pause DI) und r(DI) aus Kapitel 1</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+tin = 0.3; tout = 6; topen = 100; tclose = 115; vgate = 0.13;   <span class="k">% Parameter in ms</span>
+hc = 4 * tin / tout;
+J = 0.2; dauer = 2; dt = 0.01;
+
+h_fest = false;
+T = 500; reize = 0;
+N = round(T / dt); t = dt * (0:N);
+Jt = zeros(1, N + 1);
+for s = reize
+    Jt(t &gt;= s - 1e-9 &amp; t &lt; s + dauer - 1e-9) = J;  <span class="k">% Reizstrom J für &#x27;dauer&#x27; ms ab jedem Reiz</span>
+end
+v = zeros(1, N + 1); h = ones(1, N + 1);
+for n = 1:N                                         <span class="k">% Euler-Verfahren</span>
+    dv = h(n) * v(n)^2 * (1 - v(n)) / tin - v(n) / tout + Jt(n);
+    if h_fest, dh = 0;
+    elseif v(n) &lt; vgate, dh = (1 - h(n)) / topen;
+    else, dh = -h(n) / tclose;
+    end
+    v(n + 1) = v(n) + dt * dv; h(n + 1) = h(n) + dt * dh;
+end
+d = t(find(diff(sign(v - 0.1)) ~= 0));              <span class="k">% Beginn und Ende der Aktionspotentiale (v = 0.1)</span>
+apd = d(2) - d(1);
+he = h(find(t &gt;= d(2), 1));                               <span class="k">% h am Ende des Aktionspotentials</span>
+Delta = apd - tclose * log(1 / hc);
+r_ms = @(DI) Delta + tclose * log((1 - (1 - he) * exp(-DI / topen)) / hc);
+r_k1 = @(DI) 220 - 180 * exp(-DI / 60);
+T = 1250; reize = [0 400 800];
+N = round(T / dt); t = dt * (0:N);
+Jt = zeros(1, N + 1);
+for s = reize
+    Jt(t &gt;= s - 1e-9 &amp; t &lt; s + dauer - 1e-9) = J;  <span class="k">% Reizstrom J für &#x27;dauer&#x27; ms ab jedem Reiz</span>
+end
+v = zeros(1, N + 1); h = ones(1, N + 1);
+for n = 1:N                                         <span class="k">% Euler-Verfahren</span>
+    dv = h(n) * v(n)^2 * (1 - v(n)) / tin - v(n) / tout + Jt(n);
+    if h_fest, dh = 0;
+    elseif v(n) &lt; vgate, dh = (1 - h(n)) / topen;
+    else, dh = -h(n) / tclose;
+    end
+    v(n + 1) = v(n) + dt * dv; h(n + 1) = h(n) + dt * dh;
+end
+d = t(find(diff(sign(v - 0.1)) ~= 0));              <span class="k">% Beginn und Ende der Aktionspotentiale (v = 0.1)</span>
+ende = d(find(d &gt; 805, 1));                               <span class="k">% Ende des dritten Aktionspotentials</span>
+DIs = [10 20 40 60 80 100 150 200 250 300]; sim = zeros(size(DIs));
+for k = 1:numel(DIs)
+    s2 = ende + DIs(k);
+    T = s2 + 400; reize = [0 400 800 s2];
+    N = round(T / dt); t = dt * (0:N);
+    Jt = zeros(1, N + 1);
+    for s = reize
+        Jt(t &gt;= s - 1e-9 &amp; t &lt; s + dauer - 1e-9) = J;  <span class="k">% Reizstrom J für &#x27;dauer&#x27; ms ab jedem Reiz</span>
+    end
+    v = zeros(1, N + 1); h = ones(1, N + 1);
+    for n = 1:N                                         <span class="k">% Euler-Verfahren</span>
+        dv = h(n) * v(n)^2 * (1 - v(n)) / tin - v(n) / tout + Jt(n);
+        if h_fest, dh = 0;
+        elseif v(n) &lt; vgate, dh = (1 - h(n)) / topen;
+        else, dh = -h(n) / tclose;
+        end
+        v(n + 1) = v(n) + dt * dv; h(n + 1) = h(n) + dt * dh;
+    end
+    d = t(find(diff(sign(v - 0.1)) ~= 0));              <span class="k">% Beginn und Ende der Aktionspotentiale (v = 0.1)</span>
+    d = d(d &gt; s2 - 1);
+    sim(k) = d(2) - d(1);
+end
+fprintf(&#x27;h_e = %.4f,  Delta = %.2f ms\n&#x27;, he, Delta);
+fprintf(&#x27;DI:         %s\n&#x27;, sprintf(&#x27;%5d  &#x27;, DIs));
+fprintf(&#x27;Simulation: %s\n&#x27;, sprintf(&#x27;%5.1f  &#x27;, sim));
+fprintf(&#x27;Formel:     %s\n&#x27;, sprintf(&#x27;%5.1f  &#x27;, r_ms(DIs)));
+DI = linspace(4.8, 300, 400);
+plot(DI, r_ms(DI), &#x27;Color&#x27;, [0 0.447 0.741], &#x27;LineWidth&#x27;, 2.5); hold on
+plot(DI, r_k1(DI), &#x27;Color&#x27;, [0.45 0.70 0.90], &#x27;LineWidth&#x27;, 2);
+plot(DIs, sim, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+xlabel(&#x27;DI (ms)&#x27;); ylabel(&#x27;APD (ms)&#x27;); ylim([40 235]);
+legend(&#x27;r_{MS}(DI)&#x27;, &#x27;r(DI) aus Kapitel 1&#x27;, &#x27;S1-S2-Simulation&#x27;, &#x27;Location&#x27;, &#x27;southeast&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 3.25: Restitutionskurve des Mitchell-Schaeffer-Modells (Buch, Abschnitt 3.5, Gl. 3.33)</span>
+<span class="k"># Formel r_MS(DI), simulierte S1-S2-Messung (drei S1-Reize im Abstand von 400 ms, dann S2 nach der Pause DI) und r(DI) aus Kapitel 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+tin, tout, topen, tclose, vgate = 0.3, 6.0, 100.0, 115.0, 0.13      <span class="k"># Parameter in ms</span>
+hc = 4 * tin / tout
+
+def simuliere(T, reize, J=0.2, dauer=2.0, dt=0.01, h_fest=None):
+    &quot;&quot;&quot;Euler-Verfahren für das Mitchell-Schaeffer-Modell; Reizstrom J für &#x27;dauer&#x27; ms ab jedem Zeitpunkt in &#x27;reize&#x27;.&quot;&quot;&quot;
+    N = int(round(T / dt)); t = dt * np.arange(N + 1)
+    Jt = np.zeros(N + 1)
+    for s in reize:
+        Jt[(t &gt;= s - 1e-9) &amp; (t &lt; s + dauer - 1e-9)] = J
+    v = np.zeros(N + 1); h = np.ones(N + 1)
+    for n in range(N):
+        dv = h[n] * v[n]**2 * (1 - v[n]) / tin - v[n] / tout + Jt[n]
+        if h_fest is not None: dh = 0.0
+        elif v[n] &lt; vgate: dh = (1 - h[n]) / topen
+        else: dh = -h[n] / tclose
+        v[n + 1] = v[n] + dt * dv; h[n + 1] = h[n] + dt * dh
+    return t, v, h
+
+def durchgaenge(t, v, schwelle=0.1):
+    &quot;&quot;&quot;Zeitpunkte, zu denen v die Schwelle über- oder unterschreitet (Beginn und Ende eines Aktionspotentials).&quot;&quot;&quot;
+    i = np.where(np.diff(np.sign(v - schwelle)) != 0)[0]
+    return t[i]
+
+t, v, h = simuliere(500, [0.0])
+d = durchgaenge(t, v); apd = d[1] - d[0]
+he = h[np.searchsorted(t, d[1])]                          <span class="k"># h am Ende des Aktionspotentials</span>
+Delta = apd - tclose * np.log(1 / hc)
+r_ms = lambda DI: Delta + tclose * np.log((1 - (1 - he) * np.exp(-DI / topen)) / hc)
+r_k1 = lambda DI: 220 - 180 * np.exp(-DI / 60)
+t, v, _ = simuliere(1250, [0, 400, 800])
+ende = [s for s in durchgaenge(t, v) if s &gt; 805][0]       <span class="k"># Ende des dritten Aktionspotentials</span>
+DIs = [10, 20, 40, 60, 80, 100, 150, 200, 250, 300]; sim = []
+for DI in DIs:
+    s2 = ende + DI
+    t, v, _ = simuliere(s2 + 400, [0, 400, 800, s2])
+    d = [s for s in durchgaenge(t, v) if s &gt; s2 - 1]
+    sim.append(d[1] - d[0])
+print(f&quot;h_e = {he:.4f},  Delta = {Delta:.2f} ms&quot;)
+print(&quot;DI:        &quot;, &quot;  &quot;.join(f&quot;{x:5d}&quot; for x in DIs))
+print(&quot;Simulation:&quot;, &quot;  &quot;.join(f&quot;{x:5.1f}&quot; for x in sim))
+print(&quot;Formel:    &quot;, &quot;  &quot;.join(f&quot;{r_ms(x):5.1f}&quot; for x in DIs))
+DI = np.linspace(4.8, 300, 400)
+plt.plot(DI, r_ms(DI), color=(0, 0.447, 0.741), lw=2.5, label=&quot;r_MS(DI)&quot;)
+plt.plot(DI, r_k1(DI), color=(0.45, 0.70, 0.90), lw=2, label=&quot;r(DI) aus Kapitel 1&quot;)
+plt.plot(DIs, sim, &quot;ko&quot;, label=&quot;S1-S2-Simulation&quot;)
+plt.xlabel(&quot;DI (ms)&quot;); plt.ylabel(&quot;APD (ms)&quot;); plt.ylim(40, 235); plt.legend(loc=&quot;lower right&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 3.25: Restitutionskurve des Mitchell-Schaeffer-Modells (Buch, Abschnitt 3.5, Gl. 3.33)</span>
+<span class="k"># Formel r_MS(DI), simulierte S1-S2-Messung (drei S1-Reize im Abstand von 400 ms, dann S2 nach der Pause DI) und r(DI) aus Kapitel 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+tin &lt;- 0.3; tout &lt;- 6; topen &lt;- 100; tclose &lt;- 115; vgate &lt;- 0.13   <span class="k"># Parameter in ms</span>
+hc &lt;- 4 * tin / tout
+
+simuliere &lt;- function(T, reize, J = 0.2, dauer = 2, dt = 0.01, h_fest = FALSE) {
+  <span class="k"># Euler-Verfahren für das Mitchell-Schaeffer-Modell; Reizstrom J für &#x27;dauer&#x27; ms ab jedem Zeitpunkt in &#x27;reize&#x27;</span>
+  N &lt;- round(T / dt); t &lt;- dt * (0:N)
+  Jt &lt;- numeric(N + 1)
+  for (s in reize) Jt[t &gt;= s - 1e-9 &amp; t &lt; s + dauer - 1e-9] &lt;- J
+  v &lt;- numeric(N + 1); h &lt;- rep(1, N + 1)
+  for (n in 1:N) {
+    dv &lt;- h[n] * v[n]^2 * (1 - v[n]) / tin - v[n] / tout + Jt[n]
+    dh &lt;- if (h_fest) 0 else if (v[n] &lt; vgate) (1 - h[n]) / topen else -h[n] / tclose
+    v[n + 1] &lt;- v[n] + dt * dv; h[n + 1] &lt;- h[n] + dt * dh
+  }
+  list(t = t, v = v, h = h)
+}
+durchgaenge &lt;- function(t, v, schwelle = 0.1) t[which(diff(sign(v - schwelle)) != 0)]   <span class="k"># Beginn und Ende der Aktionspotentiale</span>
+
+x &lt;- simuliere(500, 0)
+d &lt;- durchgaenge(x$t, x$v); apd &lt;- d[2] - d[1]
+he &lt;- x$h[which(x$t &gt;= d[2])[1]]                          <span class="k"># h am Ende des Aktionspotentials</span>
+Delta &lt;- apd - tclose * log(1 / hc)
+r_ms &lt;- function(DI) Delta + tclose * log((1 - (1 - he) * exp(-DI / topen)) / hc)
+r_k1 &lt;- function(DI) 220 - 180 * exp(-DI / 60)
+x &lt;- simuliere(1250, c(0, 400, 800))
+d &lt;- durchgaenge(x$t, x$v)
+ende &lt;- d[d &gt; 805][1]                                     <span class="k"># Ende des dritten Aktionspotentials</span>
+DIs &lt;- c(10, 20, 40, 60, 80, 100, 150, 200, 250, 300)
+sim &lt;- sapply(DIs, function(DI) {
+  s2 &lt;- ende + DI
+  x &lt;- simuliere(s2 + 400, c(0, 400, 800, s2))
+  d &lt;- durchgaenge(x$t, x$v); d &lt;- d[d &gt; s2 - 1]
+  d[2] - d[1]
+})
+cat(sprintf(&quot;h_e = %.4f,  Delta = %.2f ms\n&quot;, he, Delta))
+cat(&quot;DI:        &quot;, sprintf(&quot;%5d&quot;, DIs), &quot;\n&quot;)
+cat(&quot;Simulation:&quot;, sprintf(&quot;%5.1f&quot;, sim), &quot;\n&quot;)
+cat(&quot;Formel:    &quot;, sprintf(&quot;%5.1f&quot;, r_ms(DIs)), &quot;\n&quot;)
+DI &lt;- seq(4.8, 300, length.out = 400)
+plot(DI, r_ms(DI), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2.5, ylim = c(40, 235), xlab = &quot;DI (ms)&quot;, ylab = &quot;APD (ms)&quot;)
+lines(DI, r_k1(DI), col = rgb(0.45, 0.70, 0.90), lwd = 2)
+points(DIs, sim, pch = 16)
+legend(&quot;bottomright&quot;, legend = c(&quot;r_MS(DI)&quot;, &quot;r(DI) aus Kapitel 1&quot;, &quot;S1-S2-Simulation&quot;),
+       col = c(rgb(0, 0.447, 0.741), rgb(0.45, 0.70, 0.90), &quot;black&quot;), lwd = c(2.5, 2, NA), pch = c(NA, NA, 16))</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>h_e = 0.1611,  Delta = 41.88 ms
+DI:            10     20     40     60     80    100    150    200    250    300
+Simulation:  64.1   95.1  133.0  156.7  173.0  184.9  203.3  213.2  218.8  222.1
+Formel:      63.3   93.4  131.9  156.0  172.6  184.5  203.1  213.1  218.8  222.1</code></pre></details>
+    </div>
+  </div>
+</section>
+  
+  
+  <nav class="weiter" aria-label="Weiterblättern"><a href="abschnitt-3-4.html"><small>Zurück</small>3.4 Euler-Verfahren</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Begleitmaterial zum Buch „Dynamische Systeme in den Lebenswissenschaften“ von Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programme unter <a href="../LICENSE.txt">MIT-Lizenz</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

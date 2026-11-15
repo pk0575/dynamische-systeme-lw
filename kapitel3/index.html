@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kapitel 3: Kontinuierliche dynamische Systeme mit einer Variablen – Dynamische Systeme in den Lebenswissenschaften</title>
+<meta name="description" content="Programme und Apps zu Kapitel 3 des Buchs Dynamische Systeme in den Lebenswissenschaften">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamische Systeme in den Lebenswissenschaften</a>
+  <nav aria-label="Kapitel"><a href="../index.html">Start</a> <a href="../kapitel1/index.html">Kapitel 1</a> <a href="../kapitel2/index.html">Kapitel 2</a> <a href="../kapitel3/index.html" aria-current="page">Kapitel 3</a> <a href="../kapitel4/index.html">Kapitel 4</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Abschnitte"><h2><a href="index.html">Kapitel 3</a></h2><ol><li><a href="abschnitt-3-1.html"><span class="nr">3.1</span><span>Differentialgleichungen und Anfangswertprobleme</span></a></li><li><a href="abschnitt-3-2.html"><span class="nr">3.2</span><span>Exponentielles und logistisches Wachstum</span></a></li><li><a href="abschnitt-3-3.html"><span class="nr">3.3</span><span>Stationäre Lösungen und Stabilität</span></a></li><li><a href="abschnitt-3-4.html"><span class="nr">3.4</span><span>Euler-Verfahren</span></a></li><li><a href="abschnitt-3-5.html"><span class="nr">3.5</span><span>Vertiefung: Erregbarkeit von Herzzellen</span></a></li></ol></aside>
+<main>
+  <div class="intro"><div><p class="eyebrow">Kapitel 3</p><h1>Kontinuierliche dynamische Systeme mit einer Variablen</h1><p>Differentialgleichungen, exponentielles und logistisches Wachstum, Stabilität, Euler-Verfahren und Erregbarkeit von Herzzellen. Zu jedem Abschnitt gibt es die Programme zu allen berechneten Abbildungen, Apps zum Ausprobieren im Browser und die MATLAB-Apps der Vorlesung.</p>
+  <p><a href="kapitel3_programme.zip" download>Alle Programme zu Kapitel 3 herunterladen (ZIP)</a></p></div><fieldset class="lang">
+  <legend>Programmiersprache</legend>
+  <div class="seg" role="radiogroup" aria-label="Programmiersprache">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Gilt für alle Seiten. MATLAB-Programme laufen auch im kostenlosen GNU Octave.</small>
+</fieldset></div>
+  <ul class="abschnitte"><li><a href="abschnitt-3-1.html"><span class="nr">3.1</span><span class="t">Differentialgleichungen und Anfangswertprobleme<small>Lässt man den Zeitschritt einer Differenzengleichung gegen null gehen, entsteht eine Differentialgleichung: Sie beschreibt die momentane Änderungsrate dx/dt einer Größe. Zusammen mit einem Anfangswert bildet sie ein Anfangswertproblem. Seine Lösung ist eine Funktion x(t), deren Graph in jedem Punkt der Steigung des Richtungsfelds folgt.</small></span><span class="zahl">5 Abb. · Apps</span></a></li><li><a href="abschnitt-3-2.html"><span class="nr">3.2</span><span class="t">Exponentielles und logistisches Wachstum<small>dx/dt = r x ist das einfachste Wachstumsmodell: Die Änderungsrate ist proportional zur Größe selbst, die Lösung x(t) = x<sub>0</sub> e<sup>rt</sup> wächst oder klingt exponentiell ab. Begrenzte Ressourcen führen auf das logistische Modell dx/dt = r (1 − x/K) x, dessen Lösungen sich der Kapazität K nähern.</small></span><span class="zahl">5 Abb.</span></a></li><li><a href="abschnitt-3-3.html"><span class="nr">3.3</span><span class="t">Stationäre Lösungen und Stabilität<small>Eine autonome Differentialgleichung dx/dt = f(x) ist stationär, wo f(x*) = 0 ist. Ob die Lösungen zu x* hin oder von x* weg laufen, zeigt die Phasenlinie, rechnerisch das Vorzeichen von f′(x*). Hängt f von einem Parameter ab, beschreibt das Bifurkationsdiagramm, wie sich die stationären Zustände verändern – etwa bei der Befischung eines Bestands oder beim Genschalter des lac-Operons.</small></span><span class="zahl">5 Abb. · Apps</span></a></li><li><a href="abschnitt-3-4.html"><span class="nr">3.4</span><span class="t">Euler-Verfahren<small>Die meisten Differentialgleichungen lassen sich nicht geschlossen lösen. Das Euler-Verfahren ersetzt die Lösung durch kurze Geradenstücke mit der Steigung des Richtungsfelds: x<sub>n+1</sub> = x<sub>n</sub> + h f(t<sub>n</sub>, x<sub>n</sub>). Kleinere Schrittweiten h liefern genauere Näherungen; zu große Schrittweiten können das Verfahren instabil machen.</small></span><span class="zahl">4 Abb. · Apps</span></a></li><li><a href="abschnitt-3-5.html"><span class="nr">3.5</span><span class="t">Vertiefung: Erregbarkeit von Herzzellen<small>Das Mitchell-Schaeffer-Modell beschreibt das Aktionspotential einer Herzmuskelzelle mit einer Differentialgleichung für das Membranpotential v. Hält man die Kanalvariable h fest, hat sie einen Ruhezustand, eine Schwelle und einen erregten Zustand. Lässt man h langsam mitlaufen, entsteht ein vollständiges Aktionspotential, und man kann seine Dauer und die Restitutionskurve berechnen. Die Programme verwenden das Euler-Verfahren mit h = 0.01 ms.</small></span><span class="zahl">3 Abb.</span></a></li></ul>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Begleitmaterial zum Buch „Dynamische Systeme in den Lebenswissenschaften“ von Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programme unter <a href="../LICENSE.txt">MIT-Lizenz</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

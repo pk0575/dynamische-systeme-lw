@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dynamische Systeme in den Lebenswissenschaften – Webseite zum Buch</title>
+<meta name="description" content="Programme in Julia, MATLAB, Python und R und Apps zum Buch Dynamische Systeme in den Lebenswissenschaften von Philipp Kügler">
+<link rel="stylesheet" href="assets/fonts/schriften.css">
+<link rel="stylesheet" href="assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="index.html">Dynamische Systeme in den Lebenswissenschaften</a>
+  <nav aria-label="Kapitel"><a href="index.html" aria-current="page">Start</a> <a href="kapitel1/index.html">Kapitel 1</a> <a href="kapitel2/index.html">Kapitel 2</a> <a href="kapitel3/index.html">Kapitel 3</a> <a href="kapitel4/index.html">Kapitel 4</a></nav>
+</div></header>
+<div class="layout ohne-seite gutter">
+<main>
+  <div class="held">
+    <div class="lesetext">
+      <p class="eyebrow">Webseite zum Buch</p>
+      <h1>Dynamische Systeme in den Lebenswissenschaften</h1>
+      <p>Mathematik lernt man am besten, indem man selbst rechnet. Hier finden Sie zu den Abbildungen des Buchs kurze Programme in
+      Julia, MATLAB, Python und R. Sie simulieren die Modelle, geben Zahlenwerte aus und erzeugen die Bilder aus dem Buch.</p>
+      <p>Die Abbildungs- und Gleichungsnummern entsprechen denen im Buch. Ändern Sie Parameter und Startwerte und beobachten Sie,
+      was passiert. Ausgewählte Apps laufen direkt im Browser, ohne Installation.</p>
+    </div>
+    <div class="kacheln"><figure><img src="bilder/kachel_1_1.png" alt="Abbildung: zeitdiskret, eine Variable"><figcaption>zeitdiskret, eine Variable</figcaption></figure><figure><img src="bilder/kachel_2_1.png" alt="Abbildung: zeitdiskret, mehrere Variablen"><figcaption>zeitdiskret, mehrere Variablen</figcaption></figure><figure><img src="bilder/kachel_3_1.png" alt="Abbildung: kontinuierlich, eine Variable"><figcaption>kontinuierlich, eine Variable</figcaption></figure><figure><img src="bilder/kachel_4_3.png" alt="Abbildung: kontinuierlich, mehrere Variablen"><figcaption>kontinuierlich, mehrere Variablen</figcaption></figure></div>
+  </div>
+  <h2 class="sektion">Kapitel</h2>
+  <div class="karten"><a class="karte" href="kapitel1/index.html"><p class="eyebrow">Kapitel 1</p><h3>Diskrete dynamische Systeme mit einer Variablen</h3><p>Folgen, Differenzengleichungen, logistisches Wachstum, Stabilität, Newton-Verfahren und Herzrhythmus.</p><p>6 Abschnitte · 33 Abbildungen mit Programmen · Apps</p></a><a class="karte" href="kapitel2/index.html"><p class="eyebrow">Kapitel 2</p><h3>Diskrete dynamische Systeme mit mehreren Variablen</h3><p>Räuber und Beute, Matrix-Modelle, Eigenwerte, das SIR-Modell und die Ausbreitung des Aktionspotentials.</p><p>5 Abschnitte · 19 Abbildungen mit Programmen · Apps</p></a><a class="karte" href="kapitel3/index.html"><p class="eyebrow">Kapitel 3</p><h3>Kontinuierliche dynamische Systeme mit einer Variablen</h3><p>Differentialgleichungen, exponentielles und logistisches Wachstum, Stabilität, Euler-Verfahren und Erregbarkeit von Herzzellen.</p><p>5 Abschnitte · 22 Abbildungen mit Programmen · Apps</p></a><a class="karte" href="kapitel4/index.html"><p class="eyebrow">Kapitel 4</p><h3>Kontinuierliche dynamische Systeme mit mehreren Variablen</h3><p>Systeme von Differentialgleichungen, Phasenebene, lineare Systeme, Michaelis-Menten-Kinetik, Stabilität und Grenzzyklen.</p><p>5 Abschnitte · 22 Abbildungen mit Programmen · Apps</p></a></div>
+  <section class="info">
+    <div><h3>Julia</h3><p>Julia ab Version 1.10 mit den Paketen Plots und OrdinaryDiffEq: einmalig <code>using Pkg; Pkg.add(["Plots", "OrdinaryDiffEq"])</code>. Programm herunterladen und in der Julia-Konsole mit <code>include("name.jl")</code> starten.</p></div>
+    <div><h3>MATLAB und GNU Octave</h3><p>Die MATLAB-Programme kommen ohne Toolboxen aus und laufen auch im kostenlosen GNU Octave. Datei in den aktuellen Ordner legen und den Namen ohne Endung eingeben.</p></div>
+    <div><h3>Python</h3><p>Python 3 mit den Paketen NumPy, SciPy und Matplotlib, z. B. über Anaconda oder <code>pip install numpy scipy matplotlib</code>. Programm herunterladen und mit <code>python name.py</code> starten.</p></div>
+    <div><h3>R</h3><p>R mit Basisgrafik; für Differentialgleichungen das Paket deSolve: einmalig <code>install.packages("deSolve")</code>. Programm herunterladen und mit <code>source("name.R")</code> in R oder RStudio starten.</p></div>
+    <div><h3>Lizenz</h3><p>Die Programme stehen unter der <a href="LICENSE.txt">MIT-Lizenz</a>: Sie dürfen sie frei verwenden, verändern und weitergeben, auch in eigenen Lehrveranstaltungen, solange der Copyright-Vermerk erhalten bleibt. Die Texte des Buchs sind davon nicht erfasst.</p></div>
+    <div><h3>Apps</h3><p>Browser-Apps stehen auf den Abschnittsseiten unter „Im Browser ausprobieren“. Die interaktiven MATLAB-Apps aus der Vorlesung können Sie dort herunterladen.</p></div>
+  </section>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Begleitmaterial zum Buch „Dynamische Systeme in den Lebenswissenschaften“ von Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programme unter <a href="LICENSE.txt">MIT-Lizenz</a> · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a></span>
+</div></footer>
+<script src="assets/seite.js"></script>
+<script src="assets/apps.js"></script>
+</body>
+</html>

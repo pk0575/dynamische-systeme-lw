@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kapitel 4: Kontinuierliche dynamische Systeme mit mehreren Variablen – Dynamische Systeme in den Lebenswissenschaften</title>
+<meta name="description" content="Programme und Apps zu Kapitel 4 des Buchs Dynamische Systeme in den Lebenswissenschaften">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamische Systeme in den Lebenswissenschaften</a>
+  <nav aria-label="Kapitel"><a href="../index.html">Start</a> <a href="../kapitel1/index.html">Kapitel 1</a> <a href="../kapitel2/index.html">Kapitel 2</a> <a href="../kapitel3/index.html">Kapitel 3</a> <a href="../kapitel4/index.html" aria-current="page">Kapitel 4</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Abschnitte"><h2><a href="index.html">Kapitel 4</a></h2><ol><li><a href="abschnitt-4-1.html"><span class="nr">4.1</span><span>Systeme von Differentialgleichungen</span></a></li><li><a href="abschnitt-4-2.html"><span class="nr">4.2</span><span>Lineare Systeme</span></a></li><li><a href="abschnitt-4-3.html"><span class="nr">4.3</span><span>Michaelis-Menten-Kinetik</span></a></li><li><a href="abschnitt-4-4.html"><span class="nr">4.4</span><span>Stationäre Zustände und Stabilität</span></a></li><li><a href="abschnitt-4-5.html"><span class="nr">4.5</span><span>Vertiefung: Erregbarkeit in der Phasenebene</span></a></li></ol></aside>
+<main>
+  <div class="intro"><div><p class="eyebrow">Kapitel 4</p><h1>Kontinuierliche dynamische Systeme mit mehreren Variablen</h1><p>Systeme von Differentialgleichungen, Phasenebene, lineare Systeme, Michaelis-Menten-Kinetik, Stabilität und Grenzzyklen. Zu jedem Abschnitt gibt es die Programme zu allen berechneten Abbildungen, Apps zum Ausprobieren im Browser und die MATLAB-Apps der Vorlesung.</p>
+  <p><a href="kapitel4_programme.zip" download>Alle Programme zu Kapitel 4 herunterladen (ZIP)</a></p></div><fieldset class="lang">
+  <legend>Programmiersprache</legend>
+  <div class="seg" role="radiogroup" aria-label="Programmiersprache">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Gilt für alle Seiten. MATLAB-Programme laufen auch im kostenlosen GNU Octave.</small>
+</fieldset></div>
+  <ul class="abschnitte"><li><a href="abschnitt-4-1.html"><span class="nr">4.1</span><span class="t">Systeme von Differentialgleichungen<small>Mehrere Größen, die sich gegenseitig beeinflussen, führen auf ein System von Differentialgleichungen. Seine Lösung betrachtet man als Zeitverläufe oder als Bahn in der Phasenebene, in der das Richtungsfeld die Bewegung vorgibt. Die Programme lösen die Systeme mit <code>solve_ivp</code> (Python) bzw. <code>ode45</code> (MATLAB) oder mit dem Euler-Verfahren.</small></span><span class="zahl">6 Abb. · Apps</span></a></li><li><a href="abschnitt-4-2.html"><span class="nr">4.2</span><span class="t">Lineare Systeme<small>Für lineare Systeme dx/dt = A x liefern die Eigenwerte von A die Lösungen. Bei zwei Variablen entscheiden Spur und Determinante, ob der Ursprung ein Knoten, eine Spirale, ein Zentrum oder ein Sattel ist und ob er stabil ist. Ein Beispiel aus der Pharmakologie ist die Aufnahme eines Wirkstoffs aus dem Magen ins Blut.</small></span><span class="zahl">4 Abb. · Apps</span></a></li><li><a href="abschnitt-4-3.html"><span class="nr">4.3</span><span class="t">Michaelis-Menten-Kinetik<small>Ein Enzym E bindet ein Substrat S zu einem Komplex SE, der in Produkt P und freies Enzym zerfällt. Das Massenwirkungsgesetz liefert ein System für vier Konzentrationen. Ist wenig Enzym vorhanden, stellt sich der Komplex schnell auf einen quasistationären Wert ein, und man erhält die Michaelis-Menten-Rate.</small></span><span class="zahl">4 Abb. · Apps</span></a></li><li><a href="abschnitt-4-4.html"><span class="nr">4.4</span><span class="t">Stationäre Zustände und Stabilität<small>Stationäre Zustände liegen auf den Schnittpunkten der Nullklinen. Ihre Stabilität ergibt sich aus den Eigenwerten der Jacobi-Matrix, also aus der Linearisierung. Beispiele sind Räuber und Beute, konkurrierende Hefen, der Bioreaktor mit dem Auswaschen der Biomasse sowie Grenzzyklen bei der Genregulation und im Schrittmachergewebe des Herzens.</small></span><span class="zahl">6 Abb. · Apps</span></a></li><li><a href="abschnitt-4-5.html"><span class="nr">4.5</span><span class="t">Vertiefung: Erregbarkeit in der Phasenebene<small>Mit h als zweiter Variable wird das Mitchell-Schaeffer-Modell aus Abschnitt 3.5 zu einem System in der Phasenebene. Nullklinen und Richtungsfeld erklären Schwelle, Aktionspotential und Erholung. Ein konstanter Einwärtsstrom J<sub>0</sub> lässt den Ruhezustand verschwinden: Es entsteht ein Grenzzyklus, das Modell einer Schrittmacherzelle.</small></span><span class="zahl">2 Abb. · Apps</span></a></li></ul>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Begleitmaterial zum Buch „Dynamische Systeme in den Lebenswissenschaften“ von Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programme unter <a href="../LICENSE.txt">MIT-Lizenz</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

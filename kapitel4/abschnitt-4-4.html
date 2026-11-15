@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>4.4 Stationäre Zustände und Stabilität – Dynamische Systeme in den Lebenswissenschaften</title>
+<meta name="description" content="Programme in Julia, MATLAB, Python und R zu Abschnitt 4.4 des Buchs Dynamische Systeme in den Lebenswissenschaften">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamische Systeme in den Lebenswissenschaften</a>
+  <nav aria-label="Kapitel"><a href="../index.html">Start</a> <a href="../kapitel1/index.html">Kapitel 1</a> <a href="../kapitel2/index.html">Kapitel 2</a> <a href="../kapitel3/index.html">Kapitel 3</a> <a href="../kapitel4/index.html" aria-current="page">Kapitel 4</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Abschnitte"><h2><a href="index.html">Kapitel 4</a></h2><ol><li><a href="abschnitt-4-1.html"><span class="nr">4.1</span><span>Systeme von Differentialgleichungen</span></a></li><li><a href="abschnitt-4-2.html"><span class="nr">4.2</span><span>Lineare Systeme</span></a></li><li><a href="abschnitt-4-3.html"><span class="nr">4.3</span><span>Michaelis-Menten-Kinetik</span></a></li><li><a href="abschnitt-4-4.html" aria-current="page"><span class="nr">4.4</span><span>Stationäre Zustände und Stabilität</span></a></li><li><a href="abschnitt-4-5.html"><span class="nr">4.5</span><span>Vertiefung: Erregbarkeit in der Phasenebene</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Kapitel 4 · Kontinuierliche dynamische Systeme mit mehreren Variablen</p>
+      <h1><span class="num">4.4</span>Stationäre Zustände und Stabilität</h1>
+      <p>Stationäre Zustände liegen auf den Schnittpunkten der Nullklinen. Ihre Stabilität ergibt sich aus den Eigenwerten der Jacobi-Matrix, also aus der Linearisierung. Beispiele sind Räuber und Beute, konkurrierende Hefen, der Bioreaktor mit dem Auswaschen der Biomasse sowie Grenzzyklen bei der Genregulation und im Schrittmachergewebe des Herzens.</p>
+      <p>Zu jeder Abbildung des Abschnitts finden Sie das Programm, das sie erzeugt. Ändern Sie Parameter und Startwerte und beobachten Sie, was passiert. Abbildungs- und Gleichungsnummern beziehen sich auf das Buch.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programmiersprache</legend>
+  <div class="seg" role="radiogroup" aria-label="Programmiersprache">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Gilt für alle Seiten. MATLAB-Programme laufen auch im kostenlosen GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>Auf dieser Seite</b><ul><li><a href="#rb-nullklinen"><span class="abb">Abb. 4.17</span>Nullklinen des Räuber-Beute-Modells</a></li><li><a href="#hefe-phase"><span class="abb">Abb. 4.18</span>Konkurrenz in der Phasenebene</a></li><li><a href="#bioreaktor"><span class="abb">Abb. 4.20</span>Bioreaktor</a></li><li><a href="#bioreaktor-bif"><span class="abb">Abb. 4.21</span>Auswaschen</a></li><li><a href="#genregulation"><span class="abb">Abb. 4.22</span>Genregulation mit Aktivator und Repressor</a></li><li><a href="#noble"><span class="abb">Abb. 4.23</span>Noble-Modell</a></li><li><a href="#app-phasenebene"><span class="abb">App</span>im Browser ausprobieren</a></li></ul></div>
+  
+<section class="fig" id="rb-nullklinen">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 4.17</p>
+    <h2>Nullklinen des Räuber-Beute-Modells</h2>
+    <p class="formel">dx/dt = 0:&ensp; x = 0 oder y = (r/c)(1 − x/K);&ensp; dy/dt = 0:&ensp; y = 0 oder x = e/d</p>
+    <p class="lead">Die Lösung kreuzt die x-Nullklinen senkrecht und die y-Nullklinen waagrecht. Die Jacobi-Matrix im Koexistenzzustand hat komplexe Eigenwerte mit negativem Realteil: eine stabile Spirale.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/rb_nullklinen.png" alt="Ergebnis des Programms rb_nullklinen.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="rb_nullklinen.jl" data-m="rb_nullklinen.m" data-py="rb_nullklinen.py" data-r="rb_nullklinen.R">rb_nullklinen.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/rb_nullklinen.py" data-jl="code/rb_nullklinen.jl" data-m="code/rb_nullklinen.m" data-py="code/rb_nullklinen.py" data-r="code/rb_nullklinen.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 4.17: Nullklinen des Räuber-Beute-Modells (Buch, Abschnitt 4.4, Gl. 4.2)</span>
+<span class="k"># x-Nullklinen: x = 0 und y = (r/c)(1 - x/K);  y-Nullklinen: y = 0 und x = e/d;  dazu Richtungsfeld und Lösung</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># Paket OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># löst dz/dt = f(t, z) und gibt die Lösung zu den Zeitpunkten t zurück (Zeile i = Komponente i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+using LinearAlgebra
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+r = 1; K = 10; c = 0.5; d = 0.2; e = 1
+f(t, z) = [r * (1 - z[1] / K) * z[1] - c * z[1] * z[2], d * z[1] * z[2] - e * z[2]]
+function feldpfeile(f)                   <span class="k"># Richtungsfeld: gleich lange Pfeile im Bild</span>
+    X = Float64[]; Y = Float64[]; U = Float64[]; W = Float64[]
+    for x in range(0.4, 10.6, length = 18), y in range(0.15, 2.85, length = 10)
+        u, w = f(0, [x, y]); u /= 11; w /= 3; L = hypot(u, w)
+        push!(X, x); push!(Y, y); push!(U, u / L * 0.3); push!(W, w / L * 0.3 * 3 / 11)
+    end
+    return X, Y, U, W
+end
+
+X, Y, U, W = feldpfeile(f)
+p = quiver(X, Y, quiver = (U, W), color = GR, label = &quot;&quot;, xlims = (0, 11), ylims = (0, 3), xlabel = &quot;Beute x&quot;, ylabel = &quot;Räuber y&quot;,
+           legend = :topright)
+xs = range(0, 10, length = 50)
+plot!(p, xs, r / c .* (1 .- xs ./ K), color = BL, lw = 3, label = &quot;dx/dt = 0&quot;)
+plot!(p, [0, 0], [0, 3], color = BL, lw = 3, label = &quot;&quot;)
+plot!(p, [e / d, e / d], [0, 3], color = HB, lw = 3, label = &quot;dy/dt = 0&quot;)
+plot!(p, [0, 11], [0, 0], color = HB, lw = 3, label = &quot;&quot;)
+z = loese(f, [8, 0.5], range(0, 40, length = 2001))
+plot!(p, z[1, :], z[2, :], color = R2, lw = 2, label = &quot;&quot;)
+xs_ = e / d; ys_ = r / c * (1 - e / (d * K))
+J = [r * (1 - 2xs_ / K) - c * ys_  -c * xs_; d * ys_  d * xs_ - e]
+lam = sort(complex.(eigvals(J)), by = l -&gt; (imag(l), real(l)))
+@printf(&quot;Koexistenz (%g, %g): Spur %g, det %g, Eigenwerte &quot;, xs_, ys_, tr(J), det(J))
+println(join([@sprintf(&quot;%.3f%+.3fi&quot;, real(l), imag(l)) for l in lam], &quot;  &quot;))
+scatter!(p, [0, 10], [0, 0], color = :white, msc = :black, ms = 7, label = &quot;&quot;); scatter!(p, [5], [1], color = :black, ms = 7, label = &quot;&quot;)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 4.17: Nullklinen des Räuber-Beute-Modells (Buch, Abschnitt 4.4, Gl. 4.2)</span>
+<span class="k">% x-Nullklinen: x = 0 und y = (r/c)(1 - x/K);  y-Nullklinen: y = 0 und x = e/d;  dazu Richtungsfeld und Lösung</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+r = 1; K = 10; c = 0.5; d = 0.2; e = 1;
+f = @(t, z) [r * (1 - z(1) / K) * z(1) - c * z(1) * z(2); d * z(1) * z(2) - e * z(2)];
+opt = odeset(&#x27;RelTol&#x27;, 1e-9, &#x27;AbsTol&#x27;, 1e-11);
+[X, Y] = meshgrid(linspace(0.4, 10.6, 18), linspace(0.15, 2.85, 10));
+U = (r * (1 - X / K) .* X - c * X .* Y) / 11; V = (d * X .* Y - e * Y) / 3; L = sqrt(U.^2 + V.^2);
+quiver(X, Y, U ./ L * 0.3, V ./ L * 0.3 * 3 / 11, 0, &#x27;Color&#x27;, [0.2 0.6 0.25]); hold on
+xs = linspace(0, 10, 50);
+plot(xs, r / c * (1 - xs / K), &#x27;Color&#x27;, [0 0.447 0.741], &#x27;LineWidth&#x27;, 3);
+plot([0 0], [0 3], &#x27;Color&#x27;, [0 0.447 0.741], &#x27;LineWidth&#x27;, 3);
+plot([e / d e / d], [0 3], &#x27;Color&#x27;, [0.45 0.70 0.90], &#x27;LineWidth&#x27;, 3);
+plot([0 11], [0 0], &#x27;Color&#x27;, [0.45 0.70 0.90], &#x27;LineWidth&#x27;, 3);
+[t, z] = ode45(f, linspace(0, 40, 2001), [8; 0.5], opt);
+plot(z(:, 1), z(:, 2), &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2);
+<span class="k">% Jacobi-Matrix im Koexistenzzustand (5, 1) und ihre Eigenwerte</span>
+xs_ = e / d; ys_ = r / c * (1 - e / (d * K));
+J = [r * (1 - 2 * xs_ / K) - c * ys_, -c * xs_; d * ys_, d * xs_ - e];
+lam = eig(J); lam = sortrows([imag(lam) real(lam)]);
+fprintf(&#x27;Koexistenz (%g, %g): Spur %g, det %g, Eigenwerte %s\n&#x27;, xs_, ys_, trace(J), det(J), sprintf(&#x27;%.3f%+.3fi  &#x27;, lam(:, [2 1])&#x27;));
+plot([0 10], [0 0], &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;w&#x27;, &#x27;MarkerSize&#x27;, 9); plot(5, 1, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;, &#x27;MarkerSize&#x27;, 9); hold off
+xlim([0 11]); ylim([0 3]); xlabel(&#x27;Beute x&#x27;); ylabel(&#x27;Räuber y&#x27;);
+legend(&#x27;&#x27;, &#x27;dx/dt = 0&#x27;, &#x27;&#x27;, &#x27;dy/dt = 0&#x27;, &#x27;Location&#x27;, &#x27;northeast&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 4.17: Nullklinen des Räuber-Beute-Modells (Buch, Abschnitt 4.4, Gl. 4.2)</span>
+<span class="k"># x-Nullklinen: x = 0 und y = (r/c)(1 - x/K);  y-Nullklinen: y = 0 und x = e/d;  dazu Richtungsfeld und Lösung</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+r, K, c, d, e = 1, 10, 0.5, 0.2, 1
+f = lambda t, z: [r * (1 - z[0] / K) * z[0] - c * z[0] * z[1], d * z[0] * z[1] - e * z[1]]
+
+X, Y = np.meshgrid(np.linspace(0.4, 10.6, 18), np.linspace(0.15, 2.85, 10))
+U, V = f(0, [X, Y]); U, V = U / 11, V / 3; L = np.hypot(U, V)
+plt.quiver(X, Y, U / L * 0.3, V / L * 0.3 * 3 / 11, color=(0.2, 0.6, 0.25), angles=&quot;xy&quot;, scale_units=&quot;xy&quot;, scale=1, width=0.0025)
+xs = np.linspace(0, 10, 50)
+plt.plot(xs, r / c * (1 - xs / K), color=(0, 0.447, 0.741), lw=3, label=&quot;dx/dt = 0&quot;)
+plt.plot([0, 0], [0, 3], color=(0, 0.447, 0.741), lw=3)
+plt.plot([e / d, e / d], [0, 3], color=(0.45, 0.70, 0.90), lw=3, label=&quot;dy/dt = 0&quot;)
+plt.plot([0, 11], [0, 0], color=(0.45, 0.70, 0.90), lw=3)
+s = solve_ivp(f, [0, 40], [8, 0.5], t_eval=np.linspace(0, 40, 2001), rtol=1e-9, atol=1e-11)
+plt.plot(s.y[0], s.y[1], color=(0.64, 0.08, 0.18), lw=2)
+<span class="k"># Jacobi-Matrix im Koexistenzzustand (5, 1) und ihre Eigenwerte</span>
+xs_, ys_ = e / d, r / c * (1 - e / (d * K))
+J = np.array([[r * (1 - 2 * xs_ / K) - c * ys_, -c * xs_], [d * ys_, d * xs_ - e]])
+lam = np.linalg.eigvals(J)
+print(f&quot;Koexistenz ({xs_:g}, {ys_:g}): Spur {np.trace(J):g}, det {np.linalg.det(J):g}, Eigenwerte&quot;,
+      &quot;  &quot;.join(f&quot;{l.real:.3f}{l.imag:+.3f}i&quot; for l in sorted(lam, key=lambda l: (l.imag, l.real))))
+plt.plot([0, 10], [0, 0], &quot;o&quot;, mfc=&quot;w&quot;, mec=&quot;k&quot;, ms=9, clip_on=False); plt.plot(5, 1, &quot;ko&quot;, ms=9)
+plt.xlim(0, 11); plt.ylim(0, 3); plt.xlabel(&quot;Beute x&quot;); plt.ylabel(&quot;Räuber y&quot;); plt.legend(loc=&quot;upper right&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 4.17: Nullklinen des Räuber-Beute-Modells (Buch, Abschnitt 4.4, Gl. 4.2)</span>
+<span class="k"># x-Nullklinen: x = 0 und y = (r/c)(1 - x/K);  y-Nullklinen: y = 0 und x = e/d;  dazu Richtungsfeld und Lösung</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+library(deSolve)                         <span class="k"># Paket deSolve: install.packages(&quot;deSolve&quot;)</span>
+r &lt;- 1; K &lt;- 10; c &lt;- 0.5; d &lt;- 0.2; e &lt;- 1
+f &lt;- function(t, z) c(r * (1 - z[1] / K) * z[1] - c * z[1] * z[2], d * z[1] * z[2] - e * z[2])
+loese &lt;- function(f, z0, t) ode(z0, t, function(t, z, p) list(f(t, z)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-12)
+feld &lt;- function(f, xl, yl, nx, ny, laenge = 0.3) {   <span class="k"># Richtungsfeld: gleich lange Pfeile (bezogen auf die Achsenlängen)</span>
+  g &lt;- expand.grid(x = seq(xl[1], xl[2], length.out = nx), y = seq(yl[1], yl[2], length.out = ny))
+  w &lt;- t(apply(g, 1, function(p) f(0, p))); sx &lt;- diff(xl); sy &lt;- diff(yl)
+  u &lt;- w[, 1] / sx; v &lt;- w[, 2] / sy; L &lt;- sqrt(u^2 + v^2) + 1e-12
+  arrows(g$x, g$y, g$x + u / L * laenge * sx / 11, g$y + v / L * laenge * sy / 11, length = 0.04, col = rgb(0.2, 0.6, 0.25))
+}
+
+plot(NULL, xlim = c(0, 11), ylim = c(0, 3), xlab = &quot;Beute x&quot;, ylab = &quot;Räuber y&quot;)
+feld(f, c(0.4, 10.6), c(0.15, 2.85), 18, 10)
+xs &lt;- seq(0, 10, length.out = 50)
+lines(xs, r / c * (1 - xs / K), col = rgb(0, 0.447, 0.741), lwd = 3); lines(c(0, 0), c(0, 3), col = rgb(0, 0.447, 0.741), lwd = 3)
+lines(c(e / d, e / d), c(0, 3), col = rgb(0.45, 0.70, 0.90), lwd = 3); lines(c(0, 11), c(0, 0), col = rgb(0.45, 0.70, 0.90), lwd = 3)
+x &lt;- loese(f, c(8, 0.5), seq(0, 40, length.out = 2001))
+lines(x[, 2], x[, 3], col = rgb(0.64, 0.08, 0.18), lwd = 2)
+<span class="k"># Jacobi-Matrix im Koexistenzzustand (5, 1) und ihre Eigenwerte</span>
+xs_ &lt;- e / d; ys_ &lt;- r / c * (1 - e / (d * K))
+J &lt;- matrix(c(r * (1 - 2 * xs_ / K) - c * ys_, -c * xs_, d * ys_, d * xs_ - e), 2, byrow = TRUE)
+lam &lt;- eigen(J)$values; lam &lt;- lam[order(Im(lam), Re(lam))]
+cat(sprintf(&quot;Koexistenz (%g, %g): Spur %g, det %g, Eigenwerte &quot;, xs_, ys_, sum(diag(J)), det(J)),
+    paste(sprintf(&quot;%.3f%+.3fi&quot;, Re(lam), Im(lam)), collapse = &quot;  &quot;), &quot;\n&quot;, sep = &quot;&quot;)
+points(c(0, 10), c(0, 0), pch = 21, bg = &quot;white&quot;, cex = 1.3, xpd = TRUE); points(5, 1, pch = 16, cex = 1.3)
+legend(&quot;topright&quot;, legend = c(&quot;dx/dt = 0&quot;, &quot;dy/dt = 0&quot;), col = c(rgb(0, 0.447, 0.741), rgb(0.45, 0.70, 0.90)), lwd = 3)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>Koexistenz (5, 1): Spur -0.5, det 0.5, Eigenwerte -0.250-0.661i  -0.250+0.661i</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="hefe-phase">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 4.18</p>
+    <h2>Konkurrenz in der Phasenebene</h2>
+    <p class="formel">y = (1 − x/K<sub>1</sub>)/γ<sub>1</sub>,&ensp; y = K<sub>2</sub> (1 − γ<sub>2</sub> x)</p>
+    <p class="lead">Die Nullklinen schneiden sich im ersten Quadranten nicht; stabil ist nur der Zustand (K<sub>1</sub>, 0), in dem S. kephir allein übrig bleibt.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/hefe_phase.png" alt="Ergebnis des Programms hefe_phase.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="hefe_phase.jl" data-m="hefe_phase.m" data-py="hefe_phase.py" data-r="hefe_phase.R">hefe_phase.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/hefe_phase.py" data-jl="code/hefe_phase.jl" data-m="code/hefe_phase.m" data-py="code/hefe_phase.py" data-r="code/hefe_phase.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 4.18: Konkurrenzmodell in der Phasenebene (Buch, Abschnitt 4.4, Gl. 4.4)</span>
+<span class="k"># Nullklinen y = (1 - x/K1)/g1 und y = K2 (1 - g2 x), stationäre Zustände (gefüllt: stabil, offen: instabil) und die Lösung aus Abb. 4.5</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># Paket OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># löst dz/dt = f(t, z) und gibt die Lösung zu den Zeitpunkten t zurück (Zeile i = Komponente i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+using LinearAlgebra
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+
+r1 = 0.0607; K1 = 5.8; g1 = 0.0757     <span class="k"># S. kephir</span>
+r2 = 0.2183; K2 = 13; g2 = 0.2423      <span class="k"># S. cerevisiae</span>
+f(t, z) = [r1 * (1 - z[1] / K1 - g1 * z[2]) * z[1], r2 * (1 - z[2] / K2 - g2 * z[1]) * z[2]]
+xs = range(0, 6.5, length = 50)
+p = plot(xs, (1 .- xs ./ K1) ./ g1, color = BL, lw = 3, label = &quot;dx/dt = 0&quot;, xlims = (0, 6.5), ylims = (0, 15),
+         xlabel = &quot;S. kephir x&quot;, ylabel = &quot;S. cerevisiae y&quot;)
+plot!(p, xs, K2 .* (1 .- g2 .* xs), color = HB, lw = 3, label = &quot;dy/dt = 0&quot;)
+z = loese(f, [0.5, 0.5], range(0, 400, length = 4001))
+plot!(p, z[1, :], z[2, :], color = R2, lw = 2, label = &quot;&quot;); scatter!(p, [0.5], [0.5], color = R2, label = &quot;&quot;)
+for (x, y) in [(0, 0), (0, K2), (K1, 0)]
+    J = [r1 * (1 - 2x / K1 - g1 * y)  -r1 * g1 * x; -r2 * g2 * y  r2 * (1 - 2y / K2 - g2 * x)]
+    lam = sort(real.(eigvals(J))); stabil = maximum(lam) &lt; 0
+    scatter!(p, [x], [y], color = stabil ? :black : :white, msc = :black, ms = 8, label = &quot;&quot;)
+    @printf(&quot;(%g, %g): Eigenwerte %s -&gt; %s\n&quot;, x, y, join([@sprintf(&quot;%.4f&quot;, l) for l in lam], &quot;  &quot;), stabil ? &quot;stabil&quot; : &quot;instabil&quot;)
+end
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 4.18: Konkurrenzmodell in der Phasenebene (Buch, Abschnitt 4.4, Gl. 4.4)</span>
+<span class="k">% Nullklinen y = (1 - x/K1)/g1 und y = K2 (1 - g2 x), stationäre Zustände (gefüllt: stabil, offen: instabil) und die Lösung aus Abb. 4.5</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+r1 = 0.0607; K1 = 5.8; g1 = 0.0757;     <span class="k">% S. kephir</span>
+r2 = 0.2183; K2 = 13; g2 = 0.2423;      <span class="k">% S. cerevisiae</span>
+f = @(t, z) [r1 * (1 - z(1) / K1 - g1 * z(2)) * z(1); r2 * (1 - z(2) / K2 - g2 * z(1)) * z(2)];
+opt = odeset(&#x27;RelTol&#x27;, 1e-9, &#x27;AbsTol&#x27;, 1e-11);
+xs = linspace(0, 6.5, 50);
+plot(xs, (1 - xs / K1) / g1, &#x27;Color&#x27;, [0 0.447 0.741], &#x27;LineWidth&#x27;, 3); hold on
+plot(xs, K2 * (1 - g2 * xs), &#x27;Color&#x27;, [0.45 0.70 0.90], &#x27;LineWidth&#x27;, 3);
+[t, z] = ode45(f, linspace(0, 400, 4001), [0.5; 0.5], opt);
+plot(z(:, 1), z(:, 2), &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2);
+plot(0.5, 0.5, &#x27;o&#x27;, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;MarkerFaceColor&#x27;, [0.64 0.08 0.18]);
+P = [0 0; 0 K2; K1 0];
+for i = 1:3
+    x = P(i, 1); y = P(i, 2);
+    J = [r1 * (1 - 2 * x / K1 - g1 * y), -r1 * g1 * x; -r2 * g2 * y, r2 * (1 - 2 * y / K2 - g2 * x)];
+    lam = sort(real(eig(J)));
+    if max(lam) &lt; 0, art = &#x27;stabil&#x27;; fc = &#x27;k&#x27;; else, art = &#x27;instabil&#x27;; fc = &#x27;w&#x27;; end
+    plot(x, y, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, fc, &#x27;MarkerSize&#x27;, 10);
+    fprintf(&#x27;(%g, %g): Eigenwerte %.4f  %.4f -&gt; %s\n&#x27;, x, y, lam, art);
+end
+hold off
+xlim([0 6.5]); ylim([0 15]); xlabel(&#x27;S. kephir x&#x27;); ylabel(&#x27;S. cerevisiae y&#x27;);
+legend(&#x27;dx/dt = 0&#x27;, &#x27;dy/dt = 0&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 4.18: Konkurrenzmodell in der Phasenebene (Buch, Abschnitt 4.4, Gl. 4.4)</span>
+<span class="k"># Nullklinen y = (1 - x/K1)/g1 und y = K2 (1 - g2 x), stationäre Zustände (gefüllt: stabil, offen: instabil) und die Lösung aus Abb. 4.5</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+r1, K1, g1 = 0.0607, 5.8, 0.0757      <span class="k"># S. kephir</span>
+r2, K2, g2 = 0.2183, 13, 0.2423       <span class="k"># S. cerevisiae</span>
+f = lambda t, z: [r1 * (1 - z[0] / K1 - g1 * z[1]) * z[0], r2 * (1 - z[1] / K2 - g2 * z[0]) * z[1]]
+
+xs = np.linspace(0, 6.5, 50)
+plt.plot(xs, (1 - xs / K1) / g1, color=(0, 0.447, 0.741), lw=3, label=&quot;dx/dt = 0&quot;)
+plt.plot(xs, K2 * (1 - g2 * xs), color=(0.45, 0.70, 0.90), lw=3, label=&quot;dy/dt = 0&quot;)
+s = solve_ivp(f, [0, 400], [0.5, 0.5], t_eval=np.linspace(0, 400, 4001), rtol=1e-9, atol=1e-11)
+plt.plot(s.y[0], s.y[1], color=(0.64, 0.08, 0.18), lw=2); plt.plot(0.5, 0.5, &quot;o&quot;, color=(0.64, 0.08, 0.18))
+for (x, y) in [(0, 0), (0, K2), (K1, 0)]:
+    J = np.array([[r1 * (1 - 2 * x / K1 - g1 * y), -r1 * g1 * x], [-r2 * g2 * y, r2 * (1 - 2 * y / K2 - g2 * x)]])
+    lam = np.linalg.eigvals(J); stabil = max(lam.real) &lt; 0
+    plt.plot(x, y, &quot;o&quot;, color=&quot;k&quot;, mfc=&quot;k&quot; if stabil else &quot;w&quot;, ms=10, clip_on=False)
+    print(f&quot;({x:g}, {y:g}): Eigenwerte&quot;, &quot;  &quot;.join(f&quot;{l:.4f}&quot; for l in sorted(lam.real)), &quot;-&gt;&quot;, &quot;stabil&quot; if stabil else &quot;instabil&quot;)
+plt.xlim(0, 6.5); plt.ylim(0, 15); plt.xlabel(&quot;S. kephir x&quot;); plt.ylabel(&quot;S. cerevisiae y&quot;); plt.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 4.18: Konkurrenzmodell in der Phasenebene (Buch, Abschnitt 4.4, Gl. 4.4)</span>
+<span class="k"># Nullklinen y = (1 - x/K1)/g1 und y = K2 (1 - g2 x), stationäre Zustände (gefüllt: stabil, offen: instabil) und die Lösung aus Abb. 4.5</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+library(deSolve)                         <span class="k"># Paket deSolve: install.packages(&quot;deSolve&quot;)</span>
+r1 &lt;- 0.0607; K1 &lt;- 5.8; g1 &lt;- 0.0757      <span class="k"># S. kephir</span>
+r2 &lt;- 0.2183; K2 &lt;- 13; g2 &lt;- 0.2423       <span class="k"># S. cerevisiae</span>
+f &lt;- function(t, z) c(r1 * (1 - z[1] / K1 - g1 * z[2]) * z[1], r2 * (1 - z[2] / K2 - g2 * z[1]) * z[2])
+loese &lt;- function(f, z0, t) ode(z0, t, function(t, z, p) list(f(t, z)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-12)
+
+xs &lt;- seq(0, 6.5, length.out = 50)
+plot(xs, (1 - xs / K1) / g1, type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 3, xlim = c(0, 6.5), ylim = c(0, 15),
+     xlab = &quot;S. kephir x&quot;, ylab = &quot;S. cerevisiae y&quot;)
+lines(xs, K2 * (1 - g2 * xs), col = rgb(0.45, 0.70, 0.90), lwd = 3)
+x &lt;- loese(f, c(0.5, 0.5), seq(0, 400, length.out = 4001))
+lines(x[, 2], x[, 3], col = rgb(0.64, 0.08, 0.18), lwd = 2); points(0.5, 0.5, pch = 16, col = rgb(0.64, 0.08, 0.18))
+for (p in list(c(0, 0), c(0, K2), c(K1, 0))) {
+  xx &lt;- p[1]; yy &lt;- p[2]
+  J &lt;- matrix(c(r1 * (1 - 2 * xx / K1 - g1 * yy), -r1 * g1 * xx, -r2 * g2 * yy, r2 * (1 - 2 * yy / K2 - g2 * xx)), 2, byrow = TRUE)
+  lam &lt;- sort(Re(eigen(J)$values)); stabil &lt;- max(lam) &lt; 0
+  points(xx, yy, pch = 21, bg = if (stabil) &quot;black&quot; else &quot;white&quot;, cex = 1.3, xpd = TRUE)
+  cat(sprintf(&quot;(%g, %g): Eigenwerte %.4f  %.4f -&gt; %s\n&quot;, xx, yy, lam[1], lam[2], if (stabil) &quot;stabil&quot; else &quot;instabil&quot;))
+}
+legend(&quot;topright&quot;, legend = c(&quot;dx/dt = 0&quot;, &quot;dy/dt = 0&quot;), col = c(rgb(0, 0.447, 0.741), rgb(0.45, 0.70, 0.90)), lwd = 3)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>(0, 0): Eigenwerte 0.0607  0.2183 -&gt; instabil
+(0, 13): Eigenwerte -0.2183  0.0010 -&gt; instabil
+(5.8, 0): Eigenwerte -0.0885  -0.0607 -&gt; stabil</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="bioreaktor">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 4.20</p>
+    <h2>Bioreaktor</h2>
+    <p class="formel">db/dt = K(n) b − D b,&ensp; dn/dt = −ν K(n) b − D n + D n<sub>in</sub></p>
+    <p class="lead">Die Biomasse wächst, bis der Nährstoff knapp wird, und pendelt sich auf b* = (n<sub>in</sub> − n*)/ν ein.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/bioreaktor.png" alt="Ergebnis des Programms bioreaktor.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="bioreaktor.jl" data-m="bioreaktor.m" data-py="bioreaktor.py" data-r="bioreaktor.R">bioreaktor.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/bioreaktor.py" data-jl="code/bioreaktor.jl" data-m="code/bioreaktor.m" data-py="code/bioreaktor.py" data-r="code/bioreaktor.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 4.20: Biomasse und Nährstoff im Bioreaktor (Buch, Abschnitt 4.4, Gl. 4.17)</span>
+<span class="k"># db/dt = K(n) b - D b,  dn/dt = -nu K(n) b - D n + D n_in  mit K(n) = kmax n/(k50 + n), D = 0.2, n_in = 10, nu = 2, kmax = 1, k50 = 0.5</span>
+<span class="k"># Start mit b(0) = 0.1 g/l und n(0) = n_in; gestrichelt der stationäre Zustand n* = D k50/(kmax - D), b* = (n_in - n*)/nu</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># Paket OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># löst dz/dt = f(t, z) und gibt die Lösung zu den Zeitpunkten t zurück (Zeile i = Komponente i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+
+D = 0.2; nin = 10; nu = 2; kmax = 1.0; k50 = 0.5    <span class="k"># D in 1/h, Konzentrationen in g/l</span>
+K(n) = kmax * n / (k50 + n)                         <span class="k"># Wachstumsrate nach Monod</span>
+f(t, z) = [K(z[2]) * z[1] - D * z[1], -nu * K(z[2]) * z[1] - D * z[2] + D * nin]
+t = range(0, 20, length = 2001)
+z = loese(f, [0.1, nin], t); b = z[1, :]; n = z[2, :]
+ns = D * k50 / (kmax - D); bs = (nin - ns) / nu
+@printf(&quot;stationär: n* = %.4f g/l,  b* = %.4f g/l\n&quot;, ns, bs)
+@printf(&quot;b(20) = %.4f,  n(20) = %.4f;  größte Biomasse %.4f bei t = %.2f h\n&quot;, b[end], n[end], maximum(b), t[argmax(b)])
+p1 = hline([bs], color = :black, ls = :dash, legend = false, xlabel = &quot;t (Stunden)&quot;, ylabel = &quot;Biomasse b (g/l)&quot;)
+plot!(p1, t, b, color = R2, lw = 2)
+p2 = hline([ns], color = :black, ls = :dash, legend = false, xlabel = &quot;t (Stunden)&quot;, ylabel = &quot;Nährstoff n (g/l)&quot;)
+plot!(p2, t, n, color = R2, lw = 2)
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 4.20: Biomasse und Nährstoff im Bioreaktor (Buch, Abschnitt 4.4, Gl. 4.17)</span>
+<span class="k">% db/dt = K(n) b - D b,  dn/dt = -nu K(n) b - D n + D n_in  mit K(n) = kmax n/(k50 + n), D = 0.2, n_in = 10, nu = 2, kmax = 1, k50 = 0.5</span>
+<span class="k">% Start mit b(0) = 0.1 g/l und n(0) = n_in; gestrichelt der stationäre Zustand n* = D k50/(kmax - D), b* = (n_in - n*)/nu</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+D = 0.2; nin = 10; nu = 2; kmax = 1; k50 = 0.5;      <span class="k">% D in 1/h, Konzentrationen in g/l</span>
+K = @(n) kmax * n ./ (k50 + n);                        <span class="k">% Wachstumsrate nach Monod</span>
+f = @(t, z) [K(z(2)) * z(1) - D * z(1); -nu * K(z(2)) * z(1) - D * z(2) + D * nin];
+opt = odeset(&#x27;RelTol&#x27;, 1e-9, &#x27;AbsTol&#x27;, 1e-11);
+[t, z] = ode45(f, linspace(0, 20, 2001), [0.1; nin], opt);
+b = z(:, 1); n = z(:, 2);
+ns = D * k50 / (kmax - D); bs = (nin - ns) / nu;
+fprintf(&#x27;stationär: n* = %.4f g/l,  b* = %.4f g/l\n&#x27;, ns, bs);
+[bm, im] = max(b);
+fprintf(&#x27;b(20) = %.4f,  n(20) = %.4f;  größte Biomasse %.4f bei t = %.2f h\n&#x27;, b(end), n(end), bm, t(im));
+subplot(1, 2, 1);
+plot([0 20], [bs bs], &#x27;k--&#x27;); hold on; plot(t, b, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2); hold off
+xlabel(&#x27;t (Stunden)&#x27;); ylabel(&#x27;Biomasse b (g/l)&#x27;);
+subplot(1, 2, 2);
+plot([0 20], [ns ns], &#x27;k--&#x27;); hold on; plot(t, n, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2); hold off
+xlabel(&#x27;t (Stunden)&#x27;); ylabel(&#x27;Nährstoff n (g/l)&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 4.20: Biomasse und Nährstoff im Bioreaktor (Buch, Abschnitt 4.4, Gl. 4.17)</span>
+<span class="k"># db/dt = K(n) b - D b,  dn/dt = -nu K(n) b - D n + D n_in  mit K(n) = kmax n/(k50 + n), D = 0.2, n_in = 10, nu = 2, kmax = 1, k50 = 0.5</span>
+<span class="k"># Start mit b(0) = 0.1 g/l und n(0) = n_in; gestrichelt der stationäre Zustand n* = D k50/(kmax - D), b* = (n_in - n*)/nu</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+D, nin, nu, kmax, k50 = 0.2, 10, 2, 1.0, 0.5    <span class="k"># D in 1/h, Konzentrationen in g/l</span>
+K = lambda n: kmax * n / (k50 + n)                  <span class="k"># Wachstumsrate nach Monod</span>
+
+f = lambda t, z: [K(z[1]) * z[0] - D * z[0], -nu * K(z[1]) * z[0] - D * z[1] + D * nin]
+t = np.linspace(0, 20, 2001)
+s = solve_ivp(f, [0, 20], [0.1, nin], t_eval=t, rtol=1e-9, atol=1e-11)
+b, n = s.y
+ns = D * k50 / (kmax - D); bs = (nin - ns) / nu
+print(f&quot;stationär: n* = {ns:.4f} g/l,  b* = {bs:.4f} g/l&quot;)
+print(f&quot;b(20) = {b[-1]:.4f},  n(20) = {n[-1]:.4f};  größte Biomasse {b.max():.4f} bei t = {t[b.argmax()]:.2f} h&quot;)
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+axs[0].axhline(bs, color=&quot;k&quot;, ls=&quot;--&quot;, lw=1); axs[0].plot(t, b, color=(0.64, 0.08, 0.18), lw=2)
+axs[0].set_xlabel(&quot;t (Stunden)&quot;); axs[0].set_ylabel(&quot;Biomasse b (g/l)&quot;)
+axs[1].axhline(ns, color=&quot;k&quot;, ls=&quot;--&quot;, lw=1); axs[1].plot(t, n, color=(0.64, 0.08, 0.18), lw=2)
+axs[1].set_xlabel(&quot;t (Stunden)&quot;); axs[1].set_ylabel(&quot;Nährstoff n (g/l)&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 4.20: Biomasse und Nährstoff im Bioreaktor (Buch, Abschnitt 4.4, Gl. 4.17)</span>
+<span class="k"># db/dt = K(n) b - D b,  dn/dt = -nu K(n) b - D n + D n_in  mit K(n) = kmax n/(k50 + n), D = 0.2, n_in = 10, nu = 2, kmax = 1, k50 = 0.5</span>
+<span class="k"># Start mit b(0) = 0.1 g/l und n(0) = n_in; gestrichelt der stationäre Zustand n* = D k50/(kmax - D), b* = (n_in - n*)/nu</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+library(deSolve)                         <span class="k"># Paket deSolve: install.packages(&quot;deSolve&quot;)</span>
+D &lt;- 0.2; nin &lt;- 10; nu &lt;- 2; kmax &lt;- 1; k50 &lt;- 0.5    <span class="k"># D in 1/h, Konzentrationen in g/l</span>
+K &lt;- function(n) kmax * n / (k50 + n)                  <span class="k"># Wachstumsrate nach Monod</span>
+f &lt;- function(t, z) c(K(z[2]) * z[1] - D * z[1], -nu * K(z[2]) * z[1] - D * z[2] + D * nin)
+loese &lt;- function(f, z0, t) ode(z0, t, function(t, z, p) list(f(t, z)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-12)
+
+x &lt;- loese(f, c(0.1, nin), seq(0, 20, length.out = 2001))
+b &lt;- x[, 2]; n &lt;- x[, 3]
+ns &lt;- D * k50 / (kmax - D); bs &lt;- (nin - ns) / nu
+cat(sprintf(&quot;stationär: n* = %.4f g/l,  b* = %.4f g/l\n&quot;, ns, bs))
+cat(sprintf(&quot;b(20) = %.4f,  n(20) = %.4f;  größte Biomasse %.4f bei t = %.2f h\n&quot;, b[length(b)], n[length(n)], max(b), x[which.max(b), 1]))
+par(mfrow = c(1, 2))
+plot(x[, 1], b, type = &quot;l&quot;, col = rgb(0.64, 0.08, 0.18), lwd = 2, xlab = &quot;t (Stunden)&quot;, ylab = &quot;Biomasse b (g/l)&quot;); abline(h = bs, lty = 2)
+plot(x[, 1], n, type = &quot;l&quot;, col = rgb(0.64, 0.08, 0.18), lwd = 2, xlab = &quot;t (Stunden)&quot;, ylab = &quot;Nährstoff n (g/l)&quot;); abline(h = ns, lty = 2)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>stationär: n* = 0.1250 g/l,  b* = 4.9375 g/l
+b(20) = 4.9394,  n(20) = 0.1249;  größte Biomasse 4.9682 bei t = 5.91 h</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="bioreaktor-bif">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 4.21</p>
+    <h2>Auswaschen</h2>
+    <p class="formel">D<sub>c</sub> = K(n<sub>in</sub>) ≈ 0.95 pro Stunde</p>
+    <p class="lead">Wird zu schnell verdünnt, wächst die Biomasse nicht mehr nach und wird ausgewaschen. Die Ausgabe berechnet auch den Ertrag D b*.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/bioreaktor_bif.png" alt="Ergebnis des Programms bioreaktor_bif.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="bioreaktor_bif.jl" data-m="bioreaktor_bif.m" data-py="bioreaktor_bif.py" data-r="bioreaktor_bif.R">bioreaktor_bif.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/bioreaktor_bif.py" data-jl="code/bioreaktor_bif.jl" data-m="code/bioreaktor_bif.m" data-py="code/bioreaktor_bif.py" data-r="code/bioreaktor_bif.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 4.21: Auswaschen im Bioreaktor (Buch, Abschnitt 4.4, Gl. 4.17)</span>
+<span class="k"># stationäre Biomasse b* = (n_in - D k50/(kmax - D))/nu in Abhängigkeit von D; oberhalb von D_c = K(n_in) wird die Biomasse ausgewaschen</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+
+D = 0.2; nin = 10; nu = 2; kmax = 1.0; k50 = 0.5    <span class="k"># D in 1/h, Konzentrationen in g/l</span>
+K(n) = kmax * n / (k50 + n)                         <span class="k"># Wachstumsrate nach Monod</span>
+Dc = K(nin)
+bst(D) = (nin - D * k50 / (kmax - D)) / nu
+gruen = RGB(0, 0.39, 0)
+Dg = range(0.001, 1.2, length = 600)
+D1 = Dg[Dg .&lt;= Dc]; D2 = Dg[(Dg .&gt;= Dc) .&amp; (Dg .&lt;= 0.985)]
+p = plot(D1, bst.(D1), color = gruen, lw = 3, label = &quot;stabil&quot;, xlims = (0, 1.2), ylims = (-1.5, 5.5), legend = :bottomleft,
+         xlabel = &quot;Verdünnungsrate D (pro Stunde)&quot;, ylabel = &quot;b* (g/l)&quot;)
+plot!(p, D2, bst.(D2), ls = :dash, color = gruen, lw = 2, label = &quot;&quot;)
+plot!(p, [0, Dc], [0, 0], ls = :dash, color = gruen, lw = 2, label = &quot;instabil&quot;)
+plot!(p, [Dc, 1.2], [0, 0], color = gruen, lw = 3, label = &quot;&quot;)
+vline!(p, [Dc], color = :gray, ls = :dot, label = &quot;&quot;); scatter!(p, [D], [bst(D)], color = :black, label = &quot;&quot;)
+@printf(&quot;D_c = K(n_in) = %.4f pro Stunde\n&quot;, Dc)
+for DD in (0.2, 0.5, 0.9)
+    @printf(&quot;D = %g: b* = %.4f g/l,  Ertrag D b* = %.4f g/(l h)\n&quot;, DD, bst(DD), DD * bst(DD))
+end
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 4.21: Auswaschen im Bioreaktor (Buch, Abschnitt 4.4, Gl. 4.17)</span>
+<span class="k">% stationäre Biomasse b* = (n_in - D k50/(kmax - D))/nu in Abhängigkeit von D; oberhalb von D_c = K(n_in) wird die Biomasse ausgewaschen</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+D = 0.2; nin = 10; nu = 2; kmax = 1; k50 = 0.5;      <span class="k">% D in 1/h, Konzentrationen in g/l</span>
+K = @(n) kmax * n ./ (k50 + n);                        <span class="k">% Wachstumsrate nach Monod</span>
+Dc = K(nin);
+bst = @(D) (nin - D * k50 ./ (kmax - D)) / nu;
+gruen = [0 0.39 0];
+Dg = linspace(0.001, 1.2, 600);
+D1 = Dg(Dg &lt;= Dc); D2 = Dg(Dg &gt;= Dc &amp; Dg &lt;= 0.985);
+plot(D1, bst(D1), &#x27;Color&#x27;, gruen, &#x27;LineWidth&#x27;, 3); hold on
+plot(D2, bst(D2), &#x27;--&#x27;, &#x27;Color&#x27;, gruen, &#x27;LineWidth&#x27;, 2);
+plot([0 Dc], [0 0], &#x27;--&#x27;, &#x27;Color&#x27;, gruen, &#x27;LineWidth&#x27;, 2);
+plot([Dc 1.2], [0 0], &#x27;Color&#x27;, gruen, &#x27;LineWidth&#x27;, 3);
+plot([Dc Dc], [-1.5 5.5], &#x27;:&#x27;, &#x27;Color&#x27;, [0.5 0.5 0.5]); plot(D, bst(D), &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+fprintf(&#x27;D_c = K(n_in) = %.4f pro Stunde\n&#x27;, Dc);
+for DD = [0.2 0.5 0.9]
+    fprintf(&#x27;D = %g: b* = %.4f g/l,  Ertrag D b* = %.4f g/(l h)\n&#x27;, DD, bst(DD), DD * bst(DD));
+end
+xlim([0 1.2]); ylim([-1.5 5.5]); xlabel(&#x27;Verdünnungsrate D (pro Stunde)&#x27;); ylabel(&#x27;b* (g/l)&#x27;);
+legend(&#x27;stabil&#x27;, &#x27;&#x27;, &#x27;instabil&#x27;, &#x27;Location&#x27;, &#x27;southwest&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 4.21: Auswaschen im Bioreaktor (Buch, Abschnitt 4.4, Gl. 4.17)</span>
+<span class="k"># stationäre Biomasse b* = (n_in - D k50/(kmax - D))/nu in Abhängigkeit von D; oberhalb von D_c = K(n_in) wird die Biomasse ausgewaschen</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+D, nin, nu, kmax, k50 = 0.2, 10, 2, 1.0, 0.5    <span class="k"># D in 1/h, Konzentrationen in g/l</span>
+K = lambda n: kmax * n / (k50 + n)                  <span class="k"># Wachstumsrate nach Monod</span>
+
+Dc = K(nin)
+bst = lambda D: (nin - D * k50 / (kmax - D)) / nu
+gruen = (0, 0.39, 0)
+Dg = np.linspace(0.001, 1.2, 600)
+D1 = Dg[Dg &lt;= Dc]; D2 = Dg[(Dg &gt;= Dc) &amp; (Dg &lt;= 0.985)]
+plt.plot(D1, bst(D1), color=gruen, lw=3, label=&quot;stabil&quot;)
+plt.plot(D2, bst(D2), &quot;--&quot;, color=gruen, lw=2)
+plt.plot([0, Dc], [0, 0], &quot;--&quot;, color=gruen, lw=2, label=&quot;instabil&quot;)
+plt.plot([Dc, 1.2], [0, 0], color=gruen, lw=3)
+plt.axvline(Dc, color=&quot;0.5&quot;, ls=&quot;:&quot;); plt.plot(D, bst(D), &quot;ko&quot;)
+print(f&quot;D_c = K(n_in) = {Dc:.4f} pro Stunde&quot;)
+for DD in [0.2, 0.5, 0.9]:
+    print(f&quot;D = {DD}: b* = {bst(DD):.4f} g/l,  Ertrag D b* = {DD * bst(DD):.4f} g/(l h)&quot;)
+plt.xlim(0, 1.2); plt.ylim(-1.5, 5.5); plt.xlabel(&quot;Verdünnungsrate D (pro Stunde)&quot;); plt.ylabel(&quot;b* (g/l)&quot;); plt.legend(loc=&quot;lower left&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 4.21: Auswaschen im Bioreaktor (Buch, Abschnitt 4.4, Gl. 4.17)</span>
+<span class="k"># stationäre Biomasse b* = (n_in - D k50/(kmax - D))/nu in Abhängigkeit von D; oberhalb von D_c = K(n_in) wird die Biomasse ausgewaschen</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+D &lt;- 0.2; nin &lt;- 10; nu &lt;- 2; kmax &lt;- 1; k50 &lt;- 0.5    <span class="k"># D in 1/h, Konzentrationen in g/l</span>
+K &lt;- function(n) kmax * n / (k50 + n)                  <span class="k"># Wachstumsrate nach Monod</span>
+
+Dc &lt;- K(nin)
+bst &lt;- function(D) (nin - D * k50 / (kmax - D)) / nu
+gruen &lt;- rgb(0, 0.39, 0)
+Dg &lt;- seq(0.001, 1.2, length.out = 600)
+D1 &lt;- Dg[Dg &lt;= Dc]; D2 &lt;- Dg[Dg &gt;= Dc &amp; Dg &lt;= 0.985]
+plot(D1, bst(D1), type = &quot;l&quot;, col = gruen, lwd = 3, xlim = c(0, 1.2), ylim = c(-1.5, 5.5), xlab = &quot;Verdünnungsrate D (pro Stunde)&quot;, ylab = &quot;b* (g/l)&quot;)
+lines(D2, bst(D2), lty = 2, col = gruen, lwd = 2)
+lines(c(0, Dc), c(0, 0), lty = 2, col = gruen, lwd = 2); lines(c(Dc, 1.2), c(0, 0), col = gruen, lwd = 3)
+abline(v = Dc, lty = 3, col = &quot;grey50&quot;); points(D, bst(D), pch = 16)
+cat(sprintf(&quot;D_c = K(n_in) = %.4f pro Stunde\n&quot;, Dc))
+for (DD in c(0.2, 0.5, 0.9)) cat(sprintf(&quot;D = %g: b* = %.4f g/l,  Ertrag D b* = %.4f g/(l h)\n&quot;, DD, bst(DD), DD * bst(DD)))
+legend(&quot;bottomleft&quot;, legend = c(&quot;stabil&quot;, &quot;instabil&quot;), col = gruen, lty = 1:2, lwd = c(3, 2))</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>D_c = K(n_in) = 0.9524 pro Stunde
+D = 0.2: b* = 4.9375 g/l,  Ertrag D b* = 0.9875 g/(l h)
+D = 0.5: b* = 4.7500 g/l,  Ertrag D b* = 2.3750 g/(l h)
+D = 0.9: b* = 2.7500 g/l,  Ertrag D b* = 2.4750 g/(l h)</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="genregulation">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 4.22</p>
+    <h2>Genregulation mit Aktivator und Repressor</h2>
+    <p class="formel">dA/dt = k A<sup>2</sup>/(A<sup>2</sup> + 10 (1 + 5R)) − A + 0.4</p>
+    <p class="lead">Für k = 9.5 klingt die Schwingung ab, für k = 10.5 entsteht ein Grenzzyklus mit einer Periode von etwa 38 Minuten.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/genregulation.png" alt="Ergebnis des Programms genregulation.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="genregulation.jl" data-m="genregulation.m" data-py="genregulation.py" data-r="genregulation.R">genregulation.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/genregulation.py" data-jl="code/genregulation.jl" data-m="code/genregulation.m" data-py="code/genregulation.py" data-r="code/genregulation.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 4.22: Genregulation mit Aktivator und Repressor (Buch, Abschnitt 4.4, Gl. 4.18)</span>
+<span class="k"># dA/dt = k A^2/(A^2 + 10 (1 + 5R)) - A + 0.4,  dR/dt = 0.3 A^2/(A^2 + 10 (1 + 5R)) - 0.2 R  mit A(0) = 3, R(0) = 0.2</span>
+<span class="k"># links k = 9.5: gedämpfte Schwingung; rechts k = 10.5: Grenzzyklus</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># Paket OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># löst dz/dt = f(t, z) und gibt die Lösung zu den Zeitpunkten t zurück (Zeile i = Komponente i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+
+t = range(0, 400, length = 4001)
+bilder = []
+for k in (9.5, 10.5)
+    f(t, z) = [k * z[1]^2 / (z[1]^2 + 10 * (1 + 5z[2])) - z[1] + 0.4,
+               0.3 * z[1]^2 / (z[1]^2 + 10 * (1 + 5z[2])) - 0.2 * z[2]]
+    A = loese(f, [3, 0.2], t)[1, :]
+    push!(bilder, plot(t, A, color = RGB(0.64, 0.08, 0.18), lw = 2, legend = false, title = &quot;k = $k&quot;, xlabel = &quot;t (min)&quot;,
+                       ylabel = k == 9.5 ? &quot;Aktivator A&quot; : &quot;&quot;))
+    spaet = t .&gt; 200                     <span class="k"># Maxima nach dem Einschwingen</span>
+    i = [j for j in 2:length(A) - 1 if A[j] &gt; A[j - 1] &amp;&amp; A[j] &gt; A[j + 1] &amp;&amp; spaet[j]]
+    schwankung = maximum(A[spaet]) - minimum(A[spaet])
+    if schwankung &gt; 0.01
+        @printf(&quot;k = %g: Schwankung von A für t &gt; 200: %.3f, Periode %.1f min\n&quot;, k, schwankung, sum(diff(t[i])) / (length(i) - 1))
+    else
+        @printf(&quot;k = %g: Schwankung von A für t &gt; 200: %.3f (stationärer Zustand)\n&quot;, k, schwankung)
+    end
+end
+display(plot(bilder..., layout = (1, 2), link = :y, size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 4.22: Genregulation mit Aktivator und Repressor (Buch, Abschnitt 4.4, Gl. 4.18)</span>
+<span class="k">% dA/dt = k A^2/(A^2 + 10 (1 + 5R)) - A + 0.4,  dR/dt = 0.3 A^2/(A^2 + 10 (1 + 5R)) - 0.2 R  mit A(0) = 3, R(0) = 0.2</span>
+<span class="k">% links k = 9.5: gedämpfte Schwingung; rechts k = 10.5: Grenzzyklus</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+ks = [9.5 10.5];
+opt = odeset(&#x27;RelTol&#x27;, 1e-9, &#x27;AbsTol&#x27;, 1e-11);
+t = linspace(0, 400, 4001)&#x27;;
+for j = 1:2
+    k = ks(j);
+    f = @(t, z) [k * z(1)^2 / (z(1)^2 + 10 * (1 + 5 * z(2))) - z(1) + 0.4;
+                 0.3 * z(1)^2 / (z(1)^2 + 10 * (1 + 5 * z(2))) - 0.2 * z(2)];
+    [t, z] = ode45(f, t, [3; 0.2], opt);
+    A = z(:, 1);
+    subplot(1, 2, j);
+    plot(t, A, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2); title(sprintf(&#x27;k = %g&#x27;, k)); xlabel(&#x27;t (min)&#x27;);
+    if j == 1, ylabel(&#x27;Aktivator A&#x27;); end
+    spaet = t &gt; 200;                                     <span class="k">% Maxima nach dem Einschwingen</span>
+    i = find(A(2:end-1) &gt; A(1:end-2) &amp; A(2:end-1) &gt; A(3:end) &amp; spaet(2:end-1)) + 1;
+    schwankung = max(A(spaet)) - min(A(spaet));
+    if schwankung &gt; 0.01
+        fprintf(&#x27;k = %g: Schwankung von A für t &gt; 200: %.3f, Periode %.1f min\n&#x27;, k, schwankung, mean(diff(t(i))));
+    else
+        fprintf(&#x27;k = %g: Schwankung von A für t &gt; 200: %.3f (stationärer Zustand)\n&#x27;, k, schwankung);
+    end
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 4.22: Genregulation mit Aktivator und Repressor (Buch, Abschnitt 4.4, Gl. 4.18)</span>
+<span class="k"># dA/dt = k A^2/(A^2 + 10 (1 + 5R)) - A + 0.4,  dR/dt = 0.3 A^2/(A^2 + 10 (1 + 5R)) - 0.2 R  mit A(0) = 3, R(0) = 0.2</span>
+<span class="k"># links k = 9.5: gedämpfte Schwingung; rechts k = 10.5: Grenzzyklus</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5), sharey=True)
+t = np.linspace(0, 400, 4001)
+for ax, k in zip(axs, [9.5, 10.5]):
+    f = lambda t, z: [k * z[0]**2 / (z[0]**2 + 10 * (1 + 5 * z[1])) - z[0] + 0.4,
+                      0.3 * z[0]**2 / (z[0]**2 + 10 * (1 + 5 * z[1])) - 0.2 * z[1]]
+    A = solve_ivp(f, [0, 400], [3, 0.2], t_eval=t, rtol=1e-9, atol=1e-11).y[0]
+    ax.plot(t, A, color=(0.64, 0.08, 0.18), lw=2); ax.set_title(f&quot;k = {k}&quot;); ax.set_xlabel(&quot;t (min)&quot;)
+    spaet = t &gt; 200                                       <span class="k"># Maxima nach dem Einschwingen</span>
+    i = np.where((A[1:-1] &gt; A[:-2]) &amp; (A[1:-1] &gt; A[2:]) &amp; spaet[1:-1])[0] + 1
+    schwankung = A[spaet].max() - A[spaet].min()
+    if schwankung &gt; 0.01:
+        print(f&quot;k = {k}: Schwankung von A für t &gt; 200: {schwankung:.3f}, Periode {np.mean(np.diff(t[i])):.1f} min&quot;)
+    else:
+        print(f&quot;k = {k}: Schwankung von A für t &gt; 200: {schwankung:.3f} (stationärer Zustand)&quot;)
+axs[0].set_ylabel(&quot;Aktivator A&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 4.22: Genregulation mit Aktivator und Repressor (Buch, Abschnitt 4.4, Gl. 4.18)</span>
+<span class="k"># dA/dt = k A^2/(A^2 + 10 (1 + 5R)) - A + 0.4,  dR/dt = 0.3 A^2/(A^2 + 10 (1 + 5R)) - 0.2 R  mit A(0) = 3, R(0) = 0.2</span>
+<span class="k"># links k = 9.5: gedämpfte Schwingung; rechts k = 10.5: Grenzzyklus</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+library(deSolve)                         <span class="k"># Paket deSolve: install.packages(&quot;deSolve&quot;)</span>
+loese &lt;- function(f, z0, t) ode(z0, t, function(t, z, p) list(f(t, z)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-12)
+
+t &lt;- seq(0, 400, length.out = 4001)
+par(mfrow = c(1, 2))
+for (k in c(9.5, 10.5)) {
+  f &lt;- function(t, z) c(k * z[1]^2 / (z[1]^2 + 10 * (1 + 5 * z[2])) - z[1] + 0.4,
+                        0.3 * z[1]^2 / (z[1]^2 + 10 * (1 + 5 * z[2])) - 0.2 * z[2])
+  A &lt;- loese(f, c(3, 0.2), t)[, 2]
+  plot(t, A, type = &quot;l&quot;, col = rgb(0.64, 0.08, 0.18), lwd = 2, ylim = c(0, 4.8), xlab = &quot;t (min)&quot;, ylab = &quot;Aktivator A&quot;, main = sprintf(&quot;k = %g&quot;, k))
+  spaet &lt;- t &gt; 200                       <span class="k"># Maxima nach dem Einschwingen</span>
+  i &lt;- which(A[2:4000] &gt; A[1:3999] &amp; A[2:4000] &gt; A[3:4001] &amp; spaet[2:4000]) + 1
+  schwankung &lt;- max(A[spaet]) - min(A[spaet])
+  if (schwankung &gt; 0.01) {
+    cat(sprintf(&quot;k = %g: Schwankung von A für t &gt; 200: %.3f, Periode %.1f min\n&quot;, k, schwankung, mean(diff(t[i]))))
+  } else {
+    cat(sprintf(&quot;k = %g: Schwankung von A für t &gt; 200: %.3f (stationärer Zustand)\n&quot;, k, schwankung))
+  }
+}</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>k = 9.5: Schwankung von A für t &gt; 200: 0.000 (stationärer Zustand)
+k = 10.5: Schwankung von A für t &gt; 200: 3.407, Periode 38.2 min</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="noble">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 4.23</p>
+    <h2>Noble-Modell</h2>
+    <p class="formel">C<sub>m</sub> dV/dt = −(g<sub>Na</sub> m<sup>3</sup> h + 0.14)(V − V<sub>Na</sub>) − … − g<sub>L</sub> (V − V<sub>L</sub>)</p>
+    <p class="lead">Die Schrittmacherzelle feuert von selbst, etwa alle 0.56 s. Die erregbare Zelle antwortet nur auf Reize. Für dieses steife System verwenden die Programme <code>LSODA</code> bzw. <code>ode15s</code>.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/noble.png" alt="Ergebnis des Programms noble.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="noble.jl" data-m="noble.m" data-py="noble.py" data-r="noble.R">noble.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/noble.py" data-jl="code/noble.jl" data-m="code/noble.m" data-py="code/noble.py" data-r="code/noble.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 4.23: Membranpotential im Noble-Modell (Buch, Abschnitt 4.4, Gl. 4.19)</span>
+<span class="k"># Cm dV/dt = -(400 m^3 h + 0.14)(V - 40) - (1.2 e^((-V-90)/50) + 0.015 e^((V+90)/60) + 1.2 n^4)(V + 100) - gL (V - VL) + I(t), Cm = 12</span>
+<span class="k"># links Schrittmacherzelle (gL = 0.075, VL = -60), rechts erregbare Zelle (gL = 0.3, VL = -85) mit Reizen alle 700 ms; Zeit in ms</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># Paket OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># löst dz/dt = f(t, z) und gibt die Lösung zu den Zeitpunkten t zurück (Zeile i = Komponente i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+
+function noble(gL, VL, reiz)
+    function f(t, z)
+        V, m, h, n = z
+        am = 0.1 * (-V - 48) / (exp((-V - 48) / 15) - 1); bm = 0.12 * (V + 8) / (exp((V + 8) / 5) - 1)
+        ah = 0.17 * exp((-V - 90) / 20); bh = 1 / (1 + exp((-V - 42) / 10))
+        an = 0.0001 * (-V - 50) / (exp((-V - 50) / 10) - 1); bn = 0.002 * exp((-V - 90) / 80)
+        iNa = (400 * m^3 * h + 0.14) * (V - 40)
+        iK = (1.2 * exp((-V - 90) / 50) + 0.015 * exp((V + 90) / 60) + 1.2 * n^4) * (V + 100)
+        I = reiz &amp;&amp; t - 700 * floor(t / 700) &lt; 2 ? 300.0 : 0.0     <span class="k"># Reiz: 2 ms lang alle 700 ms</span>
+        return [(-(iNa + iK + gL * (V - VL)) + I) / 12, am * (1 - m) - bm * m, ah * (1 - h) - bh * h, an * (1 - n) - bn * n]
+    end
+    return f
+end
+bilder = []
+for (name, gL, VL, reiz, T0) in [(&quot;Schrittmacher&quot;, 0.075, -60, false, 2000), (&quot;gereizt&quot;, 0.3, -85, true, 0)]
+    T = T0 + 2100
+    t = 0:0.1:T
+    z = loese(noble(gL, VL, reiz), [-80, 0.02, 0.8, 0.05], t, alg = Rodas5P(), dtmax = 0.25, reltol = 1e-8, abstol = 1e-10)
+    i = t .&gt;= T0; tt = (t[i] .- T0) ./ 1000; V = z[1, i]
+    hoch = tt[2:end][(V[1:end - 1] .&lt; 0) .&amp; (V[2:end] .&gt;= 0)]   <span class="k"># Zeitpunkte, an denen V von unten 0 mV erreicht</span>
+    @printf(&quot;%s: V zwischen %.0f und %.0f mV, %d Aktionspotentiale in 2.1 s&quot;, name, minimum(V), maximum(V), length(hoch))
+    length(hoch) &gt; 1 &amp;&amp; @printf(&quot;, Periode %.2f s&quot;, sum(diff(hoch)) / (length(hoch) - 1))
+    println()
+    push!(bilder, plot(tt, V, color = RGB(0.64, 0.08, 0.18), lw = 2, legend = false, title = name, xlabel = &quot;t (s)&quot;,
+                       ylabel = name == &quot;gereizt&quot; ? &quot;&quot; : &quot;Membranpotential V (mV)&quot;))
+end
+display(plot(bilder..., layout = (1, 2), link = :y, size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 4.23: Membranpotential im Noble-Modell (Buch, Abschnitt 4.4, Gl. 4.19)</span>
+<span class="k">% Cm dV/dt = -(400 m^3 h + 0.14)(V - 40) - (1.2 e^((-V-90)/50) + 0.015 e^((V+90)/60) + 1.2 n^4)(V + 100) - gL (V - VL) + I(t), Cm = 12</span>
+<span class="k">% links Schrittmacherzelle (gL = 0.075, VL = -60), rechts erregbare Zelle (gL = 0.3, VL = -85) mit Reizen alle 700 ms; Zeit in ms</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+namen = {&#x27;Schrittmacher&#x27;, &#x27;gereizt&#x27;};
+gLs = [0.075 0.3]; VLs = [-60 -85]; reiz = [false true]; T0s = [2000 0];
+opt = odeset(&#x27;RelTol&#x27;, 1e-8, &#x27;AbsTol&#x27;, 1e-10, &#x27;MaxStep&#x27;, 0.25);
+for j = 1:2
+    gL = gLs(j); VL = VLs(j); mitReiz = reiz(j);
+    <span class="k">% z = (V, m, h, n); Raten alpha und beta der Kanäle</span>
+    am = @(V) 0.1 * (-V - 48) / (exp((-V - 48) / 15) - 1);   bm = @(V) 0.12 * (V + 8) / (exp((V + 8) / 5) - 1);
+    ah = @(V) 0.17 * exp((-V - 90) / 20);                    bh = @(V) 1 / (1 + exp((-V - 42) / 10));
+    an = @(V) 0.0001 * (-V - 50) / (exp((-V - 50) / 10) - 1); bn = @(V) 0.002 * exp((-V - 90) / 80);
+    iNa = @(z) (400 * z(2)^3 * z(3) + 0.14) * (z(1) - 40);
+    iK = @(z) (1.2 * exp((-z(1) - 90) / 50) + 0.015 * exp((z(1) + 90) / 60) + 1.2 * z(4)^4) * (z(1) + 100);
+    I = @(t) 300 * (mitReiz &amp;&amp; mod(t, 700) &lt; 2);              <span class="k">% Reiz: 2 ms lang alle 700 ms</span>
+    f = @(t, z) [(-(iNa(z) + iK(z) + gL * (z(1) - VL)) + I(t)) / 12;
+                 am(z(1)) * (1 - z(2)) - bm(z(1)) * z(2);
+                 ah(z(1)) * (1 - z(3)) - bh(z(1)) * z(3);
+                 an(z(1)) * (1 - z(4)) - bn(z(1)) * z(4)];
+    T = T0s(j) + 2100;
+    [t, z] = ode15s(f, 0:0.1:T, [-80; 0.02; 0.8; 0.05], opt);
+    i = t &gt;= T0s(j); tt = (t(i) - T0s(j)) / 1000; V = z(i, 1);
+    hoch = tt(find(V(1:end-1) &lt; 0 &amp; V(2:end) &gt;= 0) + 1);      <span class="k">% Zeitpunkte, an denen V von unten 0 mV erreicht</span>
+    txt = sprintf(&#x27;%s: V zwischen %.0f und %.0f mV, %d Aktionspotentiale in 2.1 s&#x27;, namen{j}, min(V), max(V), numel(hoch));
+    if numel(hoch) &gt; 1, txt = [txt sprintf(&#x27;, Periode %.2f s&#x27;, mean(diff(hoch)))]; end
+    fprintf(&#x27;%s\n&#x27;, txt);
+    subplot(1, 2, j);
+    plot(tt, V, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2); title(namen{j}); xlabel(&#x27;t (s)&#x27;);
+    if j == 1, ylabel(&#x27;Membranpotential V (mV)&#x27;); end
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 4.23: Membranpotential im Noble-Modell (Buch, Abschnitt 4.4, Gl. 4.19)</span>
+<span class="k"># Cm dV/dt = -(400 m^3 h + 0.14)(V - 40) - (1.2 e^((-V-90)/50) + 0.015 e^((V+90)/60) + 1.2 n^4)(V + 100) - gL (V - VL) + I(t), Cm = 12</span>
+<span class="k"># links Schrittmacherzelle (gL = 0.075, VL = -60), rechts erregbare Zelle (gL = 0.3, VL = -85) mit Reizen alle 700 ms; Zeit in ms</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+def noble(gL, VL, reiz):
+    def f(t, z):
+        V, m, h, n = z
+        am = 0.1 * (-V - 48) / (np.exp((-V - 48) / 15) - 1); bm = 0.12 * (V + 8) / (np.exp((V + 8) / 5) - 1)
+        ah = 0.17 * np.exp((-V - 90) / 20); bh = 1 / (1 + np.exp((-V - 42) / 10))
+        an = 0.0001 * (-V - 50) / (np.exp((-V - 50) / 10) - 1); bn = 0.002 * np.exp((-V - 90) / 80)
+        iNa = (400 * m**3 * h + 0.14) * (V - 40)
+        iK = (1.2 * np.exp((-V - 90) / 50) + 0.015 * np.exp((V + 90) / 60) + 1.2 * n**4) * (V + 100)
+        I = 300.0 if reiz and (t % 700) &lt; 2 else 0.0      <span class="k"># Reiz: 2 ms lang alle 700 ms</span>
+        return [(-(iNa + iK + gL * (V - VL)) + I) / 12, am * (1 - m) - bm * m, ah * (1 - h) - bh * h, an * (1 - n) - bn * n]
+    return f
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5), sharey=True)
+for ax, name, gL, VL, reiz, T0 in [(axs[0], &quot;Schrittmacher&quot;, 0.075, -60, False, 2000), (axs[1], &quot;gereizt&quot;, 0.3, -85, True, 0)]:
+    T = T0 + 2100
+    t = np.arange(0, T + 0.05, 0.1)
+    s = solve_ivp(noble(gL, VL, reiz), [0, T], [-80, 0.02, 0.8, 0.05], t_eval=t, method=&quot;LSODA&quot;, max_step=0.25, rtol=1e-8, atol=1e-10)
+    i = t &gt;= T0; tt = (t[i] - T0) / 1000; V = s.y[0][i]
+    hoch = tt[1:][(V[:-1] &lt; 0) &amp; (V[1:] &gt;= 0)]           <span class="k"># Zeitpunkte, an denen V von unten 0 mV erreicht</span>
+    print(f&quot;{name}: V zwischen {V.min():.0f} und {V.max():.0f} mV, {len(hoch)} Aktionspotentiale in 2.1 s&quot;
+          + (f&quot;, Periode {np.mean(np.diff(hoch)):.2f} s&quot; if len(hoch) &gt; 1 else &quot;&quot;))
+    ax.plot(tt, V, color=(0.64, 0.08, 0.18), lw=2); ax.set_title(name); ax.set_xlabel(&quot;t (s)&quot;)
+axs[0].set_ylabel(&quot;Membranpotential V (mV)&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 4.23: Membranpotential im Noble-Modell (Buch, Abschnitt 4.4, Gl. 4.19)</span>
+<span class="k"># Cm dV/dt = -(400 m^3 h + 0.14)(V - 40) - (1.2 e^((-V-90)/50) + 0.015 e^((V+90)/60) + 1.2 n^4)(V + 100) - gL (V - VL) + I(t), Cm = 12</span>
+<span class="k"># links Schrittmacherzelle (gL = 0.075, VL = -60), rechts erregbare Zelle (gL = 0.3, VL = -85) mit Reizen alle 700 ms; Zeit in ms</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+library(deSolve)                         <span class="k"># Paket deSolve: install.packages(&quot;deSolve&quot;)</span>
+
+noble &lt;- function(gL, VL, reiz) function(t, z, p) {
+  V &lt;- z[1]; m &lt;- z[2]; h &lt;- z[3]; n &lt;- z[4]
+  am &lt;- 0.1 * (-V - 48) / (exp((-V - 48) / 15) - 1); bm &lt;- 0.12 * (V + 8) / (exp((V + 8) / 5) - 1)
+  ah &lt;- 0.17 * exp((-V - 90) / 20); bh &lt;- 1 / (1 + exp((-V - 42) / 10))
+  an &lt;- 0.0001 * (-V - 50) / (exp((-V - 50) / 10) - 1); bn &lt;- 0.002 * exp((-V - 90) / 80)
+  iNa &lt;- (400 * m^3 * h + 0.14) * (V - 40)
+  iK &lt;- (1.2 * exp((-V - 90) / 50) + 0.015 * exp((V + 90) / 60) + 1.2 * n^4) * (V + 100)
+  I &lt;- if (reiz &amp;&amp; t %% 700 &lt; 2) 300 else 0   <span class="k"># Reiz: 2 ms lang alle 700 ms</span>
+  list(c((-(iNa + iK + gL * (V - VL)) + I) / 12, am * (1 - m) - bm * m, ah * (1 - h) - bh * h, an * (1 - n) - bn * n))
+}
+par(mfrow = c(1, 2))
+for (fall in list(list(&quot;Schrittmacher&quot;, 0.075, -60, FALSE, 2000), list(&quot;gereizt&quot;, 0.3, -85, TRUE, 0))) {
+  T0 &lt;- fall[[5]]; T &lt;- T0 + 2100
+  x &lt;- ode(c(-80, 0.02, 0.8, 0.05), seq(0, T, by = 0.1), noble(fall[[2]], fall[[3]], fall[[4]]), NULL,
+           method = &quot;lsoda&quot;, hmax = 0.25, rtol = 1e-8, atol = 1e-10)
+  i &lt;- x[, 1] &gt;= T0; tt &lt;- (x[i, 1] - T0) / 1000; V &lt;- x[i, 2]
+  hoch &lt;- tt[which(V[-length(V)] &lt; 0 &amp; V[-1] &gt;= 0) + 1]   <span class="k"># Zeitpunkte, an denen V von unten 0 mV erreicht</span>
+  txt &lt;- sprintf(&quot;%s: V zwischen %.0f und %.0f mV, %d Aktionspotentiale in 2.1 s&quot;, fall[[1]], min(V), max(V), length(hoch))
+  if (length(hoch) &gt; 1) txt &lt;- paste0(txt, sprintf(&quot;, Periode %.2f s&quot;, mean(diff(hoch))))
+  cat(txt, &quot;\n&quot;)
+  plot(tt, V, type = &quot;l&quot;, col = rgb(0.64, 0.08, 0.18), lwd = 2, ylim = c(-95, 50), xlab = &quot;t (s)&quot;, ylab = &quot;Membranpotential V (mV)&quot;, main = fall[[1]])
+}</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>Schrittmacher: V zwischen -82 und 23 mV, 3 Aktionspotentiale in 2.1 s, Periode 0.56 s
+gereizt: V zwischen -82 und 39 mV, 3 Aktionspotentiale in 2.1 s, Periode 0.70 s</code></pre></details>
+    </div>
+  </div>
+</section>
+  <section class="apps" id="app-phasenebene">
+  <div class="fig-head"><p class="eyebrow">Im Browser ausprobieren · ohne Installation</p><h2>Räuber und Beute in der Phasenebene</h2><p class="lead">Modell (4.2) mit r = 1, c = 0,5, d = 0,2, e = 1. Ändern Sie die Kapazität K und den Startpunkt: Die Lösung (rot) folgt dem Richtungsfeld (grün) und kreuzt die Nullklinen waagrecht bzw. senkrecht.</p></div>
+  <div class="app" data-app="phasenebene">
+    <canvas width="720" height="560" aria-label="Räuber und Beute in der Phasenebene"></canvas>
+    <div class="regler"><label><span>Kapazität K</span> <output data-o="K"></output><input type="range" data-r="K" min="3" max="30" step="0.5" value="10" aria-label="Kapazität K"></label><label><span>Beute x(0)</span> <output data-o="x0"></output><input type="range" data-r="x0" min="0.5" max="15" step="0.5" value="8" aria-label="Beute x(0)"></label><label><span>Räuber y(0)</span> <output data-o="y0"></output><input type="range" data-r="y0" min="0.05" max="3.5" step="0.05" value="0.5" aria-label="Räuber y(0)"></label><p class="zustand"></p><pre class="werte"></pre></div>
+  </div>
+</section>
+  <section class="matlab-apps"><h3>MATLAB-Apps aus der Vorlesung</h3><p>Herunterladen, in einen Ordner legen und in MATLAB den Namen ohne Endung eingeben, z. B. <code>bioreaktor_app</code>. Die Apps nutzen die grafische Oberfläche von MATLAB und laufen nicht in GNU Octave.</p><ul><li><a href="apps/bioreaktor_app.m" download>bioreaktor_app.m</a><span>Bioreaktor (Chemostat) mit verschiedenen Wachstumsraten</span></li><li><a href="apps/genregulation_app.m" download>genregulation_app.m</a><span>Hopf-Bifurkation im genetischen Oszillator</span></li><li><a href="apps/chemostat_hopf_app.m" download>chemostat_hopf_app.m</a><span>Algen und Rädertierchen im Chemostat</span></li><li><a href="apps/fieber_app.m" download>fieber_app.m</a><span>Fieber als verstellter Sollwert der Temperaturregelung</span></li><li><a href="apps/circadian_app.m" download>circadian_app.m</a><span>Innere Uhr und Jetlag (Kronauer-Modell)</span></li></ul></section>
+  <nav class="weiter" aria-label="Weiterblättern"><a href="abschnitt-4-3.html"><small>Zurück</small>4.3 Michaelis-Menten-Kinetik</a><a href="abschnitt-4-5.html"><small>Weiter</small>4.5 Vertiefung: Erregbarkeit in der Phasenebene</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Begleitmaterial zum Buch „Dynamische Systeme in den Lebenswissenschaften“ von Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programme unter <a href="../LICENSE.txt">MIT-Lizenz</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

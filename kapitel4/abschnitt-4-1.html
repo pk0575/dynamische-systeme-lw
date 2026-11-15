@@ -1,0 +1,747 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>4.1 Systeme von Differentialgleichungen – Dynamische Systeme in den Lebenswissenschaften</title>
+<meta name="description" content="Programme in Julia, MATLAB, Python und R zu Abschnitt 4.1 des Buchs Dynamische Systeme in den Lebenswissenschaften">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamische Systeme in den Lebenswissenschaften</a>
+  <nav aria-label="Kapitel"><a href="../index.html">Start</a> <a href="../kapitel1/index.html">Kapitel 1</a> <a href="../kapitel2/index.html">Kapitel 2</a> <a href="../kapitel3/index.html">Kapitel 3</a> <a href="../kapitel4/index.html" aria-current="page">Kapitel 4</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Abschnitte"><h2><a href="index.html">Kapitel 4</a></h2><ol><li><a href="abschnitt-4-1.html" aria-current="page"><span class="nr">4.1</span><span>Systeme von Differentialgleichungen</span></a></li><li><a href="abschnitt-4-2.html"><span class="nr">4.2</span><span>Lineare Systeme</span></a></li><li><a href="abschnitt-4-3.html"><span class="nr">4.3</span><span>Michaelis-Menten-Kinetik</span></a></li><li><a href="abschnitt-4-4.html"><span class="nr">4.4</span><span>Stationäre Zustände und Stabilität</span></a></li><li><a href="abschnitt-4-5.html"><span class="nr">4.5</span><span>Vertiefung: Erregbarkeit in der Phasenebene</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Kapitel 4 · Kontinuierliche dynamische Systeme mit mehreren Variablen</p>
+      <h1><span class="num">4.1</span>Systeme von Differentialgleichungen</h1>
+      <p>Mehrere Größen, die sich gegenseitig beeinflussen, führen auf ein System von Differentialgleichungen. Seine Lösung betrachtet man als Zeitverläufe oder als Bahn in der Phasenebene, in der das Richtungsfeld die Bewegung vorgibt. Die Programme lösen die Systeme mit <code>solve_ivp</code> (Python) bzw. <code>ode45</code> (MATLAB) oder mit dem Euler-Verfahren.</p>
+      <p>Zu jeder Abbildung des Abschnitts finden Sie das Programm, das sie erzeugt. Ändern Sie Parameter und Startwerte und beobachten Sie, was passiert. Abbildungs- und Gleichungsnummern beziehen sich auf das Buch.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programmiersprache</legend>
+  <div class="seg" role="radiogroup" aria-label="Programmiersprache">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Gilt für alle Seiten. MATLAB-Programme laufen auch im kostenlosen GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>Auf dieser Seite</b><ul><li><a href="#rb-logistisch"><span class="abb">Abb. 4.2</span>Räuber-Beute-Modell</a></li><li><a href="#rb-richtungsfeld"><span class="abb">Abb. 4.3</span>Richtungsfeld des Räuber-Beute-Modells</a></li><li><a href="#lotka-volterra"><span class="abb">Abb. 4.4</span>Klassisches Lotka-Volterra-Modell</a></li><li><a href="#hefe-konkurrenz"><span class="abb">Abb. 4.5</span>Konkurrenz zweier Hefearten</a></li><li><a href="#oszillator"><span class="abb">Abb. 4.6</span>Gedämpfter Oszillator</a></li><li><a href="#lv-euler"><span class="abb">Abb. 4.7</span>Euler-Verfahren für ein System</a></li></ul></div>
+  
+<section class="fig" id="rb-logistisch">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 4.2</p>
+    <h2>Räuber-Beute-Modell</h2>
+    <p class="formel">dx/dt = r (1 − x/K) x − c x y,&ensp; dy/dt = d x y − e y</p>
+    <p class="lead">Beute und Räuber schwingen gegeneinander versetzt und nähern sich dabei dem stationären Zustand (5, 1). In der Phasenebene wird daraus eine Spirale.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/rb_logistisch.png" alt="Ergebnis des Programms rb_logistisch.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="rb_logistisch.jl" data-m="rb_logistisch.m" data-py="rb_logistisch.py" data-r="rb_logistisch.R">rb_logistisch.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/rb_logistisch.py" data-jl="code/rb_logistisch.jl" data-m="code/rb_logistisch.m" data-py="code/rb_logistisch.py" data-r="code/rb_logistisch.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 4.2: kontinuierliches Räuber-Beute-Modell (Buch, Abschnitt 4.1, Gl. 4.2)</span>
+<span class="k"># dx/dt = r (1 - x/K) x - c x y,  dy/dt = d x y - e y  mit r = 1, K = 10, c = 0.5, d = 0.2, e = 1, x(0) = 8, y(0) = 0.5</span>
+<span class="k"># links Zeitverläufe, rechts dieselbe Lösung in der Phasenebene</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># Paket OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># löst dz/dt = f(t, z) und gibt die Lösung zu den Zeitpunkten t zurück (Zeile i = Komponente i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+idx(t, tt) = findfirst(t .&gt;= tt - 1e-9)    <span class="k"># erster Index mit t &gt;= tt</span>
+r = 1; K = 10; c = 0.5; d = 0.2; e = 1
+f(t, z) = [r * (1 - z[1] / K) * z[1] - c * z[1] * z[2], d * z[1] * z[2] - e * z[2]]
+
+t = range(0, 40, length = 2001)
+z = loese(f, [8, 0.5], t); x = z[1, :]; y = z[2, :]
+for tt in (10, 20, 40)
+    i = idx(t, tt)
+    @printf(&quot;t = %2d: x = %.3f,  y = %.3f\n&quot;, tt, x[i], y[i])
+end
+@printf(&quot;stationärer Zustand (e/d, r/c (1 - e/(d K))) = (%g, %g)\n&quot;, e / d, r / c * (1 - e / (d * K)))
+p1 = plot(t, x, color = R1, lw = 2, label = &quot;Beute x(t)&quot;, xlabel = &quot;t&quot;)
+plot!(p1, t, y, color = R3, lw = 2, label = &quot;Räuber y(t)&quot;)
+p2 = plot(x, y, color = R2, lw = 2, legend = false, xlabel = &quot;Beute x&quot;, ylabel = &quot;Räuber y&quot;)
+scatter!(p2, [8, 5], [0.5, 1], color = :black)
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 4.2: kontinuierliches Räuber-Beute-Modell (Buch, Abschnitt 4.1, Gl. 4.2)</span>
+<span class="k">% dx/dt = r (1 - x/K) x - c x y,  dy/dt = d x y - e y  mit r = 1, K = 10, c = 0.5, d = 0.2, e = 1, x(0) = 8, y(0) = 0.5</span>
+<span class="k">% links Zeitverläufe, rechts dieselbe Lösung in der Phasenebene</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+r = 1; K = 10; c = 0.5; d = 0.2; e = 1;
+f = @(t, z) [r * (1 - z(1) / K) * z(1) - c * z(1) * z(2); d * z(1) * z(2) - e * z(2)];
+opt = odeset(&#x27;RelTol&#x27;, 1e-9, &#x27;AbsTol&#x27;, 1e-11);
+t = linspace(0, 40, 2001);
+[t, z] = ode45(f, t, [8; 0.5], opt);                     <span class="k">% Zeile i von z: Lösung zur Zeit t(i)</span>
+x = z(:, 1); y = z(:, 2);
+for tt = [10 20 40]
+    i = find(t &gt;= tt - 1e-9, 1);
+    fprintf(&#x27;t = %2d: x = %.3f,  y = %.3f\n&#x27;, tt, x(i), y(i));
+end
+fprintf(&#x27;stationärer Zustand (e/d, r/c (1 - e/(d K))) = (%g, %g)\n&#x27;, e / d, r / c * (1 - e / (d * K)));
+subplot(1, 2, 1);
+plot(t, x, &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2); hold on
+plot(t, y, &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;LineWidth&#x27;, 2); hold off
+xlabel(&#x27;t&#x27;); legend(&#x27;Beute x(t)&#x27;, &#x27;Räuber y(t)&#x27;);
+subplot(1, 2, 2);
+plot(x, y, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2); hold on
+plot([x(1) 5], [y(1) 1], &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+xlabel(&#x27;Beute x&#x27;); ylabel(&#x27;Räuber y&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 4.2: kontinuierliches Räuber-Beute-Modell (Buch, Abschnitt 4.1, Gl. 4.2)</span>
+<span class="k"># dx/dt = r (1 - x/K) x - c x y,  dy/dt = d x y - e y  mit r = 1, K = 10, c = 0.5, d = 0.2, e = 1, x(0) = 8, y(0) = 0.5</span>
+<span class="k"># links Zeitverläufe, rechts dieselbe Lösung in der Phasenebene</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+r, K, c, d, e = 1, 10, 0.5, 0.2, 1
+f = lambda t, z: [r * (1 - z[0] / K) * z[0] - c * z[0] * z[1], d * z[0] * z[1] - e * z[1]]
+
+t = np.linspace(0, 40, 2001)
+s = solve_ivp(f, [0, 40], [8, 0.5], t_eval=t, rtol=1e-9, atol=1e-11)
+x, y = s.y
+for tt in [10, 20, 40]:
+    i = np.searchsorted(t, tt)
+    print(f&quot;t = {tt:2d}: x = {x[i]:.3f},  y = {y[i]:.3f}&quot;)
+print(f&quot;stationärer Zustand (e/d, r/c (1 - e/(d K))) = ({e / d:g}, {r / c * (1 - e / (d * K)):g})&quot;)
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+axs[0].plot(t, x, color=(0.43, 0.04, 0.12), lw=2, label=&quot;Beute x(t)&quot;)
+axs[0].plot(t, y, color=(0.89, 0.44, 0.49), lw=2, label=&quot;Räuber y(t)&quot;)
+axs[0].set_xlabel(&quot;t&quot;); axs[0].legend()
+axs[1].plot(x, y, color=(0.64, 0.08, 0.18), lw=2); axs[1].plot(x[0], y[0], &quot;ko&quot;); axs[1].plot(5, 1, &quot;ko&quot;)
+axs[1].set_xlabel(&quot;Beute x&quot;); axs[1].set_ylabel(&quot;Räuber y&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 4.2: kontinuierliches Räuber-Beute-Modell (Buch, Abschnitt 4.1, Gl. 4.2)</span>
+<span class="k"># dx/dt = r (1 - x/K) x - c x y,  dy/dt = d x y - e y  mit r = 1, K = 10, c = 0.5, d = 0.2, e = 1, x(0) = 8, y(0) = 0.5</span>
+<span class="k"># links Zeitverläufe, rechts dieselbe Lösung in der Phasenebene</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+library(deSolve)                         <span class="k"># Paket deSolve: install.packages(&quot;deSolve&quot;)</span>
+r &lt;- 1; K &lt;- 10; c &lt;- 0.5; d &lt;- 0.2; e &lt;- 1
+f &lt;- function(t, z) c(r * (1 - z[1] / K) * z[1] - c * z[1] * z[2], d * z[1] * z[2] - e * z[2])
+loese &lt;- function(f, z0, t) ode(z0, t, function(t, z, p) list(f(t, z)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-12)
+
+x &lt;- loese(f, c(8, 0.5), seq(0, 40, length.out = 2001))   <span class="k"># Spalten: Zeit, x, y</span>
+for (tt in c(10, 20, 40)) {
+  i &lt;- which(x[, 1] &gt;= tt - 1e-9)[1]
+  cat(sprintf(&quot;t = %2d: x = %.3f,  y = %.3f\n&quot;, tt, x[i, 2], x[i, 3]))
+}
+cat(sprintf(&quot;stationärer Zustand (e/d, r/c (1 - e/(d K))) = (%g, %g)\n&quot;, e / d, r / c * (1 - e / (d * K))))
+par(mfrow = c(1, 2))
+plot(x[, 1], x[, 2], type = &quot;l&quot;, col = rgb(0.43, 0.04, 0.12), lwd = 2, ylim = c(0, 10), xlab = &quot;t&quot;, ylab = &quot;&quot;)
+lines(x[, 1], x[, 3], col = rgb(0.89, 0.44, 0.49), lwd = 2)
+legend(&quot;topright&quot;, legend = c(&quot;Beute x(t)&quot;, &quot;Räuber y(t)&quot;), col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)), lwd = 2)
+plot(x[, 2], x[, 3], type = &quot;l&quot;, col = rgb(0.64, 0.08, 0.18), lwd = 2, xlab = &quot;Beute x&quot;, ylab = &quot;Räuber y&quot;)
+points(c(8, 5), c(0.5, 1), pch = 16)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>t = 10: x = 5.199,  y = 0.976
+t = 20: x = 5.016,  y = 1.000
+t = 40: x = 5.000,  y = 1.000
+stationärer Zustand (e/d, r/c (1 - e/(d K))) = (5, 1)</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="rb-richtungsfeld">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 4.3</p>
+    <h2>Richtungsfeld des Räuber-Beute-Modells</h2>
+    <p class="formel">Pfeil im Punkt (x, y) in Richtung (dx/dt, dy/dt)</p>
+    <p class="lead">Die Pfeile haben alle dieselbe Länge und zeigen nur die Richtung. In den stationären Zuständen (0, 0), (10, 0) und (5, 1) verschwinden beide Ableitungen.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/rb_richtungsfeld.png" alt="Ergebnis des Programms rb_richtungsfeld.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="rb_richtungsfeld.jl" data-m="rb_richtungsfeld.m" data-py="rb_richtungsfeld.py" data-r="rb_richtungsfeld.R">rb_richtungsfeld.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/rb_richtungsfeld.py" data-jl="code/rb_richtungsfeld.jl" data-m="code/rb_richtungsfeld.m" data-py="code/rb_richtungsfeld.py" data-r="code/rb_richtungsfeld.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 4.3: Richtungsfeld des Räuber-Beute-Modells (Buch, Abschnitt 4.1, Gl. 4.2)</span>
+<span class="k"># Pfeile in Richtung (dx/dt, dy/dt), alle gleich lang; dazu die Lösung aus Abb. 4.2 und die stationären Zustände</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># Paket OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># löst dz/dt = f(t, z) und gibt die Lösung zu den Zeitpunkten t zurück (Zeile i = Komponente i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+r = 1; K = 10; c = 0.5; d = 0.2; e = 1
+f(t, z) = [r * (1 - z[1] / K) * z[1] - c * z[1] * z[2], d * z[1] * z[2] - e * z[2]]
+function feldpfeile(f)                   <span class="k"># Richtungsfeld: gleich lange Pfeile im Bild</span>
+    X = Float64[]; Y = Float64[]; U = Float64[]; W = Float64[]
+    for x in range(0.4, 10.6, length = 18), y in range(0.15, 2.85, length = 10)
+        u, w = f(0, [x, y]); u /= 11; w /= 3; L = hypot(u, w)
+        push!(X, x); push!(Y, y); push!(U, u / L * 0.3); push!(W, w / L * 0.3 * 3 / 11)
+    end
+    return X, Y, U, W
+end
+
+X, Y, U, W = feldpfeile(f)
+p = quiver(X, Y, quiver = (U, W), color = GR, legend = false, xlims = (0, 11), ylims = (0, 3), xlabel = &quot;Beute x&quot;, ylabel = &quot;Räuber y&quot;)
+z = loese(f, [8, 0.5], range(0, 40, length = 2001))
+plot!(p, z[1, :], z[2, :], color = R2, lw = 2)
+scatter!(p, [0, 10], [0, 0], color = :white, msc = :black, ms = 7)    <span class="k"># instabil</span>
+scatter!(p, [5], [1], color = :black, ms = 7)                          <span class="k"># stabil</span>
+for (xs, ys) in [(0, 0), (10, 0), (5, 1)]
+    u, w = f(0, [xs, ys])
+    @printf(&quot;(%2d, %d): dx/dt = %g, dy/dt = %g\n&quot;, xs, ys, u, w)
+end
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 4.3: Richtungsfeld des Räuber-Beute-Modells (Buch, Abschnitt 4.1, Gl. 4.2)</span>
+<span class="k">% Pfeile in Richtung (dx/dt, dy/dt), alle gleich lang; dazu die Lösung aus Abb. 4.2 und die stationären Zustände</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+r = 1; K = 10; c = 0.5; d = 0.2; e = 1;
+f = @(t, z) [r * (1 - z(1) / K) * z(1) - c * z(1) * z(2); d * z(1) * z(2) - e * z(2)];
+opt = odeset(&#x27;RelTol&#x27;, 1e-9, &#x27;AbsTol&#x27;, 1e-11);
+[X, Y] = meshgrid(linspace(0.4, 10.6, 18), linspace(0.15, 2.85, 10));
+U = (r * (1 - X / K) .* X - c * X .* Y) / 11;            <span class="k">% auf die Achsenlängen bezogen, damit alle Pfeile gleich lang sind</span>
+V = (d * X .* Y - e * Y) / 3;
+L = sqrt(U.^2 + V.^2);
+quiver(X, Y, U ./ L * 0.3, V ./ L * 0.3 * 3 / 11, 0, &#x27;Color&#x27;, [0.2 0.6 0.25]); hold on
+[t, z] = ode45(f, linspace(0, 40, 2001), [8; 0.5], opt);
+plot(z(:, 1), z(:, 2), &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2);
+plot([0 10], [0 0], &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;w&#x27;, &#x27;MarkerSize&#x27;, 9);      <span class="k">% instabil</span>
+plot(5, 1, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;, &#x27;MarkerSize&#x27;, 9); hold off      <span class="k">% stabil</span>
+P = [0 0; 10 0; 5 1];
+for i = 1:3
+    w = f(0, P(i, :)&#x27;);
+    fprintf(&#x27;(%2d, %d): dx/dt = %g, dy/dt = %g\n&#x27;, P(i, 1), P(i, 2), w(1), w(2));
+end
+xlim([0 11]); ylim([0 3]); xlabel(&#x27;Beute x&#x27;); ylabel(&#x27;Räuber y&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 4.3: Richtungsfeld des Räuber-Beute-Modells (Buch, Abschnitt 4.1, Gl. 4.2)</span>
+<span class="k"># Pfeile in Richtung (dx/dt, dy/dt), alle gleich lang; dazu die Lösung aus Abb. 4.2 und die stationären Zustände</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+r, K, c, d, e = 1, 10, 0.5, 0.2, 1
+f = lambda t, z: [r * (1 - z[0] / K) * z[0] - c * z[0] * z[1], d * z[0] * z[1] - e * z[1]]
+
+X, Y = np.meshgrid(np.linspace(0.4, 10.6, 18), np.linspace(0.15, 2.85, 10))
+U, V = f(0, [X, Y])
+U, V = U / 11, V / 3                                     <span class="k"># auf die Achsenlängen bezogen, damit alle Pfeile im Bild gleich lang sind</span>
+L = np.hypot(U, V)
+plt.quiver(X, Y, U / L * 0.3, V / L * 0.3 * 3 / 11, color=(0.2, 0.6, 0.25), angles=&quot;xy&quot;, scale_units=&quot;xy&quot;, scale=1, width=0.003)
+s = solve_ivp(f, [0, 40], [8, 0.5], t_eval=np.linspace(0, 40, 2001), rtol=1e-9, atol=1e-11)
+plt.plot(s.y[0], s.y[1], color=(0.64, 0.08, 0.18), lw=2)
+plt.plot([0, 10], [0, 0], &quot;o&quot;, mfc=&quot;w&quot;, mec=&quot;k&quot;, ms=9, clip_on=False)      <span class="k"># instabil</span>
+plt.plot(5, 1, &quot;ko&quot;, ms=9)                                                  <span class="k"># stabil</span>
+for xs, ys in [(0, 0), (10, 0), (5, 1)]:
+    print(f&quot;({xs:2d}, {ys}): dx/dt = {f(0, [xs, ys])[0]:g}, dy/dt = {f(0, [xs, ys])[1]:g}&quot;)
+plt.xlim(0, 11); plt.ylim(0, 3); plt.xlabel(&quot;Beute x&quot;); plt.ylabel(&quot;Räuber y&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 4.3: Richtungsfeld des Räuber-Beute-Modells (Buch, Abschnitt 4.1, Gl. 4.2)</span>
+<span class="k"># Pfeile in Richtung (dx/dt, dy/dt), alle gleich lang; dazu die Lösung aus Abb. 4.2 und die stationären Zustände</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+library(deSolve)                         <span class="k"># Paket deSolve: install.packages(&quot;deSolve&quot;)</span>
+r &lt;- 1; K &lt;- 10; c &lt;- 0.5; d &lt;- 0.2; e &lt;- 1
+f &lt;- function(t, z) c(r * (1 - z[1] / K) * z[1] - c * z[1] * z[2], d * z[1] * z[2] - e * z[2])
+loese &lt;- function(f, z0, t) ode(z0, t, function(t, z, p) list(f(t, z)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-12)
+feld &lt;- function(f, xl, yl, nx, ny, laenge = 0.3) {   <span class="k"># Richtungsfeld: gleich lange Pfeile (bezogen auf die Achsenlängen)</span>
+  g &lt;- expand.grid(x = seq(xl[1], xl[2], length.out = nx), y = seq(yl[1], yl[2], length.out = ny))
+  w &lt;- t(apply(g, 1, function(p) f(0, p))); sx &lt;- diff(xl); sy &lt;- diff(yl)
+  u &lt;- w[, 1] / sx; v &lt;- w[, 2] / sy; L &lt;- sqrt(u^2 + v^2) + 1e-12
+  arrows(g$x, g$y, g$x + u / L * laenge * sx / 11, g$y + v / L * laenge * sy / 11, length = 0.04, col = rgb(0.2, 0.6, 0.25))
+}
+
+plot(NULL, xlim = c(0, 11), ylim = c(0, 3), xlab = &quot;Beute x&quot;, ylab = &quot;Räuber y&quot;)
+feld(f, c(0.4, 10.6), c(0.15, 2.85), 18, 10)
+x &lt;- loese(f, c(8, 0.5), seq(0, 40, length.out = 2001))
+lines(x[, 2], x[, 3], col = rgb(0.64, 0.08, 0.18), lwd = 2)
+points(c(0, 10), c(0, 0), pch = 21, bg = &quot;white&quot;, cex = 1.3, xpd = TRUE)   <span class="k"># instabil</span>
+points(5, 1, pch = 16, cex = 1.3)                                          <span class="k"># stabil</span>
+for (p in list(c(0, 0), c(10, 0), c(5, 1))) { w &lt;- f(0, p); cat(sprintf(&quot;(%2d, %g): dx/dt = %g, dy/dt = %g\n&quot;, p[1], p[2], w[1], w[2])) }</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>( 0, 0): dx/dt = 0, dy/dt = 0
+(10, 0): dx/dt = 0, dy/dt = 0
+( 5, 1): dx/dt = 0, dy/dt = 0</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="lotka-volterra">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 4.4</p>
+    <h2>Klassisches Lotka-Volterra-Modell</h2>
+    <p class="formel">dx/dt = r x − c x y,&ensp; dy/dt = d x y − e y</p>
+    <p class="lead">Ohne Kapazitätsgrenze sind die Bahnen geschlossen: Die Größe H(x, y) = d x − e ln x + c y − r ln y bleibt längs jeder Lösung konstant, wie die Ausgabe bestätigt.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/lotka_volterra.png" alt="Ergebnis des Programms lotka_volterra.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="lotka_volterra.jl" data-m="lotka_volterra.m" data-py="lotka_volterra.py" data-r="lotka_volterra.R">lotka_volterra.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/lotka_volterra.py" data-jl="code/lotka_volterra.jl" data-m="code/lotka_volterra.m" data-py="code/lotka_volterra.py" data-r="code/lotka_volterra.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 4.4: klassisches Lotka-Volterra-Modell (Buch, Abschnitt 4.1, Gl. 4.3)</span>
+<span class="k"># dx/dt = r x - c x y,  dy/dt = d x y - e y  mit r = 1, c = 0.5, d = 0.2, e = 1</span>
+<span class="k"># links periodische Zeitverläufe für x(0) = 3, y(0) = 2, rechts geschlossene Bahnen für verschiedene Anfangswerte</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># Paket OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># löst dz/dt = f(t, z) und gibt die Lösung zu den Zeitpunkten t zurück (Zeile i = Komponente i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+
+r = 1; c = 0.5; d = 0.2; e = 1
+f(t, z) = [r * z[1] - c * z[1] * z[2], d * z[1] * z[2] - e * z[2]]
+H(x, y) = d * x - e * log(x) + c * y - r * log(y)    <span class="k"># bleibt längs jeder Lösung konstant</span>
+t = range(0, 25, length = 2501)
+z = loese(f, [3, 2], t)
+p1 = plot(t, z[1, :], color = R1, lw = 2, label = &quot;Beute&quot;, xlabel = &quot;t&quot;)
+plot!(p1, t, z[2, :], color = R3, lw = 2, label = &quot;Räuber&quot;)
+p2 = plot(legend = false, xlabel = &quot;Beute x&quot;, ylabel = &quot;Räuber y&quot;)
+for (i, x0) in enumerate([4, 3, 1.5])
+    z = loese(f, [x0, 2], range(0, 12, length = 1201))
+    plot!(p2, z[1, :], z[2, :], color = [R1, R2, R3][i], lw = 2)
+    @printf(&quot;x(0) = %g: H am Anfang %.6f, am Ende %.6f\n&quot;, x0, H(x0, 2), H(z[1, end], z[2, end]))
+end
+scatter!(p2, [e / d], [r / c], color = :black)
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 4.4: klassisches Lotka-Volterra-Modell (Buch, Abschnitt 4.1, Gl. 4.3)</span>
+<span class="k">% dx/dt = r x - c x y,  dy/dt = d x y - e y  mit r = 1, c = 0.5, d = 0.2, e = 1</span>
+<span class="k">% links periodische Zeitverläufe für x(0) = 3, y(0) = 2, rechts geschlossene Bahnen für verschiedene Anfangswerte</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+r = 1; c = 0.5; d = 0.2; e = 1;
+f = @(t, z) [r * z(1) - c * z(1) * z(2); d * z(1) * z(2) - e * z(2)];
+H = @(x, y) d * x - e * log(x) + c * y - r * log(y);     <span class="k">% bleibt längs jeder Lösung konstant</span>
+opt = odeset(&#x27;RelTol&#x27;, 1e-9, &#x27;AbsTol&#x27;, 1e-11);
+subplot(1, 2, 1);
+[t, z] = ode45(f, linspace(0, 25, 2501), [3; 2], opt);
+plot(t, z(:, 1), &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2); hold on
+plot(t, z(:, 2), &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;LineWidth&#x27;, 2); hold off
+xlabel(&#x27;t&#x27;); legend(&#x27;Beute&#x27;, &#x27;Räuber&#x27;);
+subplot(1, 2, 2); hold on
+rot = [0.43 0.04 0.12; 0.64 0.08 0.18; 0.89 0.44 0.49]; x0s = [4 3 1.5];
+for i = 1:3
+    [t, z] = ode45(f, linspace(0, 12, 1201), [x0s(i); 2], opt);
+    plot(z(:, 1), z(:, 2), &#x27;Color&#x27;, rot(i, :), &#x27;LineWidth&#x27;, 2);
+    fprintf(&#x27;x(0) = %g: H am Anfang %.6f, am Ende %.6f\n&#x27;, x0s(i), H(x0s(i), 2), H(z(end, 1), z(end, 2)));
+end
+plot(e / d, r / c, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+xlabel(&#x27;Beute x&#x27;); ylabel(&#x27;Räuber y&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 4.4: klassisches Lotka-Volterra-Modell (Buch, Abschnitt 4.1, Gl. 4.3)</span>
+<span class="k"># dx/dt = r x - c x y,  dy/dt = d x y - e y  mit r = 1, c = 0.5, d = 0.2, e = 1</span>
+<span class="k"># links periodische Zeitverläufe für x(0) = 3, y(0) = 2, rechts geschlossene Bahnen für verschiedene Anfangswerte</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+r, c, d, e = 1, 0.5, 0.2, 1
+f = lambda t, z: [r * z[0] - c * z[0] * z[1], d * z[0] * z[1] - e * z[1]]
+H = lambda x, y: d * x - e * np.log(x) + c * y - r * np.log(y)    <span class="k"># bleibt längs jeder Lösung konstant</span>
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+t = np.linspace(0, 25, 2501)
+s = solve_ivp(f, [0, 25], [3, 2], t_eval=t, rtol=1e-9, atol=1e-11)
+axs[0].plot(t, s.y[0], color=(0.43, 0.04, 0.12), lw=2, label=&quot;Beute&quot;)
+axs[0].plot(t, s.y[1], color=(0.89, 0.44, 0.49), lw=2, label=&quot;Räuber&quot;)
+axs[0].set_xlabel(&quot;t&quot;); axs[0].legend()
+rot = [(0.43, 0.04, 0.12), (0.64, 0.08, 0.18), (0.89, 0.44, 0.49)]
+for i, x0 in enumerate([4, 3, 1.5]):
+    s = solve_ivp(f, [0, 12], [x0, 2], t_eval=np.linspace(0, 12, 1201), rtol=1e-9, atol=1e-11)
+    axs[1].plot(s.y[0], s.y[1], color=rot[i], lw=2)
+    print(f&quot;x(0) = {x0}: H am Anfang {H(x0, 2):.6f}, am Ende {H(s.y[0][-1], s.y[1][-1]):.6f}&quot;)
+axs[1].plot(e / d, r / c, &quot;ko&quot;); axs[1].set_xlabel(&quot;Beute x&quot;); axs[1].set_ylabel(&quot;Räuber y&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 4.4: klassisches Lotka-Volterra-Modell (Buch, Abschnitt 4.1, Gl. 4.3)</span>
+<span class="k"># dx/dt = r x - c x y,  dy/dt = d x y - e y  mit r = 1, c = 0.5, d = 0.2, e = 1</span>
+<span class="k"># links periodische Zeitverläufe für x(0) = 3, y(0) = 2, rechts geschlossene Bahnen für verschiedene Anfangswerte</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+library(deSolve)                         <span class="k"># Paket deSolve: install.packages(&quot;deSolve&quot;)</span>
+r &lt;- 1; c &lt;- 0.5; d &lt;- 0.2; e &lt;- 1
+f &lt;- function(t, z) c(r * z[1] - c * z[1] * z[2], d * z[1] * z[2] - e * z[2])
+H &lt;- function(x, y) d * x - e * log(x) + c * y - r * log(y)   <span class="k"># bleibt längs jeder Lösung konstant</span>
+loese &lt;- function(f, z0, t) ode(z0, t, function(t, z, p) list(f(t, z)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-12)
+
+par(mfrow = c(1, 2))
+x &lt;- loese(f, c(3, 2), seq(0, 25, length.out = 2501))
+plot(x[, 1], x[, 2], type = &quot;l&quot;, col = rgb(0.43, 0.04, 0.12), lwd = 2, ylim = c(0, 10), xlab = &quot;t&quot;, ylab = &quot;&quot;)
+lines(x[, 1], x[, 3], col = rgb(0.89, 0.44, 0.49), lwd = 2)
+legend(&quot;topright&quot;, legend = c(&quot;Beute&quot;, &quot;Räuber&quot;), col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)), lwd = 2)
+rot &lt;- c(rgb(0.43, 0.04, 0.12), rgb(0.64, 0.08, 0.18), rgb(0.89, 0.44, 0.49))
+plot(NULL, xlim = c(0, 16), ylim = c(0, 7), xlab = &quot;Beute x&quot;, ylab = &quot;Räuber y&quot;)
+x0s &lt;- c(4, 3, 1.5)
+for (i in 1:3) {
+  x &lt;- loese(f, c(x0s[i], 2), seq(0, 12, length.out = 1201))
+  lines(x[, 2], x[, 3], col = rot[i], lwd = 2)
+  n &lt;- nrow(x)
+  cat(sprintf(&quot;x(0) = %g: H am Anfang %.6f, am Ende %.6f\n&quot;, x0s[i], H(x0s[i], 2), H(x[n, 2], x[n, 3])))
+}
+points(e / d, r / c, pch = 16)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>x(0) = 4: H am Anfang -0.279442, am Ende -0.279442
+x(0) = 3: H am Anfang -0.191759, am Ende -0.191759
+x(0) = 1.5: H am Anfang 0.201388, am Ende 0.201388</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="hefe-konkurrenz">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 4.5</p>
+    <h2>Konkurrenz zweier Hefearten</h2>
+    <p class="formel">dx/dt = r<sub>1</sub> (1 − x/K<sub>1</sub> − γ<sub>1</sub> y) x,&ensp; dy/dt = r<sub>2</sub> (1 − y/K<sub>2</sub> − γ<sub>2</sub> x) y</p>
+    <p class="lead">S. cerevisiae wächst zunächst schneller, wird aber langfristig von S. kephir verdrängt.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/hefe_konkurrenz.png" alt="Ergebnis des Programms hefe_konkurrenz.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="hefe_konkurrenz.jl" data-m="hefe_konkurrenz.m" data-py="hefe_konkurrenz.py" data-r="hefe_konkurrenz.R">hefe_konkurrenz.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/hefe_konkurrenz.py" data-jl="code/hefe_konkurrenz.jl" data-m="code/hefe_konkurrenz.m" data-py="code/hefe_konkurrenz.py" data-r="code/hefe_konkurrenz.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 4.5: Konkurrenz zweier Hefearten (Buch, Abschnitt 4.1, Gl. 4.4)</span>
+<span class="k"># dx/dt = r1 (1 - x/K1 - g1 y) x,  dy/dt = r2 (1 - y/K2 - g2 x) y  mit den Parametern nach Gause, x(0) = y(0) = 0.5</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># Paket OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># löst dz/dt = f(t, z) und gibt die Lösung zu den Zeitpunkten t zurück (Zeile i = Komponente i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+idx(t, tt) = findfirst(t .&gt;= tt - 1e-9)    <span class="k"># erster Index mit t &gt;= tt</span>
+
+r1 = 0.0607; K1 = 5.8; g1 = 0.0757     <span class="k"># S. kephir</span>
+r2 = 0.2183; K2 = 13; g2 = 0.2423      <span class="k"># S. cerevisiae</span>
+f(t, z) = [r1 * (1 - z[1] / K1 - g1 * z[2]) * z[1], r2 * (1 - z[2] / K2 - g2 * z[1]) * z[2]]
+t = range(0, 300, length = 3001)
+z = loese(f, [0.5, 0.5], t); x = z[1, :]; y = z[2, :]
+for tt in (50, 100, 300)
+    i = idx(t, tt)
+    @printf(&quot;t = %3d h: x = %.3f,  y = %.3f\n&quot;, tt, x[i], y[i])
+end
+@printf(&quot;y erreicht sein Maximum %.3f bei t = %.1f h\n&quot;, maximum(y), t[argmax(y)])
+p = plot(t, x, color = R1, lw = 2, label = &quot;S. kephir x(t)&quot;, xlabel = &quot;t (Stunden)&quot;, ylabel = &quot;Hefevolumen&quot;)
+plot!(p, t, y, color = R3, lw = 2, label = &quot;S. cerevisiae y(t)&quot;)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 4.5: Konkurrenz zweier Hefearten (Buch, Abschnitt 4.1, Gl. 4.4)</span>
+<span class="k">% dx/dt = r1 (1 - x/K1 - g1 y) x,  dy/dt = r2 (1 - y/K2 - g2 x) y  mit den Parametern nach Gause, x(0) = y(0) = 0.5</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+r1 = 0.0607; K1 = 5.8; g1 = 0.0757;     <span class="k">% S. kephir</span>
+r2 = 0.2183; K2 = 13; g2 = 0.2423;      <span class="k">% S. cerevisiae</span>
+f = @(t, z) [r1 * (1 - z(1) / K1 - g1 * z(2)) * z(1); r2 * (1 - z(2) / K2 - g2 * z(1)) * z(2)];
+opt = odeset(&#x27;RelTol&#x27;, 1e-9, &#x27;AbsTol&#x27;, 1e-11);
+[t, z] = ode45(f, linspace(0, 300, 3001), [0.5; 0.5], opt);
+x = z(:, 1); y = z(:, 2);
+for tt = [50 100 300]
+    i = find(t &gt;= tt - 1e-9, 1);
+    fprintf(&#x27;t = %3d h: x = %.3f,  y = %.3f\n&#x27;, tt, x(i), y(i));
+end
+[ym, im] = max(y);
+fprintf(&#x27;y erreicht sein Maximum %.3f bei t = %.1f h\n&#x27;, ym, t(im));
+plot(t, x, &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2); hold on
+plot(t, y, &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;LineWidth&#x27;, 2); hold off
+xlabel(&#x27;t (Stunden)&#x27;); ylabel(&#x27;Hefevolumen&#x27;); legend(&#x27;S. kephir x(t)&#x27;, &#x27;S. cerevisiae y(t)&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 4.5: Konkurrenz zweier Hefearten (Buch, Abschnitt 4.1, Gl. 4.4)</span>
+<span class="k"># dx/dt = r1 (1 - x/K1 - g1 y) x,  dy/dt = r2 (1 - y/K2 - g2 x) y  mit den Parametern nach Gause, x(0) = y(0) = 0.5</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+r1, K1, g1 = 0.0607, 5.8, 0.0757      <span class="k"># S. kephir</span>
+r2, K2, g2 = 0.2183, 13, 0.2423       <span class="k"># S. cerevisiae</span>
+f = lambda t, z: [r1 * (1 - z[0] / K1 - g1 * z[1]) * z[0], r2 * (1 - z[1] / K2 - g2 * z[0]) * z[1]]
+
+t = np.linspace(0, 300, 3001)
+s = solve_ivp(f, [0, 300], [0.5, 0.5], t_eval=t, rtol=1e-9, atol=1e-11)
+x, y = s.y
+for tt in [50, 100, 300]:
+    i = np.searchsorted(t, tt)
+    print(f&quot;t = {tt:3d} h: x = {x[i]:.3f},  y = {y[i]:.3f}&quot;)
+print(f&quot;y erreicht sein Maximum {y.max():.3f} bei t = {t[y.argmax()]:.1f} h&quot;)
+plt.plot(t, x, color=(0.43, 0.04, 0.12), lw=2, label=&quot;S. kephir x(t)&quot;)
+plt.plot(t, y, color=(0.89, 0.44, 0.49), lw=2, label=&quot;S. cerevisiae y(t)&quot;)
+plt.xlabel(&quot;t (Stunden)&quot;); plt.ylabel(&quot;Hefevolumen&quot;); plt.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 4.5: Konkurrenz zweier Hefearten (Buch, Abschnitt 4.1, Gl. 4.4)</span>
+<span class="k"># dx/dt = r1 (1 - x/K1 - g1 y) x,  dy/dt = r2 (1 - y/K2 - g2 x) y  mit den Parametern nach Gause, x(0) = y(0) = 0.5</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+library(deSolve)                         <span class="k"># Paket deSolve: install.packages(&quot;deSolve&quot;)</span>
+r1 &lt;- 0.0607; K1 &lt;- 5.8; g1 &lt;- 0.0757      <span class="k"># S. kephir</span>
+r2 &lt;- 0.2183; K2 &lt;- 13; g2 &lt;- 0.2423       <span class="k"># S. cerevisiae</span>
+f &lt;- function(t, z) c(r1 * (1 - z[1] / K1 - g1 * z[2]) * z[1], r2 * (1 - z[2] / K2 - g2 * z[1]) * z[2])
+loese &lt;- function(f, z0, t) ode(z0, t, function(t, z, p) list(f(t, z)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-12)
+
+x &lt;- loese(f, c(0.5, 0.5), seq(0, 300, length.out = 3001))
+for (tt in c(50, 100, 300)) {
+  i &lt;- which(x[, 1] &gt;= tt - 1e-9)[1]
+  cat(sprintf(&quot;t = %3d h: x = %.3f,  y = %.3f\n&quot;, tt, x[i, 2], x[i, 3]))
+}
+cat(sprintf(&quot;y erreicht sein Maximum %.3f bei t = %.1f h\n&quot;, max(x[, 3]), x[which.max(x[, 3]), 1]))
+plot(x[, 1], x[, 2], type = &quot;l&quot;, col = rgb(0.43, 0.04, 0.12), lwd = 2, ylim = c(0, 10), xlab = &quot;t (Stunden)&quot;, ylab = &quot;Hefevolumen&quot;)
+lines(x[, 1], x[, 3], col = rgb(0.89, 0.44, 0.49), lwd = 2)
+legend(&quot;topright&quot;, legend = c(&quot;S. kephir x(t)&quot;, &quot;S. cerevisiae y(t)&quot;), col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)), lwd = 2)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>t =  50 h: x = 1.425,  y = 8.652
+t = 100 h: x = 1.983,  y = 7.093
+t = 300 h: x = 5.791,  y = 0.001
+y erreicht sein Maximum 8.780 bei t = 39.9 h</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="oszillator">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 4.6</p>
+    <h2>Gedämpfter Oszillator</h2>
+    <p class="formel">x<sub>1</sub>′ = x<sub>2</sub>,&ensp; x<sub>2</sub>′ = −(k x<sub>1</sub> + μ x<sub>2</sub>)/m</p>
+    <p class="lead">Eine Differentialgleichung 2. Ordnung wird mit der Geschwindigkeit als zweiter Variable zu einem System. Die Bahn spiralt in die Ruhelage.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/oszillator.png" alt="Ergebnis des Programms oszillator.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="oszillator.jl" data-m="oszillator.m" data-py="oszillator.py" data-r="oszillator.R">oszillator.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/oszillator.py" data-jl="code/oszillator.jl" data-m="code/oszillator.m" data-py="code/oszillator.py" data-r="code/oszillator.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 4.6: gedämpfter Oszillator (Buch, Abschnitt 4.1, Gl. 4.5 und 4.6)</span>
+<span class="k"># m x&#x27;&#x27; + mu x&#x27; + k x = 0 als System dx1/dt = x2, dx2/dt = -(k x1 + mu x2)/m  mit m = 1, mu = 0.4, k = 4, x1(0) = 1, x2(0) = 0</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># Paket OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># löst dz/dt = f(t, z) und gibt die Lösung zu den Zeitpunkten t zurück (Zeile i = Komponente i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+idx(t, tt) = findfirst(t .&gt;= tt - 1e-9)    <span class="k"># erster Index mit t &gt;= tt</span>
+
+m = 1; mu = 0.4; k = 4
+f(t, z) = [z[2], -(k * z[1] + mu * z[2]) / m]
+t = range(0, 20, length = 2001)
+z = loese(f, [1, 0], t); x1 = z[1, :]; x2 = z[2, :]
+for tt in (5, 10, 20)
+    i = idx(t, tt)
+    @printf(&quot;t = %2d: x1 = %7.4f,  x2 = %7.4f\n&quot;, tt, x1[i], x2[i])
+end
+p1 = hline([0], color = :black, label = &quot;&quot;, xlabel = &quot;t&quot;)
+plot!(p1, t, x1, color = R1, lw = 2, label = &quot;Ort x1&quot;)
+plot!(p1, t, x2, color = R3, lw = 2, label = &quot;Geschwindigkeit x2&quot;)
+p2 = plot(x1, x2, color = R2, lw = 2, legend = false, xlabel = &quot;Ort x1&quot;, ylabel = &quot;Geschwindigkeit x2&quot;)
+scatter!(p2, [1, 0], [0, 0], color = :black)
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 4.6: gedämpfter Oszillator (Buch, Abschnitt 4.1, Gl. 4.5 und 4.6)</span>
+<span class="k">% m x&#x27;&#x27; + mu x&#x27; + k x = 0 als System dx1/dt = x2, dx2/dt = -(k x1 + mu x2)/m  mit m = 1, mu = 0.4, k = 4, x1(0) = 1, x2(0) = 0</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+m = 1; mu = 0.4; k = 4;
+f = @(t, z) [z(2); -(k * z(1) + mu * z(2)) / m];
+opt = odeset(&#x27;RelTol&#x27;, 1e-9, &#x27;AbsTol&#x27;, 1e-11);
+[t, z] = ode45(f, linspace(0, 20, 2001), [1; 0], opt);
+x1 = z(:, 1); x2 = z(:, 2);
+for tt = [5 10 20]
+    i = find(t &gt;= tt - 1e-9, 1);
+    fprintf(&#x27;t = %2d: x1 = %7.4f,  x2 = %7.4f\n&#x27;, tt, x1(i), x2(i));
+end
+subplot(1, 2, 1);
+plot([0 20], [0 0], &#x27;k&#x27;); hold on
+plot(t, x1, &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2);
+plot(t, x2, &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;LineWidth&#x27;, 2); hold off
+xlabel(&#x27;t&#x27;); legend(&#x27;&#x27;, &#x27;Ort x1&#x27;, &#x27;Geschwindigkeit x2&#x27;);
+subplot(1, 2, 2);
+plot(x1, x2, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2); hold on
+plot([1 0], [0 0], &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+xlabel(&#x27;Ort x1&#x27;); ylabel(&#x27;Geschwindigkeit x2&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 4.6: gedämpfter Oszillator (Buch, Abschnitt 4.1, Gl. 4.5 und 4.6)</span>
+<span class="k"># m x&#x27;&#x27; + mu x&#x27; + k x = 0 als System dx1/dt = x2, dx2/dt = -(k x1 + mu x2)/m  mit m = 1, mu = 0.4, k = 4, x1(0) = 1, x2(0) = 0</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+m, mu, k = 1, 0.4, 4
+f = lambda t, z: [z[1], -(k * z[0] + mu * z[1]) / m]
+t = np.linspace(0, 20, 2001)
+s = solve_ivp(f, [0, 20], [1, 0], t_eval=t, rtol=1e-9, atol=1e-11)
+x1, x2 = s.y
+for tt in [5, 10, 20]:
+    i = np.searchsorted(t, tt)
+    print(f&quot;t = {tt:2d}: x1 = {x1[i]:7.4f},  x2 = {x2[i]:7.4f}&quot;)
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+axs[0].axhline(0, color=&quot;k&quot;, lw=1)
+axs[0].plot(t, x1, color=(0.43, 0.04, 0.12), lw=2, label=&quot;Ort x1&quot;)
+axs[0].plot(t, x2, color=(0.89, 0.44, 0.49), lw=2, label=&quot;Geschwindigkeit x2&quot;)
+axs[0].set_xlabel(&quot;t&quot;); axs[0].legend()
+axs[1].plot(x1, x2, color=(0.64, 0.08, 0.18), lw=2); axs[1].plot([1, 0], [0, 0], &quot;ko&quot;)
+axs[1].set_xlabel(&quot;Ort x1&quot;); axs[1].set_ylabel(&quot;Geschwindigkeit x2&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 4.6: gedämpfter Oszillator (Buch, Abschnitt 4.1, Gl. 4.5 und 4.6)</span>
+<span class="k"># m x&#x27;&#x27; + mu x&#x27; + k x = 0 als System dx1/dt = x2, dx2/dt = -(k x1 + mu x2)/m  mit m = 1, mu = 0.4, k = 4, x1(0) = 1, x2(0) = 0</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+library(deSolve)                         <span class="k"># Paket deSolve: install.packages(&quot;deSolve&quot;)</span>
+m &lt;- 1; mu &lt;- 0.4; k &lt;- 4
+f &lt;- function(t, z) c(z[2], -(k * z[1] + mu * z[2]) / m)
+loese &lt;- function(f, z0, t) ode(z0, t, function(t, z, p) list(f(t, z)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-12)
+
+x &lt;- loese(f, c(1, 0), seq(0, 20, length.out = 2001))
+for (tt in c(5, 10, 20)) {
+  i &lt;- which(x[, 1] &gt;= tt - 1e-9)[1]
+  cat(sprintf(&quot;t = %2d: x1 = %7.4f,  x2 = %7.4f\n&quot;, tt, x[i, 2], x[i, 3]))
+}
+par(mfrow = c(1, 2))
+plot(x[, 1], x[, 2], type = &quot;l&quot;, col = rgb(0.43, 0.04, 0.12), lwd = 2, ylim = c(-2.2, 2.2), xlab = &quot;t&quot;, ylab = &quot;&quot;)
+lines(x[, 1], x[, 3], col = rgb(0.89, 0.44, 0.49), lwd = 2); abline(h = 0)
+legend(&quot;topright&quot;, legend = c(&quot;Ort x1&quot;, &quot;Geschwindigkeit x2&quot;), col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)), lwd = 2)
+plot(x[, 2], x[, 3], type = &quot;l&quot;, col = rgb(0.64, 0.08, 0.18), lwd = 2, xlab = &quot;Ort x1&quot;, ylab = &quot;Geschwindigkeit x2&quot;)
+points(c(1, 0), c(0, 0), pch = 16)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>t =  5: x1 = -0.3369,  x2 =  0.3707
+t = 10: x1 =  0.0791,  x2 = -0.2360
+t = 20: x1 = -0.0077,  x2 = -0.0318</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="lv-euler">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 4.7</p>
+    <h2>Euler-Verfahren für ein System</h2>
+    <p class="formel"><b>x</b><sub>n+1</sub> = <b>x</b><sub>n</sub> + h <b>f</b>(<b>x</b><sub>n</sub>),&ensp; h = 0.1</p>
+    <p class="lead">Das Euler-Verfahren verlässt die geschlossene Bahn und spiralt nach außen. Die Ausgabe zeigt, wie die eigentlich konstante Größe H wächst.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/lv_euler.png" alt="Ergebnis des Programms lv_euler.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="lv_euler.jl" data-m="lv_euler.m" data-py="lv_euler.py" data-r="lv_euler.R">lv_euler.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/lv_euler.py" data-jl="code/lv_euler.jl" data-m="code/lv_euler.m" data-py="code/lv_euler.py" data-r="code/lv_euler.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 4.7: Euler-Verfahren für das Lotka-Volterra-Modell (Buch, Abschnitt 4.1, Gl. 4.7)</span>
+<span class="k"># x_{n+1} = x_n + h (r x_n - c x_n y_n),  y_{n+1} = y_n + h (d x_n y_n - e y_n)  mit h = 0.1; die exakte Bahn ist geschlossen</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># Paket OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># löst dz/dt = f(t, z) und gibt die Lösung zu den Zeitpunkten t zurück (Zeile i = Komponente i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+
+r = 1; c = 0.5; d = 0.2; e = 1
+f(t, z) = [r * z[1] - c * z[1] * z[2], d * z[1] * z[2] - e * z[2]]
+h = 0.1; N = 160
+x = zeros(N + 1); y = zeros(N + 1); x[1] = 3; y[1] = 2
+for n in 1:N
+    x[n + 1] = x[n] + h * (r * x[n] - c * x[n] * y[n])
+    y[n + 1] = y[n] + h * (d * x[n] * y[n] - e * y[n])
+end
+z = loese(f, [3, 2], range(0, 6.5, length = 651))
+H(x, y) = d * x - e * log(x) + c * y - r * log(y)
+@printf(&quot;H exakt (konstant): %.4f\n&quot;, H(3, 2))
+println(&quot;H Euler nach 40, 80, 160 Schritten: &quot;, join([@sprintf(&quot;%.4f&quot;, H(x[n + 1], y[n + 1])) for n in (40, 80, 160)], &quot;  &quot;))
+p = plot(x, y, marker = :circle, ms = 2, color = R3, lw = 1, label = &quot;Euler, h = 0.1&quot;, xlabel = &quot;Beute x&quot;, ylabel = &quot;Räuber y&quot;)
+plot!(p, z[1, :], z[2, :], color = R1, lw = 2.5, label = &quot;exakt&quot;)
+scatter!(p, [3, 5], [2, 2], color = :black, label = &quot;&quot;)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 4.7: Euler-Verfahren für das Lotka-Volterra-Modell (Buch, Abschnitt 4.1, Gl. 4.7)</span>
+<span class="k">% x_{n+1} = x_n + h (r x_n - c x_n y_n),  y_{n+1} = y_n + h (d x_n y_n - e y_n)  mit h = 0.1; die exakte Bahn ist geschlossen</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+r = 1; c = 0.5; d = 0.2; e = 1;
+f = @(t, z) [r * z(1) - c * z(1) * z(2); d * z(1) * z(2) - e * z(2)];
+h = 0.1; N = 160;
+x = zeros(1, N + 1); y = zeros(1, N + 1); x(1) = 3; y(1) = 2;
+for n = 1:N
+    x(n + 1) = x(n) + h * (r * x(n) - c * x(n) * y(n));
+    y(n + 1) = y(n) + h * (d * x(n) * y(n) - e * y(n));
+end
+opt = odeset(&#x27;RelTol&#x27;, 1e-9, &#x27;AbsTol&#x27;, 1e-11);
+[t, z] = ode45(f, linspace(0, 6.5, 651), [3; 2], opt);
+H = @(x, y) d * x - e * log(x) + c * y - r * log(y);
+fprintf(&#x27;H exakt (konstant): %.4f\n&#x27;, H(3, 2));
+fprintf(&#x27;H Euler nach 40, 80, 160 Schritten: %.4f  %.4f  %.4f\n&#x27;, H(x([41 81 161]), y([41 81 161])));
+plot(x, y, &#x27;-o&#x27;, &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;MarkerSize&#x27;, 3); hold on
+plot(z(:, 1), z(:, 2), &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2.5);
+plot([3 5], [2 2], &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+xlabel(&#x27;Beute x&#x27;); ylabel(&#x27;Räuber y&#x27;); legend(&#x27;Euler, h = 0.1&#x27;, &#x27;exakt&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 4.7: Euler-Verfahren für das Lotka-Volterra-Modell (Buch, Abschnitt 4.1, Gl. 4.7)</span>
+<span class="k"># x_{n+1} = x_n + h (r x_n - c x_n y_n),  y_{n+1} = y_n + h (d x_n y_n - e y_n)  mit h = 0.1; die exakte Bahn ist geschlossen</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+r, c, d, e = 1, 0.5, 0.2, 1
+f = lambda t, z: [r * z[0] - c * z[0] * z[1], d * z[0] * z[1] - e * z[1]]
+h, N = 0.1, 160
+x = np.zeros(N + 1); y = np.zeros(N + 1); x[0], y[0] = 3, 2
+for n in range(N):
+    x[n + 1] = x[n] + h * (r * x[n] - c * x[n] * y[n])
+    y[n + 1] = y[n] + h * (d * x[n] * y[n] - e * y[n])
+s = solve_ivp(f, [0, 6.5], [3, 2], t_eval=np.linspace(0, 6.5, 651), rtol=1e-9, atol=1e-11)
+H = lambda x, y: d * x - e * np.log(x) + c * y - r * np.log(y)
+print(f&quot;H exakt (konstant): {H(3, 2):.4f}&quot;)
+print(&quot;H Euler nach 40, 80, 160 Schritten:&quot;, &quot;  &quot;.join(f&quot;{H(x[n], y[n]):.4f}&quot; for n in [40, 80, 160]))
+plt.plot(x, y, &quot;-o&quot;, color=(0.89, 0.44, 0.49), ms=3, lw=1, label=&quot;Euler, h = 0.1&quot;)
+plt.plot(s.y[0], s.y[1], color=(0.43, 0.04, 0.12), lw=2.5, label=&quot;exakt&quot;)
+plt.plot([3, 5], [2, 2], &quot;ko&quot;)
+plt.xlabel(&quot;Beute x&quot;); plt.ylabel(&quot;Räuber y&quot;); plt.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 4.7: Euler-Verfahren für das Lotka-Volterra-Modell (Buch, Abschnitt 4.1, Gl. 4.7)</span>
+<span class="k"># x_{n+1} = x_n + h (r x_n - c x_n y_n),  y_{n+1} = y_n + h (d x_n y_n - e y_n)  mit h = 0.1; die exakte Bahn ist geschlossen</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+library(deSolve)                         <span class="k"># Paket deSolve: install.packages(&quot;deSolve&quot;)</span>
+r &lt;- 1; c &lt;- 0.5; d &lt;- 0.2; e &lt;- 1
+f &lt;- function(t, z) c(r * z[1] - c * z[1] * z[2], d * z[1] * z[2] - e * z[2])
+h &lt;- 0.1; N &lt;- 160
+x &lt;- numeric(N + 1); y &lt;- numeric(N + 1); x[1] &lt;- 3; y[1] &lt;- 2
+for (n in 1:N) {
+  x[n + 1] &lt;- x[n] + h * (r * x[n] - c * x[n] * y[n])
+  y[n + 1] &lt;- y[n] + h * (d * x[n] * y[n] - e * y[n])
+}
+loese &lt;- function(f, z0, t) ode(z0, t, function(t, z, p) list(f(t, z)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-12)
+ex &lt;- loese(f, c(3, 2), seq(0, 6.5, length.out = 651))
+H &lt;- function(x, y) d * x - e * log(x) + c * y - r * log(y)
+cat(sprintf(&quot;H exakt (konstant): %.4f\n&quot;, H(3, 2)))
+cat(&quot;H Euler nach 40, 80, 160 Schritten:&quot;, sprintf(&quot;%.4f&quot;, H(x[c(41, 81, 161)], y[c(41, 81, 161)])), &quot;\n&quot;)
+plot(x, y, type = &quot;o&quot;, pch = 16, cex = 0.5, col = rgb(0.89, 0.44, 0.49), xlab = &quot;Beute x&quot;, ylab = &quot;Räuber y&quot;)
+lines(ex[, 2], ex[, 3], col = rgb(0.43, 0.04, 0.12), lwd = 2.5)
+points(c(3, 5), c(2, 2), pch = 16)
+legend(&quot;topright&quot;, legend = c(&quot;Euler, h = 0.1&quot;, &quot;exakt&quot;), col = c(rgb(0.89, 0.44, 0.49), rgb(0.43, 0.04, 0.12)), lwd = c(1, 2.5), pch = c(16, NA))</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>H exakt (konstant): -0.1918
+H Euler nach 40, 80, 160 Schritten: -0.1439  -0.0681  0.1756</code></pre></details>
+    </div>
+  </div>
+</section>
+  
+  <section class="matlab-apps"><h3>MATLAB-Apps aus der Vorlesung</h3><p>Herunterladen, in einen Ordner legen und in MATLAB den Namen ohne Endung eingeben, z. B. <code>hai_thunfisch_app</code>. Die Apps nutzen die grafische Oberfläche von MATLAB und laufen nicht in GNU Octave.</p><ul><li><a href="apps/hai_thunfisch_app.m" download>hai_thunfisch_app.m</a><span>Räuber-Beute-Modell „Hai und Thunfisch“</span></li></ul></section>
+  <nav class="weiter" aria-label="Weiterblättern"><a href="abschnitt-4-2.html"><small>Weiter</small>4.2 Lineare Systeme</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Begleitmaterial zum Buch „Dynamische Systeme in den Lebenswissenschaften“ von Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programme unter <a href="../LICENSE.txt">MIT-Lizenz</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>1.3 Logistisches Wachstumsmodell – Dynamische Systeme in den Lebenswissenschaften</title>
+<meta name="description" content="Programme in Julia, MATLAB, Python und R zu Abschnitt 1.3 des Buchs Dynamische Systeme in den Lebenswissenschaften">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamische Systeme in den Lebenswissenschaften</a>
+  <nav aria-label="Kapitel"><a href="../index.html">Start</a> <a href="../kapitel1/index.html" aria-current="page">Kapitel 1</a> <a href="../kapitel2/index.html">Kapitel 2</a> <a href="../kapitel3/index.html">Kapitel 3</a> <a href="../kapitel4/index.html">Kapitel 4</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Abschnitte"><h2><a href="index.html">Kapitel 1</a></h2><ol><li><a href="abschnitt-1-1.html"><span class="nr">1.1</span><span>Folgen und Differenzengleichungen</span></a></li><li><a href="abschnitt-1-2.html"><span class="nr">1.2</span><span>Lineare Differenzengleichungen</span></a></li><li><a href="abschnitt-1-3.html" aria-current="page"><span class="nr">1.3</span><span>Logistisches Wachstumsmodell</span></a></li><li><a href="abschnitt-1-4.html"><span class="nr">1.4</span><span>Stationäre Zustände und Stabilität</span></a></li><li><a href="abschnitt-1-5.html"><span class="nr">1.5</span><span>Newton-Verfahren</span></a></li><li><a href="abschnitt-1-6.html"><span class="nr">1.6</span><span>Vertiefung: Herzmodelle</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Kapitel 1 · Diskrete dynamische Systeme mit einer Variablen</p>
+      <h1><span class="num">1.3</span>Logistisches Wachstumsmodell</h1>
+      <p>Eine Population kann nicht unbegrenzt wachsen. Im logistischen Modell sinkt die Wachstumsrate mit dem Bestand und wird bei der Tragfähigkeit K null. Nach einer Variablentransformation hängt das Modell nur noch von einem Parameter a ab, und schon diese einfache Gleichung zeigt Zyklen und Chaos.</p>
+      <p>Zu jeder Abbildung des Abschnitts finden Sie das Programm, das sie erzeugt. Ändern Sie Parameter und Startwerte und beobachten Sie, was passiert. Abbildungs- und Gleichungsnummern beziehen sich auf das Buch.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programmiersprache</legend>
+  <div class="seg" role="radiogroup" aria-label="Programmiersprache">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Gilt für alle Seiten. MATLAB-Programme laufen auch im kostenlosen GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>Auf dieser Seite</b><ul><li><a href="#wachstumsrate"><span class="abb">Abb. 1.17</span>Geometrisches Wachstum mit Wachstumsrate r</a></li><li><a href="#ratenfunktion"><span class="abb">Abb. 1.18</span>Ratenfunktion</a></li><li><a href="#logistisch-simulation"><span class="abb">Abb. 1.20</span>Simulation des logistischen Modells</a></li><li><a href="#logistisch-treppe"><span class="abb">Abb. 1.21</span>Aktualisierungsfunktion und Treppendiagramm</a></li><li><a href="#logistisch-parameterstudie"><span class="abb">Abb. 1.22</span>Parameterstudie</a></li><li><a href="#logistisch-bifurkation"><span class="abb">Abb. 1.23</span>Bifurkationsdiagramm</a></li><li><a href="#logistisch-sensitivitaet"><span class="abb">Abb. 1.24</span>Sensitivität bezüglich des Startwerts</a></li><li><a href="#app-treppe-logistisch"><span class="abb">App</span>im Browser ausprobieren</a></li></ul></div>
+  
+<section class="fig" id="wachstumsrate">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 1.17</p>
+    <h2>Geometrisches Wachstum mit Wachstumsrate <i>r</i></h2>
+    <p class="formel">x<sub>n+1</sub> = (1 + r) x<sub>n</sub>,&ensp; x<sub>0</sub> = 100</p>
+    <p class="lead">Bei konstanter Wachstumsrate hängt ln(x<sub>n</sub>) linear von <i>n</i> ab; die Steigung ist ln(1 + r). So erkennt man exponentielles Wachstum in Messdaten.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/wachstumsrate.png" alt="Ergebnis des Programms wachstumsrate.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="wachstumsrate.jl" data-m="wachstumsrate.m" data-py="wachstumsrate.py" data-r="wachstumsrate.R">wachstumsrate.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/wachstumsrate.py" data-jl="code/wachstumsrate.jl" data-m="code/wachstumsrate.m" data-py="code/wachstumsrate.py" data-r="code/wachstumsrate.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 1.17: geometrisches Wachstum mit Wachstumsrate r (Buch, Abschnitt 1.3, Gl. 1.24)</span>
+<span class="k"># x_{n+1} = (1 + r) x_n mit x_0 = 100; links x_n, rechts ln(x_n)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+
+x0 = 100; N = 30
+n = 0:N
+rot = [RGB(0.43, 0.04, 0.12), RGB(0.64, 0.08, 0.18), RGB(0.89, 0.44, 0.49)]; zeichen = [:circle, :rect, :diamond]
+p1 = plot(xlabel = &quot;n&quot;, ylabel = &quot;x_n&quot;, legend = :topleft)
+p2 = plot(xlabel = &quot;n&quot;, ylabel = &quot;ln(x_n)&quot;, legend = :topleft)
+for (i, r) in enumerate([1, 0.1, -0.5])
+    x = x0 .* (1 + r) .^ n
+    plot!(p1, n[1:5], x[1:5], ls = :dash, marker = zeichen[i], color = rot[i], label = &quot;r = $r&quot;)
+    plot!(p2, n, log.(x), ls = :dash, marker = zeichen[i], color = rot[i], label = &quot;r = $r&quot;)
+    @printf(&quot;r = %g:  Steigung von ln(x_n) = ln(1 + r) = %.4f\n&quot;, r, log(1 + r))
+end
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 1.17: geometrisches Wachstum mit Wachstumsrate r (Buch, Abschnitt 1.3, Gl. 1.24)</span>
+<span class="k">% x_{n+1} = (1 + r) x_n mit x_0 = 100; links x_n, rechts ln(x_n)</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+x0 = 100; N = 30;
+n = 0:N;
+rot = [0.43 0.04 0.12; 0.64 0.08 0.18; 0.89 0.44 0.49]; marker = &#x27;osd&#x27;;
+rs = [1 0.1 -0.5];
+for i = 1:3
+    r = rs(i);
+    x = x0 * (1 + r) .^ n;
+    subplot(1, 2, 1); hold on
+    plot(n(1:5), x(1:5), [&#x27;--&#x27; marker(i)], &#x27;Color&#x27;, rot(i, :), &#x27;DisplayName&#x27;, sprintf(&#x27;r = %g&#x27;, r));
+    subplot(1, 2, 2); hold on
+    plot(n, log(x), [&#x27;--&#x27; marker(i)], &#x27;Color&#x27;, rot(i, :), &#x27;DisplayName&#x27;, sprintf(&#x27;r = %g&#x27;, r));
+    fprintf(&#x27;r = %g:  Steigung von ln(x_n) = ln(1 + r) = %.4f\n&#x27;, r, log(1 + r));
+end
+subplot(1, 2, 1); hold off; xlabel(&#x27;n&#x27;); ylabel(&#x27;x_n&#x27;); legend(&#x27;show&#x27;);
+subplot(1, 2, 2); hold off; xlabel(&#x27;n&#x27;); ylabel(&#x27;ln(x_n)&#x27;); legend(&#x27;show&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 1.17: geometrisches Wachstum mit Wachstumsrate r (Buch, Abschnitt 1.3, Gl. 1.24)</span>
+<span class="k"># x_{n+1} = (1 + r) x_n mit x_0 = 100; links x_n, rechts ln(x_n)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+x0, N = 100.0, 30
+n = np.arange(N + 1)
+rot = [(0.43, 0.04, 0.12), (0.64, 0.08, 0.18), (0.89, 0.44, 0.49)]
+
+fig, axs = plt.subplots(1, 2, figsize=(10, 4.5))
+for r, c, m in zip([1, 0.1, -0.5], rot, &quot;osD&quot;):
+    x = x0 * (1 + r)**n
+    axs[0].plot(n[:5], x[:5], &quot;--&quot;, marker=m, color=c, label=f&quot;r = {r}&quot;)
+    axs[1].plot(n, np.log(x), &quot;--&quot;, marker=m, color=c, label=f&quot;r = {r}&quot;)
+    print(f&quot;r = {r}:  Steigung von ln(x_n) = ln(1 + r) = {np.log(1 + r):.4f}&quot;)
+axs[0].set_xlabel(&quot;n&quot;); axs[0].set_ylabel(&quot;x_n&quot;); axs[0].legend()
+axs[1].set_xlabel(&quot;n&quot;); axs[1].set_ylabel(&quot;ln(x_n)&quot;); axs[1].legend()
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 1.17: geometrisches Wachstum mit Wachstumsrate r (Buch, Abschnitt 1.3, Gl. 1.24)</span>
+<span class="k"># x_{n+1} = (1 + r) x_n mit x_0 = 100; links x_n, rechts ln(x_n)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+x0 &lt;- 100; N &lt;- 30
+n &lt;- 0:N
+rot &lt;- c(rgb(0.43, 0.04, 0.12), rgb(0.64, 0.08, 0.18), rgb(0.89, 0.44, 0.49)); zeichen &lt;- c(16, 15, 18)
+rs &lt;- c(1, 0.1, -0.5)
+par(mfrow = c(1, 2))
+plot(NULL, xlim = c(0, 4), ylim = c(0, 1700), xlab = &quot;n&quot;, ylab = &quot;x_n&quot;)
+for (i in 1:3) {
+  x &lt;- x0 * (1 + rs[i])^n
+  lines(n[1:5], x[1:5], type = &quot;o&quot;, lty = 2, pch = zeichen[i], col = rot[i])
+}
+legend(&quot;topleft&quot;, legend = sprintf(&quot;r = %g&quot;, rs), col = rot, pch = zeichen, lty = 2)
+plot(NULL, xlim = c(0, N), ylim = c(-16, 26), xlab = &quot;n&quot;, ylab = &quot;ln(x_n)&quot;)
+for (i in 1:3) {
+  r &lt;- rs[i]
+  x &lt;- x0 * (1 + r)^n
+  lines(n, log(x), type = &quot;o&quot;, lty = 2, pch = zeichen[i], col = rot[i])
+  cat(sprintf(&quot;r = %g:  Steigung von ln(x_n) = ln(1 + r) = %.4f\n&quot;, r, log(1 + r)))
+}</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>r = 1:  Steigung von ln(x_n) = ln(1 + r) = 0.6931
+r = 0.1:  Steigung von ln(x_n) = ln(1 + r) = 0.0953
+r = -0.5:  Steigung von ln(x_n) = ln(1 + r) = -0.6931</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="ratenfunktion">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 1.18</p>
+    <h2>Ratenfunktion</h2>
+    <p class="formel">R(x) = r (1 − x/K)</p>
+    <p class="lead">Die Wachstumsrate pro Kopf ist bei kleinem Bestand fast r und fällt linear bis auf null bei x = K.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/ratenfunktion.png" alt="Ergebnis des Programms ratenfunktion.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="ratenfunktion.jl" data-m="ratenfunktion.m" data-py="ratenfunktion.py" data-r="ratenfunktion.R">ratenfunktion.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/ratenfunktion.py" data-jl="code/ratenfunktion.jl" data-m="code/ratenfunktion.m" data-py="code/ratenfunktion.py" data-r="code/ratenfunktion.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 1.18: Ratenfunktion des logistischen Wachstumsmodells (Buch, Abschnitt 1.3, Gl. 1.26)</span>
+<span class="k"># R(x) = r (1 - x/K): bei kleinem Bestand wächst er fast mit der Rate r, bei x = K kommt das Wachstum zum Erliegen</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+
+r = 1; K = 5
+R(x) = r * (1 - x / K)
+for x in (0, 1, 2.5, 5)
+    @printf(&quot;R(%g) = %.2f\n&quot;, x, R(x))
+end
+
+x = range(0, K, length = 100)
+display(plot(x, R.(x), color = RGB(0, 0.447, 0.741), lw = 2, legend = false, xlabel = &quot;x&quot;, ylabel = &quot;R(x)&quot;,
+             xticks = ([0, K], [&quot;0&quot;, &quot;K&quot;]), yticks = ([0, r], [&quot;0&quot;, &quot;r&quot;])))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 1.18: Ratenfunktion des logistischen Wachstumsmodells (Buch, Abschnitt 1.3, Gl. 1.26)</span>
+<span class="k">% R(x) = r (1 - x/K): bei kleinem Bestand wächst er fast mit der Rate r, bei x = K kommt das Wachstum zum Erliegen</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+r = 1; K = 5;
+R = @(x) r * (1 - x / K);
+for x = [0 1 2.5 5]
+    fprintf(&#x27;R(%g) = %.2f\n&#x27;, x, R(x));
+end
+
+x = linspace(0, K, 100);
+plot(x, R(x), &#x27;Color&#x27;, [0 0.447 0.741]);
+set(gca, &#x27;XTick&#x27;, [0 K], &#x27;XTickLabel&#x27;, {&#x27;0&#x27;, &#x27;K&#x27;}, &#x27;YTick&#x27;, [0 r], &#x27;YTickLabel&#x27;, {&#x27;0&#x27;, &#x27;r&#x27;});
+xlabel(&#x27;x&#x27;); ylabel(&#x27;R(x)&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 1.18: Ratenfunktion des logistischen Wachstumsmodells (Buch, Abschnitt 1.3, Gl. 1.26)</span>
+<span class="k"># R(x) = r (1 - x/K): bei kleinem Bestand wächst er fast mit der Rate r, bei x = K kommt das Wachstum zum Erliegen</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+r, K = 1.0, 5.0
+R = lambda x: r * (1 - x / K)
+for x in [0, 1, 2.5, 5]:
+    print(f&quot;R({x}) = {R(x):.2f}&quot;)
+
+x = np.linspace(0, K, 100)
+plt.plot(x, R(x), color=(0, 0.447, 0.741))
+plt.xticks([0, K], [&quot;0&quot;, &quot;K&quot;]); plt.yticks([0, r], [&quot;0&quot;, &quot;r&quot;])
+plt.xlabel(&quot;x&quot;); plt.ylabel(&quot;R(x)&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 1.18: Ratenfunktion des logistischen Wachstumsmodells (Buch, Abschnitt 1.3, Gl. 1.26)</span>
+<span class="k"># R(x) = r (1 - x/K): bei kleinem Bestand wächst er fast mit der Rate r, bei x = K kommt das Wachstum zum Erliegen</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+r &lt;- 1; K &lt;- 5
+R &lt;- function(x) r * (1 - x / K)
+for (x in c(0, 1, 2.5, 5)) cat(sprintf(&quot;R(%g) = %.2f\n&quot;, x, R(x)))
+
+x &lt;- seq(0, K, length.out = 100)
+plot(x, R(x), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2, xaxt = &quot;n&quot;, yaxt = &quot;n&quot;, xlab = &quot;x&quot;, ylab = &quot;R(x)&quot;)
+axis(1, at = c(0, K), labels = c(&quot;0&quot;, &quot;K&quot;)); axis(2, at = c(0, r), labels = c(&quot;0&quot;, &quot;r&quot;))</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>R(0) = 1.00
+R(1) = 0.80
+R(2.5) = 0.50
+R(5) = 0.00</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="logistisch-simulation">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 1.20</p>
+    <h2>Simulation des logistischen Modells</h2>
+    <p class="formel">x<sub>n+1</sub> = x<sub>n</sub> + r (1 − x<sub>n</sub>/K) x<sub>n</sub></p>
+    <p class="lead">Drei Wachstumsraten bei gleicher Tragfähigkeit K = 5 und Startwert x<sub>0</sub> = 0.1. Je größer r, desto schneller erreicht die Population K.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/logistisch_simulation.png" alt="Ergebnis des Programms logistisch_simulation.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="logistisch_simulation.jl" data-m="logistisch_simulation.m" data-py="logistisch_simulation.py" data-r="logistisch_simulation.R">logistisch_simulation.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/logistisch_simulation.py" data-jl="code/logistisch_simulation.jl" data-m="code/logistisch_simulation.m" data-py="code/logistisch_simulation.py" data-r="code/logistisch_simulation.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 1.20: Simulation des logistischen Wachstumsmodells (Buch, Abschnitt 1.3, Gl. 1.26)</span>
+<span class="k"># x_{n+1} = x_n + r (1 - x_n/K) x_n mit K = 5, x_0 = 0.1 und drei Wachstumsraten r; 20 (links) bzw. 50 (rechts) Schritte</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+
+K = 5; x0 = 0.1
+rot = [RGB(0.43, 0.04, 0.12), RGB(0.64, 0.08, 0.18), RGB(0.89, 0.44, 0.49)]; zeichen = [:circle, :rect, :diamond]
+bilder = []
+for N in (20, 50)
+    n = 0:N
+    p = plot(xlabel = &quot;n&quot;, ylabel = &quot;x_n&quot;, legend = :bottomright)
+    hline!(p, [K], color = :black, label = &quot;&quot;)
+    for (i, r) in enumerate([0.5, 0.25, 0.1])
+        x = zeros(N + 1)
+        x[1] = x0                        <span class="k"># Julia zählt ab 1: x[1] ist x_0</span>
+        for k in 1:N
+            x[k + 1] = x[k] + r * (1 - x[k] / K) * x[k]
+        end
+        plot!(p, n, x, ls = :dash, marker = zeichen[i], ms = 3, color = rot[i], label = &quot;r = $r&quot;)
+        @printf(&quot;N = %d, r = %g:  x_N = %.4f\n&quot;, N, r, x[N + 1])
+    end
+    push!(bilder, p)
+end
+display(plot(bilder..., layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 1.20: Simulation des logistischen Wachstumsmodells (Buch, Abschnitt 1.3, Gl. 1.26)</span>
+<span class="k">% x_{n+1} = x_n + r (1 - x_n/K) x_n mit K = 5, x_0 = 0.1 und drei Wachstumsraten r; 20 (links) bzw. 50 (rechts) Schritte</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+K = 5; x0 = 0.1;
+raten = [0.5 0.25 0.1];
+rot = [0.43 0.04 0.12; 0.64 0.08 0.18; 0.89 0.44 0.49]; marker = &#x27;osd&#x27;;
+Ns = [20 50];
+for p = 1:2
+    N = Ns(p); n = 0:N;
+    subplot(1, 2, p); hold on
+    for i = 1:3
+        r = raten(i);
+        x = zeros(1, N + 1);
+        x(1) = x0;                       <span class="k">% MATLAB zählt ab 1: x(1) ist x_0</span>
+        for k = 1:N
+            x(k + 1) = x(k) + r * (1 - x(k) / K) * x(k);
+        end
+        plot(n, x, [&#x27;--&#x27; marker(i)], &#x27;Color&#x27;, rot(i, :), &#x27;MarkerSize&#x27;, 4, &#x27;DisplayName&#x27;, sprintf(&#x27;r = %g&#x27;, r));
+        fprintf(&#x27;N = %d, r = %g:  x_N = %.4f\n&#x27;, N, r, x(N + 1));
+    end
+    plot([0 N], [K K], &#x27;k-&#x27;, &#x27;HandleVisibility&#x27;, &#x27;off&#x27;);
+    hold off; xlabel(&#x27;n&#x27;); ylabel(&#x27;x_n&#x27;); legend(&#x27;show&#x27;, &#x27;Location&#x27;, &#x27;southeast&#x27;);
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 1.20: Simulation des logistischen Wachstumsmodells (Buch, Abschnitt 1.3, Gl. 1.26)</span>
+<span class="k"># x_{n+1} = x_n + r (1 - x_n/K) x_n mit K = 5, x_0 = 0.1 und drei Wachstumsraten r; 20 (links) bzw. 50 (rechts) Schritte</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+K, x0 = 5.0, 0.1
+raten = [0.5, 0.25, 0.1]
+rot = [(0.43, 0.04, 0.12), (0.64, 0.08, 0.18), (0.89, 0.44, 0.49)]
+
+fig, axs = plt.subplots(1, 2, figsize=(10, 4.5))
+for ax, N in zip(axs, (20, 50)):
+    n = np.arange(N + 1)
+    for r, c, m in zip(raten, rot, &quot;osD&quot;):
+        x = np.zeros(N + 1)
+        x[0] = x0
+        for k in range(N):
+            x[k + 1] = x[k] + r * (1 - x[k] / K) * x[k]
+        ax.plot(n, x, &quot;--&quot;, marker=m, ms=4, color=c, label=f&quot;r = {r}&quot;)
+        print(f&quot;N = {N}, r = {r}:  x_N = {x[N]:.4f}&quot;)
+    ax.axhline(K, color=&quot;k&quot;, lw=0.8)
+    ax.set_xlabel(&quot;n&quot;); ax.set_ylabel(&quot;x_n&quot;); ax.legend()
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 1.20: Simulation des logistischen Wachstumsmodells (Buch, Abschnitt 1.3, Gl. 1.26)</span>
+<span class="k"># x_{n+1} = x_n + r (1 - x_n/K) x_n mit K = 5, x_0 = 0.1 und drei Wachstumsraten r; 20 (links) bzw. 50 (rechts) Schritte</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+K &lt;- 5; x0 &lt;- 0.1
+raten &lt;- c(0.5, 0.25, 0.1)
+rot &lt;- c(rgb(0.43, 0.04, 0.12), rgb(0.64, 0.08, 0.18), rgb(0.89, 0.44, 0.49)); zeichen &lt;- c(16, 15, 18)
+par(mfrow = c(1, 2))
+for (N in c(20, 50)) {
+  n &lt;- 0:N
+  plot(NULL, xlim = c(0, N), ylim = c(0, 5.3), xlab = &quot;n&quot;, ylab = &quot;x_n&quot;)
+  abline(h = K)
+  for (i in 1:3) {
+    r &lt;- raten[i]
+    x &lt;- numeric(N + 1)
+    x[1] &lt;- x0                           <span class="k"># R zählt ab 1: x[1] ist x_0</span>
+    for (k in 1:N) x[k + 1] &lt;- x[k] + r * (1 - x[k] / K) * x[k]
+    lines(n, x, type = &quot;o&quot;, lty = 2, pch = zeichen[i], cex = 0.6, col = rot[i])
+    cat(sprintf(&quot;N = %d, r = %g:  x_N = %.4f\n&quot;, N, r, x[N + 1]))
+  }
+  legend(&quot;bottomright&quot;, legend = sprintf(&quot;r = %g&quot;, raten), col = rot, pch = zeichen, lty = 2)
+}</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>N = 20, r = 0.5:  x_N = 4.9955
+N = 20, r = 0.25:  x_N = 3.4638
+N = 20, r = 0.1:  x_N = 0.6089
+N = 50, r = 0.5:  x_N = 5.0000
+N = 50, r = 0.25:  x_N = 4.9996
+N = 50, r = 0.1:  x_N = 3.6486</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="logistisch-treppe">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 1.21</p>
+    <h2>Aktualisierungsfunktion und Treppendiagramm</h2>
+    <p class="formel">f(y) = a y (1 − y),&ensp; a = 2.5</p>
+    <p class="lead">Die Treppe zeigt die Folge geometrisch: senkrecht zum Graphen von f, waagrecht zur Winkelhalbierenden. Sie läuft auf den stationären Zustand 1 − 1/a = 0.6 zu.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/logistisch_treppe.png" alt="Ergebnis des Programms logistisch_treppe.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="logistisch_treppe.jl" data-m="logistisch_treppe.m" data-py="logistisch_treppe.py" data-r="logistisch_treppe.R">logistisch_treppe.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/logistisch_treppe.py" data-jl="code/logistisch_treppe.jl" data-m="code/logistisch_treppe.m" data-py="code/logistisch_treppe.py" data-r="code/logistisch_treppe.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 1.21: Aktualisierungsfunktion und Treppendiagramm (Buch, Abschnitt 1.3, Gl. 1.30)</span>
+<span class="k"># f(y) = a y (1 - y) mit a = 2.5, Startwert y_0 = 0.1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+
+a = 2.5; y0 = 0.1; N = 12
+f(y) = a * y * (1 - y)
+
+y = range(0, 1, length = 200)
+p = plot(y, f.(y), color = RGB(0, 0.447, 0.741), lw = 2, label = &quot;f(y) = a y (1 - y)&quot;, legend = :topleft,
+         xlims = (0, 1), ylims = (0, 1), xlabel = &quot;y_n&quot;, ylabel = &quot;y_{n+1}&quot;)
+plot!(p, [0, 1], [0, 1], color = :black, label = &quot;y_{n+1} = y_n&quot;)
+
+<span class="k"># Treppe: senkrecht zum Graphen, waagrecht zur Winkelhalbierenden</span>
+yn = y0
+px = [yn]; py = [0.0]
+for k in 1:N
+    global yn
+    yneu = f(yn)
+    append!(px, [yn, yneu]); append!(py, [yneu, yneu])
+    yn = yneu
+end
+plot!(p, px, py, color = RGB(0.64, 0.08, 0.18), label = &quot;&quot;)
+@printf(&quot;y_%d = %.6f,  stationärer Zustand 1 - 1/a = %.6f\n&quot;, N, yn, 1 - 1/a)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 1.21: Aktualisierungsfunktion und Treppendiagramm (Buch, Abschnitt 1.3, Gl. 1.30)</span>
+<span class="k">% f(y) = a y (1 - y) mit a = 2.5, Startwert y_0 = 0.1</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+a = 2.5; y0 = 0.1; N = 12;
+f = @(y) a * y .* (1 - y);
+
+y = linspace(0, 1, 200);
+plot(y, f(y), &#x27;Color&#x27;, [0 0.447 0.741]); hold on
+plot([0 1], [0 1], &#x27;k-&#x27;);
+
+<span class="k">% Treppe: senkrecht zum Graphen, waagrecht zur Winkelhalbierenden</span>
+yn = y0;
+px = yn; py = 0;
+for k = 1:N
+    yneu = f(yn);
+    px = [px yn yneu]; py = [py yneu yneu];
+    yn = yneu;
+end
+plot(px, py, &#x27;Color&#x27;, [0.64 0.08 0.18]);
+fprintf(&#x27;y_%d = %.6f,  stationärer Zustand 1 - 1/a = %.6f\n&#x27;, N, yn, 1 - 1/a);
+
+xlabel(&#x27;y_n&#x27;); ylabel(&#x27;y_{n+1}&#x27;); legend(&#x27;f(y) = a y (1 - y)&#x27;, &#x27;y_{n+1} = y_n&#x27;, &#x27;Location&#x27;, &#x27;northwest&#x27;);
+hold off</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 1.21: Aktualisierungsfunktion und Treppendiagramm (Buch, Abschnitt 1.3, Gl. 1.30)</span>
+<span class="k"># f(y) = a y (1 - y) mit a = 2.5, Startwert y_0 = 0.1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+a, y0, N = 2.5, 0.1, 12
+f = lambda y: a * y * (1 - y)
+
+y = np.linspace(0, 1, 200)
+plt.plot(y, f(y), label=&quot;f(y) = a y (1 - y)&quot;)
+plt.plot([0, 1], [0, 1], &quot;k&quot;, lw=0.8, label=&quot;y_{n+1} = y_n&quot;)
+
+<span class="k"># Treppe: senkrecht zum Graphen, waagrecht zur Winkelhalbierenden</span>
+yn = y0
+px, py = [yn], [0.0]
+for k in range(N):
+    yneu = f(yn)
+    px += [yn, yneu]; py += [yneu, yneu]
+    yn = yneu
+plt.plot(px, py, &quot;r-&quot;, lw=1)
+print(f&quot;y_{N} = {yn:.6f},  stationärer Zustand 1 - 1/a = {1 - 1/a:.6f}&quot;)
+
+plt.xlabel(&quot;y_n&quot;); plt.ylabel(&quot;y_{n+1}&quot;); plt.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 1.21: Aktualisierungsfunktion und Treppendiagramm (Buch, Abschnitt 1.3, Gl. 1.30)</span>
+<span class="k"># f(y) = a y (1 - y) mit a = 2.5, Startwert y_0 = 0.1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+a &lt;- 2.5; y0 &lt;- 0.1; N &lt;- 12
+f &lt;- function(y) a * y * (1 - y)
+
+y &lt;- seq(0, 1, length.out = 200)
+plot(y, f(y), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2, xlim = c(0, 1), ylim = c(0, 1), xlab = &quot;y_n&quot;, ylab = &quot;y_{n+1}&quot;)
+abline(0, 1)
+
+<span class="k"># Treppe: senkrecht zum Graphen, waagrecht zur Winkelhalbierenden</span>
+yn &lt;- y0
+px &lt;- yn; py &lt;- 0
+for (k in 1:N) {
+  yneu &lt;- f(yn)
+  px &lt;- c(px, yn, yneu); py &lt;- c(py, yneu, yneu)
+  yn &lt;- yneu
+}
+lines(px, py, col = rgb(0.64, 0.08, 0.18))
+cat(sprintf(&quot;y_%d = %.6f,  stationärer Zustand 1 - 1/a = %.6f\n&quot;, N, yn, 1 - 1/a))
+legend(&quot;topleft&quot;, legend = c(&quot;f(y) = a y (1 - y)&quot;, &quot;y_{n+1} = y_n&quot;), col = c(rgb(0, 0.447, 0.741), &quot;black&quot;), lwd = c(2, 1))</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>y_12 = 0.599970,  stationärer Zustand 1 - 1/a = 0.600000</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="logistisch-parameterstudie">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 1.22</p>
+    <h2>Parameterstudie</h2>
+    <p class="formel">y<sub>n+1</sub> = a y<sub>n</sub> (1 − y<sub>n</sub>),&ensp; y<sub>0</sub> = 0.008</p>
+    <p class="lead">Für a = 0.75 stirbt die Population aus, für a = 3.3 pendelt sie zwischen zwei Werten, für a = 3.55 zwischen vier, für a = 4 verläuft sie chaotisch.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/logistisch_parameterstudie.png" alt="Ergebnis des Programms logistisch_parameterstudie.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="logistisch_parameterstudie.jl" data-m="logistisch_parameterstudie.m" data-py="logistisch_parameterstudie.py" data-r="logistisch_parameterstudie.R">logistisch_parameterstudie.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/logistisch_parameterstudie.py" data-jl="code/logistisch_parameterstudie.jl" data-m="code/logistisch_parameterstudie.m" data-py="code/logistisch_parameterstudie.py" data-r="code/logistisch_parameterstudie.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 1.22: Parameterstudie zum logistischen Wachstumsmodell (Buch, Abschnitt 1.3, Gl. 1.28)</span>
+<span class="k"># y_{n+1} = a y_n (1 - y_n) mit y_0 = 0.008 und a = 0.75, 3.3, 3.55, 4</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+
+y0 = 0.008; N = 24
+n = 0:N
+bilder = []
+for a in (0.75, 3.3, 3.55, 4)
+    y = zeros(N + 1)
+    y[1] = y0
+    for k in 1:N
+        y[k + 1] = a * y[k] * (1 - y[k])
+    end
+    p = plot(n, y, ls = :dash, marker = :circle, color = RGB(0.64, 0.08, 0.18), label = &quot;a = $a&quot;, legend = :topleft,
+             xlabel = &quot;n&quot;, ylabel = &quot;y_n&quot;)
+    a &gt; 1 &amp;&amp; hline!(p, [1 - 1/a], ls = :dash, color = :black, label = &quot;&quot;)   <span class="k"># stationärer Zustand 1 - 1/a</span>
+    push!(bilder, p)
+    println(@sprintf(&quot;a = %g:  y_21 ... y_24 = &quot;, a), join([@sprintf(&quot;%.4g&quot;, v) for v in y[22:25]], &quot;  &quot;))
+end
+display(plot(bilder..., layout = (2, 2), size = (900, 650)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 1.22: Parameterstudie zum logistischen Wachstumsmodell (Buch, Abschnitt 1.3, Gl. 1.28)</span>
+<span class="k">% y_{n+1} = a y_n (1 - y_n) mit y_0 = 0.008 und a = 0.75, 3.3, 3.55, 4</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+y0 = 0.008; N = 24;
+n = 0:N;
+as = [0.75 3.3 3.55 4];
+for p = 1:4
+    a = as(p);
+    y = zeros(1, N + 1);
+    y(1) = y0;
+    for k = 1:N
+        y(k + 1) = a * y(k) * (1 - y(k));
+    end
+    subplot(2, 2, p);
+    plot(n, y, &#x27;--o&#x27;, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;DisplayName&#x27;, sprintf(&#x27;a = %g&#x27;, a)); hold on
+    if a &gt; 1
+        plot([0 N], [1 - 1/a, 1 - 1/a], &#x27;k--&#x27;, &#x27;HandleVisibility&#x27;, &#x27;off&#x27;);   <span class="k">% stationärer Zustand 1 - 1/a</span>
+    end
+    hold off; xlabel(&#x27;n&#x27;); ylabel(&#x27;y_n&#x27;); legend(&#x27;show&#x27;, &#x27;Location&#x27;, &#x27;northwest&#x27;);
+    fprintf(&#x27;a = %g:  y_21 ... y_24 = &#x27;, a); fprintf(&#x27;%.4g  &#x27;, y(22:25)); fprintf(&#x27;\n&#x27;);
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 1.22: Parameterstudie zum logistischen Wachstumsmodell (Buch, Abschnitt 1.3, Gl. 1.28)</span>
+<span class="k"># y_{n+1} = a y_n (1 - y_n) mit y_0 = 0.008 und a = 0.75, 3.3, 3.55, 4</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+y0, N = 0.008, 24
+n = np.arange(N + 1)
+
+fig, axs = plt.subplots(2, 2, figsize=(10, 7))
+for ax, a in zip(axs.flat, [0.75, 3.3, 3.55, 4]):
+    y = np.zeros(N + 1)
+    y[0] = y0
+    for k in range(N):
+        y[k + 1] = a * y[k] * (1 - y[k])
+    ax.plot(n, y, &quot;o--&quot;, color=(0.64, 0.08, 0.18), label=f&quot;a = {a}&quot;)
+    if a &gt; 1:
+        ax.axhline(1 - 1 / a, color=&quot;k&quot;, ls=&quot;--&quot;, lw=0.8)   <span class="k"># stationärer Zustand 1 - 1/a</span>
+    ax.set_xlabel(&quot;n&quot;); ax.set_ylabel(&quot;y_n&quot;); ax.legend(loc=&quot;upper left&quot;)
+    print(f&quot;a = {a}:  y_21 ... y_24 =&quot;, &quot;  &quot;.join(f&quot;{v:.4g}&quot; for v in y[21:]))
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 1.22: Parameterstudie zum logistischen Wachstumsmodell (Buch, Abschnitt 1.3, Gl. 1.28)</span>
+<span class="k"># y_{n+1} = a y_n (1 - y_n) mit y_0 = 0.008 und a = 0.75, 3.3, 3.55, 4</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+y0 &lt;- 0.008; N &lt;- 24
+n &lt;- 0:N
+par(mfrow = c(2, 2))
+for (a in c(0.75, 3.3, 3.55, 4)) {
+  y &lt;- numeric(N + 1)
+  y[1] &lt;- y0
+  for (k in 1:N) y[k + 1] &lt;- a * y[k] * (1 - y[k])
+  plot(n, y, type = &quot;o&quot;, lty = 2, pch = 16, col = rgb(0.64, 0.08, 0.18), xlab = &quot;n&quot;, ylab = &quot;y_n&quot;, main = sprintf(&quot;a = %g&quot;, a))
+  if (a &gt; 1) abline(h = 1 - 1/a, lty = 2)        <span class="k"># stationärer Zustand 1 - 1/a</span>
+  cat(sprintf(&quot;a = %g:  y_21 ... y_24 =&quot;, a), sprintf(&quot;%.4g&quot;, y[22:25]), &quot;\n&quot;)
+}</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>a = 0.75:  y_21 ... y_24 = 1.844e-05  1.383e-05  1.037e-05  7.777e-06
+a = 3.3:  y_21 ... y_24 = 0.8236  0.4794  0.8236  0.4794
+a = 3.55:  y_21 ... y_24 = 0.3548  0.8127  0.5404  0.8817
+a = 4:  y_21 ... y_24 = 0.1649  0.5507  0.9897  0.04071</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="logistisch-bifurkation">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 1.23</p>
+    <h2>Bifurkationsdiagramm</h2>
+    <p class="formel">y<sub>n+1</sub> = a y<sub>n</sub> (1 − y<sub>n</sub>),&ensp; 2.8 ≤ a ≤ 4</p>
+    <p class="lead">Für jeden Parameterwert a wird die Folge 10&#8239;000 Schritte lang gerechnet, gezeichnet wird das Langzeitverhalten. Im winzigen Ausschnitt unten taucht dasselbe Verzweigungsmuster wieder auf.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/logistisch_bifurkation.png" alt="Ergebnis des Programms logistisch_bifurkation.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="logistisch_bifurkation.jl" data-m="logistisch_bifurkation.m" data-py="logistisch_bifurkation.py" data-r="logistisch_bifurkation.R">logistisch_bifurkation.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/logistisch_bifurkation.py" data-jl="code/logistisch_bifurkation.jl" data-m="code/logistisch_bifurkation.m" data-py="code/logistisch_bifurkation.py" data-r="code/logistisch_bifurkation.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 1.23: Bifurkationsdiagramm des logistischen Wachstumsmodells (Buch, Abschnitt 1.3, Gl. 1.28)</span>
+<span class="k"># y_{n+1} = a y_n (1 - y_n): für jeden Wert von a wird nach n_* = 10000 Schritten das Langzeitverhalten gezeichnet</span>
+<span class="k"># oben: 2.8 &lt;= a &lt;= 4;  unten: Ausschnitt 3.8538 &lt;= a &lt;= 3.8541, 0.494 &lt;= y &lt;= 0.506 (das Muster kehrt wieder)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+
+gruen = RGB(0, 0.39, 0)
+bilder = []
+for (a, behalten, fenster) in [(range(2.8, 4.0, length = 2401), 200, (0, 1)),
+                               (range(3.8538, 3.8541, length = 1501), 6000, (0.494, 0.506))]
+    y = fill(0.9, length(a))             <span class="k"># alle Parameterwerte gleichzeitig (Vektor)</span>
+    for k in 1:10000                     <span class="k"># Einschwingen</span>
+        y = a .* y .* (1 .- y)
+    end
+    A = Float64[]; Y = Float64[]
+    for k in 1:behalten                  <span class="k"># Langzeitverhalten sammeln</span>
+        y = a .* y .* (1 .- y)
+        m = (y .&gt; fenster[1]) .&amp; (y .&lt; fenster[2])
+        append!(A, a[m]); append!(Y, y[m])
+    end
+    push!(bilder, scatter(A, Y, ms = 0.5, msw = 0, color = gruen, legend = false, xlabel = &quot;a&quot;, ylabel = &quot;y_n für n &gt; 10000&quot;))
+end
+display(plot(bilder..., layout = (2, 1), size = (800, 700)))
+
+a = 3.2; y = 0.9                         <span class="k"># Beispiel a = 3.2: zwei Werte wechseln sich ab (2-Zyklus)</span>
+for k in 1:10000
+    global y = a * y * (1 - y)
+end
+@printf(&quot;a = 3.2:  2-Zyklus %.4f &lt;-&gt; %.4f\n&quot;, y, a * y * (1 - y))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 1.23: Bifurkationsdiagramm des logistischen Wachstumsmodells (Buch, Abschnitt 1.3, Gl. 1.28)</span>
+<span class="k">% y_{n+1} = a y_n (1 - y_n): für jeden Wert von a wird nach n_* = 10000 Schritten das Langzeitverhalten gezeichnet</span>
+<span class="k">% oben: 2.8 &lt;= a &lt;= 4;  unten: Ausschnitt 3.8538 &lt;= a &lt;= 3.8541, 0.494 &lt;= y &lt;= 0.506 (das Muster kehrt wieder)</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+gruen = [0 0.39 0];
+bereiche = {linspace(2.8, 4.0, 2401), linspace(3.8538, 3.8541, 1501)};
+behalten = [200 6000];
+fenster = [0 1; 0.494 0.506];
+for p = 1:2
+    a = bereiche{p};
+    y = 0.9 * ones(size(a));             <span class="k">% alle Parameterwerte gleichzeitig (Vektor)</span>
+    for k = 1:10000                      <span class="k">% Einschwingen</span>
+        y = a .* y .* (1 - y);
+    end
+    A = []; Y = [];
+    for k = 1:behalten(p)                <span class="k">% Langzeitverhalten sammeln</span>
+        y = a .* y .* (1 - y);
+        m = (y &gt; fenster(p, 1)) &amp; (y &lt; fenster(p, 2));
+        A = [A a(m)]; Y = [Y y(m)];
+    end
+    subplot(2, 1, p);
+    plot(A, Y, &#x27;.&#x27;, &#x27;Color&#x27;, gruen, &#x27;MarkerSize&#x27;, 1);
+    xlabel(&#x27;a&#x27;); ylabel(&#x27;y_n für n &gt; 10000&#x27;);
+end
+
+a = 3.2; y = 0.9;                        <span class="k">% Beispiel a = 3.2: zwei Werte wechseln sich ab (2-Zyklus)</span>
+for k = 1:10000
+    y = a * y * (1 - y);
+end
+fprintf(&#x27;a = 3.2:  2-Zyklus %.4f &lt;-&gt; %.4f\n&#x27;, y, a * y * (1 - y));</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 1.23: Bifurkationsdiagramm des logistischen Wachstumsmodells (Buch, Abschnitt 1.3, Gl. 1.28)</span>
+<span class="k"># y_{n+1} = a y_n (1 - y_n): für jeden Wert von a wird nach n_* = 10000 Schritten das Langzeitverhalten gezeichnet</span>
+<span class="k"># oben: 2.8 &lt;= a &lt;= 4;  unten: Ausschnitt 3.8538 &lt;= a &lt;= 3.8541, 0.494 &lt;= y &lt;= 0.506 (das Muster kehrt wieder)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+def bifurkation(a, behalten, fenster=(0, 1)):
+    y = np.full_like(a, 0.9)                 <span class="k"># alle Parameterwerte gleichzeitig (Vektor)</span>
+    for _ in range(10000):                   <span class="k"># Einschwingen</span>
+        y = a * y * (1 - y)
+    A, Y = [], []
+    for _ in range(behalten):                <span class="k"># Langzeitverhalten sammeln</span>
+        y = a * y * (1 - y)
+        m = (y &gt; fenster[0]) &amp; (y &lt; fenster[1])
+        A.append(a[m]); Y.append(y[m])
+    return np.concatenate(A), np.concatenate(Y)
+
+fig, axs = plt.subplots(2, 1, figsize=(8, 8))
+A, Y = bifurkation(np.linspace(2.8, 4.0, 2401), 200)
+axs[0].plot(A, Y, &quot;,&quot;, color=(0, 0.39, 0))
+axs[0].set_xlabel(&quot;a&quot;); axs[0].set_ylabel(&quot;y_n für n &gt; 10000&quot;)
+
+A, Y = bifurkation(np.linspace(3.8538, 3.8541, 1501), 6000, fenster=(0.494, 0.506))
+axs[1].plot(A, Y, &quot;,&quot;, color=(0, 0.39, 0))
+axs[1].set_xlabel(&quot;a&quot;); axs[1].set_ylabel(&quot;y_n für n &gt; 10000&quot;)
+axs[1].ticklabel_format(useOffset=False)
+plt.tight_layout()
+
+a = np.array([3.2]); y = np.array([0.9])         <span class="k"># Beispiel a = 3.2: zwei Werte wechseln sich ab (2-Zyklus)</span>
+for _ in range(10000):
+    y = a * y * (1 - y)
+print(f&quot;a = 3.2:  2-Zyklus {y[0]:.4f} &lt;-&gt; {a[0] * y[0] * (1 - y[0]):.4f}&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 1.23: Bifurkationsdiagramm des logistischen Wachstumsmodells (Buch, Abschnitt 1.3, Gl. 1.28)</span>
+<span class="k"># y_{n+1} = a y_n (1 - y_n): für jeden Wert von a wird nach n_* = 10000 Schritten das Langzeitverhalten gezeichnet</span>
+<span class="k"># oben: 2.8 &lt;= a &lt;= 4;  unten: Ausschnitt 3.8538 &lt;= a &lt;= 3.8541, 0.494 &lt;= y &lt;= 0.506 (das Muster kehrt wieder)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+gruen &lt;- rgb(0, 0.39, 0)
+bereiche &lt;- list(seq(2.8, 4.0, length.out = 2401), seq(3.8538, 3.8541, length.out = 1501))
+behalten &lt;- c(200, 6000)
+fenster &lt;- rbind(c(0, 1), c(0.494, 0.506))
+par(mfrow = c(2, 1))
+for (p in 1:2) {
+  a &lt;- bereiche[[p]]
+  y &lt;- rep(0.9, length(a))               <span class="k"># alle Parameterwerte gleichzeitig (Vektor)</span>
+  for (k in 1:10000) y &lt;- a * y * (1 - y)          <span class="k"># Einschwingen</span>
+  A &lt;- c(); Y &lt;- c()
+  for (k in 1:behalten[p]) {             <span class="k"># Langzeitverhalten sammeln</span>
+    y &lt;- a * y * (1 - y)
+    m &lt;- y &gt; fenster[p, 1] &amp; y &lt; fenster[p, 2]
+    A &lt;- c(A, a[m]); Y &lt;- c(Y, y[m])
+  }
+  plot(A, Y, pch = &quot;.&quot;, col = gruen, xlab = &quot;a&quot;, ylab = &quot;y_n für n &gt; 10000&quot;)
+}
+
+a &lt;- 3.2; y &lt;- 0.9                       <span class="k"># Beispiel a = 3.2: zwei Werte wechseln sich ab (2-Zyklus)</span>
+for (k in 1:10000) y &lt;- a * y * (1 - y)
+cat(sprintf(&quot;a = 3.2:  2-Zyklus %.4f &lt;-&gt; %.4f\n&quot;, y, a * y * (1 - y)))</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>a = 3.2:  2-Zyklus 0.5130 &lt;-&gt; 0.7995</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="logistisch-sensitivitaet">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 1.24</p>
+    <h2>Sensitivität bezüglich des Startwerts</h2>
+    <p class="formel">y<sub>0</sub> = 0.05 &emsp;und&emsp; ỹ<sub>0</sub> = 0.06</p>
+    <p class="lead">Für a = 2 und a = 3.1 laufen die beiden Folgen zusammen, für a = 4 entfernen sie sich nach wenigen Schritten völlig voneinander: Kleine Messfehler machen Langzeitvorhersagen unmöglich.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/logistisch_sensitivitaet.png" alt="Ergebnis des Programms logistisch_sensitivitaet.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="logistisch_sensitivitaet.jl" data-m="logistisch_sensitivitaet.m" data-py="logistisch_sensitivitaet.py" data-r="logistisch_sensitivitaet.R">logistisch_sensitivitaet.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/logistisch_sensitivitaet.py" data-jl="code/logistisch_sensitivitaet.jl" data-m="code/logistisch_sensitivitaet.m" data-py="code/logistisch_sensitivitaet.py" data-r="code/logistisch_sensitivitaet.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 1.24: Sensitivität bezüglich des Startwerts (Buch, Abschnitt 1.3, Gl. 1.28)</span>
+<span class="k"># y_{n+1} = a y_n (1 - y_n) mit y_0 = 0.05 und ~y_0 = 0.06 für a = 2, 3.1, 3.55, 4</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+
+N = 30
+n = 0:N
+bilder = []
+for a in (2, 3.1, 3.55, 4)
+    y = zeros(N + 1); yt = zeros(N + 1)
+    y[1] = 0.05; yt[1] = 0.06
+    for k in 1:N
+        y[k + 1] = a * y[k] * (1 - y[k])
+        yt[k + 1] = a * yt[k] * (1 - yt[k])
+    end
+    p = plot(n, y, ls = :dash, marker = :circle, color = RGB(0.43, 0.04, 0.12), label = &quot;y_n, a = $a&quot;, legend = :bottomright,
+             xlabel = &quot;n&quot;, ylims = (0, 1))
+    plot!(p, n, yt, ls = :dash, marker = :rect, color = RGB(0.89, 0.44, 0.49), label = &quot;~y_n, a = $a&quot;)
+    hline!(p, [1 - 1/a], color = :black, label = &quot;&quot;)
+    push!(bilder, p)
+    @printf(&quot;a = %g:  |y_30 - ~y_30| = %.4f\n&quot;, a, abs(y[N + 1] - yt[N + 1]))
+end
+display(plot(bilder..., layout = (2, 2), size = (900, 650)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 1.24: Sensitivität bezüglich des Startwerts (Buch, Abschnitt 1.3, Gl. 1.28)</span>
+<span class="k">% y_{n+1} = a y_n (1 - y_n) mit y_0 = 0.05 und ~y_0 = 0.06 für a = 2, 3.1, 3.55, 4</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+N = 30;
+n = 0:N;
+as = [2 3.1 3.55 4];
+for p = 1:4
+    a = as(p);
+    y = zeros(1, N + 1); yt = zeros(1, N + 1);
+    y(1) = 0.05; yt(1) = 0.06;
+    for k = 1:N
+        y(k + 1) = a * y(k) * (1 - y(k));
+        yt(k + 1) = a * yt(k) * (1 - yt(k));
+    end
+    subplot(2, 2, p);
+    plot(n, y, &#x27;--o&#x27;, &#x27;Color&#x27;, [0.43 0.04 0.12]); hold on
+    plot(n, yt, &#x27;--s&#x27;, &#x27;Color&#x27;, [0.89 0.44 0.49]);
+    plot([0 N], [1 - 1/a, 1 - 1/a], &#x27;k-&#x27;); hold off
+    xlabel(&#x27;n&#x27;); legend(sprintf(&#x27;y_n, a = %g&#x27;, a), sprintf(&#x27;~y_n, a = %g&#x27;, a), &#x27;Location&#x27;, &#x27;southeast&#x27;);
+    fprintf(&#x27;a = %g:  |y_30 - ~y_30| = %.4f\n&#x27;, a, abs(y(N + 1) - yt(N + 1)));
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 1.24: Sensitivität bezüglich des Startwerts (Buch, Abschnitt 1.3, Gl. 1.28)</span>
+<span class="k"># y_{n+1} = a y_n (1 - y_n) mit y_0 = 0.05 und ~y_0 = 0.06 für a = 2, 3.1, 3.55, 4</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+N = 30
+n = np.arange(N + 1)
+
+def folge(a, y0):
+    y = np.zeros(N + 1)
+    y[0] = y0
+    for k in range(N):
+        y[k + 1] = a * y[k] * (1 - y[k])
+    return y
+
+fig, axs = plt.subplots(2, 2, figsize=(10, 7))
+for ax, a in zip(axs.flat, [2, 3.1, 3.55, 4]):
+    y, yt = folge(a, 0.05), folge(a, 0.06)
+    ax.plot(n, y, &quot;o--&quot;, color=(0.43, 0.04, 0.12), label=f&quot;y_n, a = {a}&quot;)
+    ax.plot(n, yt, &quot;s--&quot;, color=(0.89, 0.44, 0.49), label=f&quot;~y_n, a = {a}&quot;)
+    ax.axhline(1 - 1 / a, color=&quot;k&quot;, lw=0.8)
+    ax.set_xlabel(&quot;n&quot;); ax.legend(loc=&quot;lower right&quot;)
+    print(f&quot;a = {a}:  |y_30 - ~y_30| = {abs(y[N] - yt[N]):.4f}&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 1.24: Sensitivität bezüglich des Startwerts (Buch, Abschnitt 1.3, Gl. 1.28)</span>
+<span class="k"># y_{n+1} = a y_n (1 - y_n) mit y_0 = 0.05 und ~y_0 = 0.06 für a = 2, 3.1, 3.55, 4</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+N &lt;- 30
+n &lt;- 0:N
+par(mfrow = c(2, 2))
+for (a in c(2, 3.1, 3.55, 4)) {
+  y &lt;- numeric(N + 1); yt &lt;- numeric(N + 1)
+  y[1] &lt;- 0.05; yt[1] &lt;- 0.06
+  for (k in 1:N) {
+    y[k + 1] &lt;- a * y[k] * (1 - y[k])
+    yt[k + 1] &lt;- a * yt[k] * (1 - yt[k])
+  }
+  plot(n, y, type = &quot;o&quot;, lty = 2, pch = 16, col = rgb(0.43, 0.04, 0.12), ylim = c(0, 1), xlab = &quot;n&quot;, ylab = &quot;&quot;)
+  lines(n, yt, type = &quot;o&quot;, lty = 2, pch = 15, col = rgb(0.89, 0.44, 0.49))
+  abline(h = 1 - 1/a)
+  legend(&quot;bottomright&quot;, legend = c(sprintf(&quot;y_n, a = %g&quot;, a), sprintf(&quot;~y_n, a = %g&quot;, a)),
+         col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)), pch = c(16, 15), lty = 2, cex = 0.8)
+  cat(sprintf(&quot;a = %g:  |y_30 - ~y_30| = %.4f\n&quot;, a, abs(y[N + 1] - yt[N + 1])))
+}</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>a = 2:  |y_30 - ~y_30| = 0.0000
+a = 3.1:  |y_30 - ~y_30| = 0.0001
+a = 3.55:  |y_30 - ~y_30| = 0.0011
+a = 4:  |y_30 - ~y_30| = 0.2929</code></pre></details>
+    </div>
+  </div>
+</section>
+  <section class="apps" id="app-treppe-logistisch">
+  <div class="fig-head"><p class="eyebrow">Im Browser ausprobieren · ohne Installation</p><h2>Logistisches Modell zum Mitziehen</h2><p class="lead">Verschieben Sie a über 3 hinaus: Aus dem stationären Zustand wird ein 2-Zyklus, dann ein 4-Zyklus, schließlich Chaos – der Weg, den das Bifurkationsdiagramm von links nach rechts zeigt.</p></div>
+  <div class="app" data-app="treppe" data-familie="logistisch">
+    <canvas width="720" height="560" aria-label="Logistisches Modell zum Mitziehen"></canvas>
+    <div class="regler"><div data-zeile="p"><label><span><span data-pname>Parameter</span></span> <output data-o="p"></output><input type="range" data-r="p" min="0" max="1" step="0.01" value="0.5" aria-label="Parameter"></label></div><label><span>Startwert x<sub>0</sub></span> <output data-o="x0"></output><input type="range" data-r="x0" min="0" max="1" step="0.01" value="0.1" aria-label="Startwert x0"></label><label><span>Schritte</span> <output data-o="n"></output><input type="range" data-r="n" min="1" max="300" step="1" value="12" aria-label="Schritte"></label><p class="zustand"></p><pre class="werte"></pre></div>
+  </div>
+</section>
+  <section class="matlab-apps"><h3>MATLAB-Apps aus der Vorlesung</h3><p>Herunterladen, in einen Ordner legen und in MATLAB den Namen ohne Endung eingeben, z. B. <code>logistik_app</code>. Die Apps nutzen die grafische Oberfläche von MATLAB und laufen nicht in GNU Octave.</p><ul><li><a href="apps/logistik_app.m" download>logistik_app.m</a><span>Logistisches Wachstumsmodell</span></li></ul></section>
+  <nav class="weiter" aria-label="Weiterblättern"><a href="abschnitt-1-2.html"><small>Zurück</small>1.2 Lineare Differenzengleichungen</a><a href="abschnitt-1-4.html"><small>Weiter</small>1.4 Stationäre Zustände und Stabilität</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Begleitmaterial zum Buch „Dynamische Systeme in den Lebenswissenschaften“ von Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programme unter <a href="../LICENSE.txt">MIT-Lizenz</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# Abb. 4.9: Wirkstoff in Magen und Blut (Buch, Abschnitt 4.2, Gl. 4.9)
+# dm/dt = -ka m,  db/dt = ka m - ke b  mit ka = 1, ke = 0.2 pro Stunde, m(0) = 4, b(0) = 0:  m(t) = 4 e^(-t), b(t) = 5 (e^(-0.2t) - e^(-t))
+# (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)
+import numpy as np
+import matplotlib.pyplot as plt
+t = np.linspace(0, 20, 600)
+m = 4 * np.exp(-t)
+b = 5 * (np.exp(-0.2 * t) - np.exp(-t))
+tmax = np.log(5) / 0.8                                   # db/dt = 0: e^(-0.2t) = 5 e^(-t)
+print(f"höchster Spiegel im Blut b = {5 * (np.exp(-0.2 * tmax) - np.exp(-tmax)):.3f} mg nach t = {tmax:.3f} h")
+A = np.array([[-1, 0], [1, -0.2]])
+print("Eigenwerte von A:", "  ".join(f"{l:g}" for l in sorted(np.linalg.eigvals(A).real)))
+plt.plot(t, m, color=(0.43, 0.04, 0.12), lw=2, label="Magen m(t)")
+plt.plot(t, b, color=(0.89, 0.44, 0.49), lw=2, label="Blut b(t)")
+plt.xlabel("t (Stunden)"); plt.ylabel("Wirkstoff (mg)"); plt.legend()
+plt.show()

@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>2.3 Eigenwerte und Langzeitverhalten – Dynamische Systeme in den Lebenswissenschaften</title>
+<meta name="description" content="Programme in Julia, MATLAB, Python und R zu Abschnitt 2.3 des Buchs Dynamische Systeme in den Lebenswissenschaften">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamische Systeme in den Lebenswissenschaften</a>
+  <nav aria-label="Kapitel"><a href="../index.html">Start</a> <a href="../kapitel1/index.html">Kapitel 1</a> <a href="../kapitel2/index.html" aria-current="page">Kapitel 2</a> <a href="../kapitel3/index.html">Kapitel 3</a> <a href="../kapitel4/index.html">Kapitel 4</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Abschnitte"><h2><a href="index.html">Kapitel 2</a></h2><ol><li><a href="abschnitt-2-1.html"><span class="nr">2.1</span><span>Beispiele: Fibonacci und Räuber-Beute</span></a></li><li><a href="abschnitt-2-2.html"><span class="nr">2.2</span><span>Matrix-Modelle</span></a></li><li><a href="abschnitt-2-3.html" aria-current="page"><span class="nr">2.3</span><span>Eigenwerte und Langzeitverhalten</span></a></li><li><a href="abschnitt-2-4.html"><span class="nr">2.4</span><span>Nichtlineare Systeme: SIR-Modell</span></a></li><li><a href="abschnitt-2-5.html"><span class="nr">2.5</span><span>Vertiefung: Ausbreitung des Aktionspotentials</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Kapitel 2 · Diskrete dynamische Systeme mit mehreren Variablen</p>
+      <h1><span class="num">2.3</span>Eigenwerte und Langzeitverhalten</h1>
+      <p>Die Lösung x<sub>n</sub> = A<sup>n</sup> x<sub>0</sub> lässt sich mit Eigenwerten und Eigenvektoren zerlegen. Auf lange Sicht setzt sich der betragsgrößte, dominante Eigenwert λ<sub>1</sub> durch: Er bestimmt, ob das System wächst, schrumpft oder zur Ruhe kommt, und sein Eigenvektor gibt die Verteilung auf die Komponenten an.</p>
+      <p>Zu jeder Abbildung des Abschnitts finden Sie das Programm, das sie erzeugt. Ändern Sie Parameter und Startwerte und beobachten Sie, was passiert. Abbildungs- und Gleichungsnummern beziehen sich auf das Buch.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programmiersprache</legend>
+  <div class="seg" role="radiogroup" aria-label="Programmiersprache">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Gilt für alle Seiten. MATLAB-Programme laufen auch im kostenlosen GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>Auf dieser Seite</b><ul><li><a href="#fibonacci-quotient"><span class="abb">Abb. 2.10</span>Quotient aufeinanderfolgender Fibonacci-Zahlen</a></li><li><a href="#krankheit-stationaer"><span class="abb">Abb. 2.11</span>Krankheitsverlauf mit stationärem Zustand</a></li><li><a href="#leslie-anteile"><span class="abb">Abb. 2.12</span>Stabile Altersverteilung</a></li><li><a href="#leslie-eigenwert"><span class="abb">Abb. 2.13</span>Dominanter Eigenwert in Abhängigkeit von b2</a></li><li><a href="#app-leslie"><span class="abb">App</span>im Browser ausprobieren</a></li></ul></div>
+  
+<section class="fig" id="fibonacci-quotient">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 2.10</p>
+    <h2>Quotient aufeinanderfolgender Fibonacci-Zahlen</h2>
+    <p class="formel">A = (0 1; 1 1),&ensp; λ<sub>1</sub> = (1 + √5)/2</p>
+    <p class="lead">Der Quotient e<sub>n+1</sub>/e<sub>n</sub> pendelt sich beim dominanten Eigenwert ein, dem goldenen Schnitt 1.618… Das Programm berechnet die Eigenwerte mit <code>eigvals</code> bzw. <code>eig</code>.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/fibonacci_quotient.png" alt="Ergebnis des Programms fibonacci_quotient.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="fibonacci_quotient.jl" data-m="fibonacci_quotient.m" data-py="fibonacci_quotient.py" data-r="fibonacci_quotient.R">fibonacci_quotient.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/fibonacci_quotient.py" data-jl="code/fibonacci_quotient.jl" data-m="code/fibonacci_quotient.m" data-py="code/fibonacci_quotient.py" data-r="code/fibonacci_quotient.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 2.10: Quotient aufeinanderfolgender Fibonacci-Zahlen (Buch, Abschnitt 2.3, Gl. 2.15)</span>
+<span class="k"># System j_{n+1} = e_n, e_{n+1} = e_n + j_n; der Quotient e_{n+1}/e_n strebt gegen den dominanten Eigenwert (goldener Schnitt)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots, LinearAlgebra
+
+A = [0 1;
+     1 1]
+x = [1, 0]                               <span class="k"># (j_0, e_0): ein junges Paar</span>
+e = [x[2]]
+for k in 1:16
+    global x = A * x
+    push!(e, x[2])
+end
+q = e[3:end] ./ e[2:end-1]
+println(&quot;Eigenwerte von A: &quot;, join([@sprintf(&quot;%.6f&quot;, l) for l in sort(eigvals(A))], &quot;  &quot;))
+println(&quot;e_{n+1}/e_n: &quot;, join([@sprintf(&quot;%.6f&quot;, v) for v in q[end-3:end]], &quot;  &quot;), &quot;   goldener Schnitt: &quot;, @sprintf(&quot;%.6f&quot;, (1 + sqrt(5)) / 2))
+
+p = plot(1:length(q), q, ls = :dash, marker = :circle, color = RGB(0.64, 0.08, 0.18), label = &quot;e_{n+1}/e_n&quot;, xlabel = &quot;n&quot;)
+hline!(p, [(1 + sqrt(5)) / 2], ls = :dash, color = :black, label = &quot;λ₁ = 1.618&quot;)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 2.10: Quotient aufeinanderfolgender Fibonacci-Zahlen (Buch, Abschnitt 2.3, Gl. 2.15)</span>
+<span class="k">% System j_{n+1} = e_n, e_{n+1} = e_n + j_n; der Quotient e_{n+1}/e_n strebt gegen den dominanten Eigenwert (goldener Schnitt)</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+A = [0 1;
+     1 1];
+x = [1; 0];                              <span class="k">% (j_0, e_0): ein junges Paar</span>
+e = x(2);
+for k = 1:16
+    x = A * x;
+    e(end + 1) = x(2);
+end
+q = e(3:end) ./ e(2:end-1);
+fprintf(&#x27;Eigenwerte von A: %.6f  %.6f\n&#x27;, sort(eig(A)));
+fprintf(&#x27;e_{n+1}/e_n: &#x27;); fprintf(&#x27;%.6f  &#x27;, q(end-3:end)); fprintf(&#x27; goldener Schnitt: %.6f\n&#x27;, (1 + sqrt(5)) / 2);
+
+n = 1:numel(q);
+plot(n, q, &#x27;--o&#x27;, &#x27;Color&#x27;, [0.64 0.08 0.18]); hold on
+plot([1 n(end)], (1 + sqrt(5)) / 2 * [1 1], &#x27;k--&#x27;); hold off
+xlabel(&#x27;n&#x27;); legend(&#x27;e_{n+1}/e_n&#x27;, &#x27;\lambda_1 = 1.618&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 2.10: Quotient aufeinanderfolgender Fibonacci-Zahlen (Buch, Abschnitt 2.3, Gl. 2.15)</span>
+<span class="k"># System j_{n+1} = e_n, e_{n+1} = e_n + j_n; der Quotient e_{n+1}/e_n strebt gegen den dominanten Eigenwert (goldener Schnitt)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+A = np.array([[0, 1],
+              [1, 1]])
+x = np.array([1, 0])                     <span class="k"># (j_0, e_0): ein junges Paar</span>
+e = [x[1]]
+for n in range(16):
+    x = A @ x
+    e.append(x[1])
+e = np.array(e, dtype=float)
+q = e[2:] / e[1:-1]
+lam = np.linalg.eigvals(A)
+print(&quot;Eigenwerte von A:&quot;, &quot;  &quot;.join(f&quot;{x:.6f}&quot; for x in sorted(np.real(lam))))
+print(&quot;e_{n+1}/e_n:&quot;, &quot;  &quot;.join(f&quot;{x:.6f}&quot; for x in q[-4:]), &quot;  goldener Schnitt:&quot;, f&quot;{(1 + 5**0.5) / 2:.6f}&quot;)
+
+n = np.arange(1, len(q) + 1)
+plt.plot(n, q, &quot;o--&quot;, color=(0.64, 0.08, 0.18), label=&quot;e_{n+1}/e_n&quot;)
+plt.axhline((1 + 5**0.5) / 2, color=&quot;k&quot;, ls=&quot;--&quot;, lw=0.8, label=&quot;λ_1 ≈ 1.618&quot;)
+plt.xlabel(&quot;n&quot;); plt.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 2.10: Quotient aufeinanderfolgender Fibonacci-Zahlen (Buch, Abschnitt 2.3, Gl. 2.15)</span>
+<span class="k"># System j_{n+1} = e_n, e_{n+1} = e_n + j_n; der Quotient e_{n+1}/e_n strebt gegen den dominanten Eigenwert (goldener Schnitt)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+A &lt;- matrix(c(0, 1,
+              1, 1), nrow = 2, byrow = TRUE)
+x &lt;- c(1, 0)                             <span class="k"># (j_0, e_0): ein junges Paar</span>
+e &lt;- x[2]
+for (k in 1:16) { x &lt;- A %*% x; e &lt;- c(e, x[2]) }
+q &lt;- e[3:length(e)] / e[2:(length(e) - 1)]
+cat(&quot;Eigenwerte von A:&quot;, sprintf(&quot;%.6f&quot;, sort(eigen(A)$values)), &quot;\n&quot;)
+cat(&quot;e_{n+1}/e_n:&quot;, sprintf(&quot;%.6f&quot;, tail(q, 4)), &quot; goldener Schnitt:&quot;, sprintf(&quot;%.6f&quot;, (1 + sqrt(5)) / 2), &quot;\n&quot;)
+
+plot(seq_along(q), q, type = &quot;o&quot;, lty = 2, pch = 16, col = rgb(0.64, 0.08, 0.18), xlab = &quot;n&quot;, ylab = &quot;&quot;)
+abline(h = (1 + sqrt(5)) / 2, lty = 2)
+legend(&quot;topright&quot;, legend = c(&quot;e_{n+1}/e_n&quot;, &quot;lambda_1 = 1.618&quot;), col = c(rgb(0.64, 0.08, 0.18), &quot;black&quot;), lty = 2, pch = c(16, NA))</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>Eigenwerte von A: -0.618034  1.618034
+e_{n+1}/e_n: 1.618056  1.618026  1.618037  1.618033   goldener Schnitt: 1.618034</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="krankheit-stationaer">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 2.11</p>
+    <h2>Krankheitsverlauf mit stationärem Zustand</h2>
+    <p class="formel">A x* = x*,&ensp; x* ≈ (98940, 495, 565)</p>
+    <p class="lead">Der dominante Eigenwert ist 1. Der zugehörige Eigenvektor, skaliert auf 100 000 Personen, ist der stationäre Zustand, gegen den die Simulation strebt.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/krankheit_stationaer.png" alt="Ergebnis des Programms krankheit_stationaer.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="krankheit_stationaer.jl" data-m="krankheit_stationaer.m" data-py="krankheit_stationaer.py" data-r="krankheit_stationaer.R">krankheit_stationaer.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/krankheit_stationaer.py" data-jl="code/krankheit_stationaer.jl" data-m="code/krankheit_stationaer.m" data-py="code/krankheit_stationaer.py" data-r="code/krankheit_stationaer.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 2.11: Krankheitsverlauf mit stationärem Zustand (Buch, Abschnitt 2.3, Gl. 2.8)</span>
+<span class="k"># Der stationäre Zustand x* = A x* ist ein Eigenvektor zum Eigenwert 1, skaliert auf 100000 Personen</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots, LinearAlgebra
+
+A = [0.997 0.6 0;
+     0.003 0   0.35;
+     0     0.4 0.65]
+w, Vec = eigen(A)
+println(&quot;Eigenwerte: &quot;, join([@sprintf(&quot;%.4f&quot;, l) for l in sort(real.(w))], &quot;  &quot;))
+i1 = argmin(abs.(w .- 1))
+v = real.(Vec[:, i1])                    <span class="k"># Eigenvektor zum Eigenwert 1</span>
+xs = v ./ sum(v) .* 100000
+@printf(&quot;stationärer Zustand x* = (%.0f, %.0f, %.0f)\n&quot;, xs...)
+
+N = 30
+X = zeros(3, N + 1); X[:, 1] = [100000, 0, 0]
+for k in 1:N
+    X[:, k + 1] = A * X[:, k]
+end
+
+namen = [&quot;g_n&quot;, &quot;l_n&quot;, &quot;k_n&quot;]
+farben = [RGB(0.43, 0.04, 0.12), RGB(0.89, 0.44, 0.49), RGB(0.64, 0.08, 0.18)]; zeichen = [:circle, :rect, :diamond]
+bilder = [begin
+    b = plot(0:N, X[i, :], ls = :dash, marker = zeichen[i], color = farben[i], label = namen[i], legend = :right)
+    hline!(b, [xs[i]], ls = :dash, color = :black, label = &quot;&quot;)
+    b
+end for i in 1:3]
+display(plot(bilder..., layout = (3, 1), size = (800, 700), xlabel = &quot;n (Jahre)&quot;))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 2.11: Krankheitsverlauf mit stationärem Zustand (Buch, Abschnitt 2.3, Gl. 2.8)</span>
+<span class="k">% Der stationäre Zustand x* = A x* ist ein Eigenvektor zum Eigenwert 1, skaliert auf 100000 Personen</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+A = [0.997 0.6 0;
+     0.003 0   0.35;
+     0     0.4 0.65];
+[V, D] = eig(A);
+w = diag(D);
+fprintf(&#x27;Eigenwerte: &#x27;); fprintf(&#x27;%.4f  &#x27;, sort(real(w))); fprintf(&#x27;\n&#x27;);
+[~, i1] = min(abs(w - 1));
+v = real(V(:, i1));                      <span class="k">% Eigenvektor zum Eigenwert 1</span>
+xs = v / sum(v) * 100000;
+fprintf(&#x27;stationärer Zustand x* = (%.0f, %.0f, %.0f)\n&#x27;, xs);
+
+N = 30;
+X = zeros(3, N + 1); X(:, 1) = [100000; 0; 0];
+for k = 1:N
+    X(:, k + 1) = A * X(:, k);
+end
+namen = {&#x27;g_n&#x27;, &#x27;l_n&#x27;, &#x27;k_n&#x27;};
+farben = [0.43 0.04 0.12; 0.89 0.44 0.49; 0.64 0.08 0.18]; marker = &#x27;osd&#x27;;
+for i = 1:3
+    subplot(3, 1, i);
+    plot(0:N, X(i, :), [&#x27;--&#x27; marker(i)], &#x27;Color&#x27;, farben(i, :)); hold on
+    plot([0 N], xs(i) * [1 1], &#x27;k--&#x27;); hold off
+    legend(namen{i}, &#x27;Location&#x27;, &#x27;southeast&#x27;);
+end
+xlabel(&#x27;n (Jahre)&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 2.11: Krankheitsverlauf mit stationärem Zustand (Buch, Abschnitt 2.3, Gl. 2.8)</span>
+<span class="k"># Der stationäre Zustand x* = A x* ist ein Eigenvektor zum Eigenwert 1, skaliert auf 100000 Personen</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+A = np.array([[0.997, 0.6, 0],
+              [0.003, 0, 0.35],
+              [0, 0.4, 0.65]])
+w, V = np.linalg.eig(A)
+print(&quot;Eigenwerte:&quot;, &quot;  &quot;.join(f&quot;{x:.4f}&quot; for x in sorted(np.real(w))))
+v = np.real(V[:, np.argmin(abs(w - 1))])     <span class="k"># Eigenvektor zum Eigenwert 1</span>
+xs = v / v.sum() * 100000
+print(&quot;stationärer Zustand x* = (%.0f, %.0f, %.0f)&quot; % tuple(xs))
+
+N = 30
+X = np.zeros((N + 1, 3)); X[0] = [100000, 0, 0]
+for n in range(N):
+    X[n + 1] = A @ X[n]
+fig, axs = plt.subplots(3, 1, figsize=(8, 7), sharex=True)
+farben = [(0.43, 0.04, 0.12), (0.89, 0.44, 0.49), (0.64, 0.08, 0.18)]
+for i, (name, m) in enumerate(zip([&quot;g_n&quot;, &quot;l_n&quot;, &quot;k_n&quot;], &quot;osD&quot;)):
+    axs[i].plot(np.arange(N + 1), X[:, i], &quot;--&quot;, marker=m, color=farben[i], label=name)
+    axs[i].axhline(xs[i], color=&quot;k&quot;, ls=&quot;--&quot;, lw=0.8)
+    axs[i].legend(loc=&quot;lower right&quot;)
+axs[2].set_xlabel(&quot;n (Jahre)&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 2.11: Krankheitsverlauf mit stationärem Zustand (Buch, Abschnitt 2.3, Gl. 2.8)</span>
+<span class="k"># Der stationäre Zustand x* = A x* ist ein Eigenvektor zum Eigenwert 1, skaliert auf 100000 Personen</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+A &lt;- matrix(c(0.997, 0.6, 0,
+              0.003, 0,   0.35,
+              0,     0.4, 0.65), nrow = 3, byrow = TRUE)
+ev &lt;- eigen(A)
+cat(&quot;Eigenwerte:&quot;, sprintf(&quot;%.4f&quot;, sort(Re(ev$values))), &quot;\n&quot;)
+i1 &lt;- which.min(abs(ev$values - 1))
+v &lt;- Re(ev$vectors[, i1])                <span class="k"># Eigenvektor zum Eigenwert 1</span>
+xs &lt;- v / sum(v) * 100000
+cat(sprintf(&quot;stationärer Zustand x* = (%.0f, %.0f, %.0f)\n&quot;, xs[1], xs[2], xs[3]))
+
+N &lt;- 30
+X &lt;- matrix(0, 3, N + 1); X[, 1] &lt;- c(100000, 0, 0)
+for (k in 1:N) X[, k + 1] &lt;- A %*% X[, k]
+
+namen &lt;- c(&quot;g_n&quot;, &quot;l_n&quot;, &quot;k_n&quot;)
+farben &lt;- c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49), rgb(0.64, 0.08, 0.18)); zeichen &lt;- c(16, 15, 18)
+par(mfrow = c(3, 1), mar = c(4, 4, 1, 1))
+for (i in 1:3) {
+  plot(0:N, X[i, ], type = &quot;o&quot;, lty = 2, pch = zeichen[i], col = farben[i], xlab = if (i == 3) &quot;n (Jahre)&quot; else &quot;&quot;, ylab = &quot;&quot;)
+  abline(h = xs[i], lty = 2)
+  legend(&quot;bottomright&quot;, legend = namen[i], col = farben[i], pch = zeichen[i], lty = 2)
+}</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>Eigenwerte: -0.1719  0.8189  1.0000
+stationärer Zustand x* = (98940, 495, 565)</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="leslie-anteile">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 2.12</p>
+    <h2>Stabile Altersverteilung</h2>
+    <p class="formel">b<sub>2</sub> = 5:&ensp; λ<sub>1</sub> ≈ 1.0157</p>
+    <p class="lead">Bekommt auch die zweite Altersklasse Nachwuchs, gibt es einen dominanten Eigenwert. Die Anteile der Klassen nähern sich seinem Eigenvektor, der stabilen Altersverteilung, und die Population wächst langsam.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/leslie_anteile.png" alt="Ergebnis des Programms leslie_anteile.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="leslie_anteile.jl" data-m="leslie_anteile.m" data-py="leslie_anteile.py" data-r="leslie_anteile.R">leslie_anteile.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/leslie_anteile.py" data-jl="code/leslie_anteile.jl" data-m="code/leslie_anteile.m" data-py="code/leslie_anteile.py" data-r="code/leslie_anteile.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 2.12: stabile Altersverteilung im Leslie-Modell (Buch, Abschnitt 2.3, Gl. 2.17)</span>
+<span class="k"># L mit b_2 = 5: die Anteile der Klassen nähern sich dem Eigenvektor v_1 zum dominanten Eigenwert lambda_1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots, LinearAlgebra
+
+L = [0   5   9;
+     0.1 0   0;
+     0   0.6 0]
+w, Vec = eigen(L)
+i1 = argmax(abs.(w))
+v1 = real.(Vec[:, i1]); v1 = v1 ./ sum(v1)
+@printf(&quot;dominanter Eigenwert lambda_1 = %.4f\n&quot;, real(w[i1]))
+@printf(&quot;stabile Altersverteilung v_1 = (%.3f, %.3f, %.3f)\n&quot;, v1...)
+
+N = 30
+X = zeros(3, N + 1); X[:, 1] = [0, 0, 1000]
+for k in 1:N
+    X[:, k + 1] = L * X[:, k]
+end
+P = X ./ sum(X, dims = 1)                <span class="k"># Anteile der Klassen</span>
+farben = [RGB(0.43, 0.04, 0.12), RGB(0.89, 0.44, 0.49), RGB(0.64, 0.08, 0.18)]; zeichen = [:circle, :rect, :diamond]
+p = plot(xlabel = &quot;n&quot;, ylabel = &quot;Anteil der Klasse&quot;)
+for i in 1:3
+    plot!(p, 0:N, P[i, :], marker = zeichen[i], color = farben[i], label = &quot;Klasse $i&quot;)
+    hline!(p, [v1[i]], ls = :dash, color = farben[i], label = &quot;&quot;)
+end
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 2.12: stabile Altersverteilung im Leslie-Modell (Buch, Abschnitt 2.3, Gl. 2.17)</span>
+<span class="k">% L mit b_2 = 5: die Anteile der Klassen nähern sich dem Eigenvektor v_1 zum dominanten Eigenwert lambda_1</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+L = [0   5   9;
+     0.1 0   0;
+     0   0.6 0];
+[V, D] = eig(L);
+w = diag(D);
+[~, i1] = max(abs(w));
+v1 = real(V(:, i1)); v1 = v1 / sum(v1);
+fprintf(&#x27;dominanter Eigenwert lambda_1 = %.4f\n&#x27;, real(w(i1)));
+fprintf(&#x27;stabile Altersverteilung v_1 = (%.3f, %.3f, %.3f)\n&#x27;, v1);
+
+N = 30;
+X = zeros(3, N + 1); X(:, 1) = [0; 0; 1000];
+for k = 1:N
+    X(:, k + 1) = L * X(:, k);
+end
+P = X ./ sum(X, 1);                      <span class="k">% Anteile der Klassen</span>
+farben = [0.43 0.04 0.12; 0.89 0.44 0.49; 0.64 0.08 0.18]; marker = &#x27;osd&#x27;;
+hold on
+for i = 1:3
+    plot(0:N, P(i, :), [&#x27;-&#x27; marker(i)], &#x27;Color&#x27;, farben(i, :), &#x27;DisplayName&#x27;, sprintf(&#x27;Klasse %d&#x27;, i));
+    plot([0 N], v1(i) * [1 1], &#x27;--&#x27;, &#x27;Color&#x27;, farben(i, :), &#x27;HandleVisibility&#x27;, &#x27;off&#x27;);
+end
+hold off; xlabel(&#x27;n&#x27;); ylabel(&#x27;Anteil der Klasse&#x27;); legend(&#x27;show&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 2.12: stabile Altersverteilung im Leslie-Modell (Buch, Abschnitt 2.3, Gl. 2.17)</span>
+<span class="k"># L mit b_2 = 5: die Anteile der Klassen nähern sich dem Eigenvektor v_1 zum dominanten Eigenwert lambda_1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+L = np.array([[0, 5, 9],
+              [0.1, 0, 0],
+              [0, 0.6, 0]])
+w, V = np.linalg.eig(L)
+i1 = np.argmax(abs(w))
+v1 = np.real(V[:, i1]); v1 = v1 / v1.sum()
+print(f&quot;dominanter Eigenwert lambda_1 = {np.real(w[i1]):.4f}&quot;)
+print(&quot;stabile Altersverteilung v_1 = (%.3f, %.3f, %.3f)&quot; % tuple(v1))
+
+N = 30
+X = np.zeros((N + 1, 3)); X[0] = [0, 0, 1000]
+for n in range(N):
+    X[n + 1] = L @ X[n]
+P = X / X.sum(axis=1, keepdims=True)         <span class="k"># Anteile der Klassen</span>
+farben = [(0.43, 0.04, 0.12), (0.89, 0.44, 0.49), (0.64, 0.08, 0.18)]
+for i, m in enumerate(&quot;osD&quot;):
+    plt.plot(np.arange(N + 1), P[:, i], &quot;-&quot;, marker=m, color=farben[i], label=f&quot;Klasse {i + 1}&quot;)
+    plt.axhline(v1[i], color=farben[i], ls=&quot;--&quot;, lw=0.8)
+plt.xlabel(&quot;n&quot;); plt.ylabel(&quot;Anteil der Klasse&quot;); plt.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 2.12: stabile Altersverteilung im Leslie-Modell (Buch, Abschnitt 2.3, Gl. 2.17)</span>
+<span class="k"># L mit b_2 = 5: die Anteile der Klassen nähern sich dem Eigenvektor v_1 zum dominanten Eigenwert lambda_1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+L &lt;- matrix(c(0,   5,   9,
+              0.1, 0,   0,
+              0,   0.6, 0), nrow = 3, byrow = TRUE)
+ev &lt;- eigen(L)
+i1 &lt;- which.max(Mod(ev$values))
+v1 &lt;- Re(ev$vectors[, i1]); v1 &lt;- v1 / sum(v1)
+cat(sprintf(&quot;dominanter Eigenwert lambda_1 = %.4f\n&quot;, Re(ev$values[i1])))
+cat(sprintf(&quot;stabile Altersverteilung v_1 = (%.3f, %.3f, %.3f)\n&quot;, v1[1], v1[2], v1[3]))
+
+N &lt;- 30
+X &lt;- matrix(0, 3, N + 1); X[, 1] &lt;- c(0, 0, 1000)
+for (k in 1:N) X[, k + 1] &lt;- L %*% X[, k]
+P &lt;- sweep(X, 2, colSums(X), &quot;/&quot;)        <span class="k"># Anteile der Klassen</span>
+farben &lt;- c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49), rgb(0.64, 0.08, 0.18)); zeichen &lt;- c(16, 15, 18)
+plot(NULL, xlim = c(0, N), ylim = c(0, 1), xlab = &quot;n&quot;, ylab = &quot;Anteil der Klasse&quot;)
+for (i in 1:3) { lines(0:N, P[i, ], type = &quot;o&quot;, pch = zeichen[i], col = farben[i]); abline(h = v1[i], lty = 2, col = farben[i]) }
+legend(&quot;topright&quot;, legend = sprintf(&quot;Klasse %d&quot;, 1:3), col = farben, pch = zeichen, lty = 1)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>dominanter Eigenwert lambda_1 = 1.0157
+stabile Altersverteilung v_1 = (0.865, 0.085, 0.050)</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="leslie-eigenwert">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 2.13</p>
+    <h2>Dominanter Eigenwert in Abhängigkeit von b<sub>2</sub></h2>
+    <p class="formel">R = b<sub>1</sub> + s<sub>1</sub> b<sub>2</sub> + s<sub>1</sub> s<sub>2</sub> b<sub>3</sub></p>
+    <p class="lead">λ<sub>1</sub> überschreitet 1 genau dort, wo die Zahl R der Nachkommen eines Neugeborenen 1 überschreitet, bei b<sub>2</sub> = 4.6.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/leslie_eigenwert.png" alt="Ergebnis des Programms leslie_eigenwert.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="leslie_eigenwert.jl" data-m="leslie_eigenwert.m" data-py="leslie_eigenwert.py" data-r="leslie_eigenwert.R">leslie_eigenwert.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/leslie_eigenwert.py" data-jl="code/leslie_eigenwert.jl" data-m="code/leslie_eigenwert.m" data-py="code/leslie_eigenwert.py" data-r="code/leslie_eigenwert.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 2.13: dominanter Eigenwert des Leslie-Modells in Abhängigkeit von b_2 (Buch, Abschnitt 2.3, Gl. 2.19)</span>
+<span class="k"># b_1 = 0, b_3 = 9, s_1 = 0.1, s_2 = 0.6; bei R = b_1 + s_1 b_2 + s_1 s_2 b_3 = 1, also b_2 = 4.6, ist lambda_1 = 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots, LinearAlgebra
+
+b2 = range(0, 10, length = 201)
+lam = [maximum(abs.(eigvals([0 b 9; 0.1 0 0; 0 0.6 0]))) for b in b2]
+@printf(&quot;b_2 mit R = 1: %.2f\n&quot;, (1 - 0.54) / 0.1)
+@printf(&quot;lambda_1 bei b_2 = 4.6: %.6f\n&quot;, maximum(abs.(eigvals([0 4.6 9; 0.1 0 0; 0 0.6 0]))))
+
+p = plot(b2, lam, color = RGB(0, 0.447, 0.741), lw = 2, legend = false, xlabel = &quot;b_2&quot;, ylabel = &quot;λ₁&quot;)
+hline!(p, [1], color = :black); plot!(p, [4.6, 4.6], [0.75, 1.2], ls = :dot, color = :black)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 2.13: dominanter Eigenwert des Leslie-Modells in Abhängigkeit von b_2 (Buch, Abschnitt 2.3, Gl. 2.19)</span>
+<span class="k">% b_1 = 0, b_3 = 9, s_1 = 0.1, s_2 = 0.6; bei R = b_1 + s_1 b_2 + s_1 s_2 b_3 = 1, also b_2 = 4.6, ist lambda_1 = 1</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+b2 = linspace(0, 10, 201);
+lam = zeros(size(b2));
+for i = 1:numel(b2)
+    lam(i) = max(abs(eig([0 b2(i) 9; 0.1 0 0; 0 0.6 0])));
+end
+fprintf(&#x27;b_2 mit R = 1: %.2f\n&#x27;, (1 - 0.54) / 0.1);
+fprintf(&#x27;lambda_1 bei b_2 = 4.6: %.6f\n&#x27;, max(abs(eig([0 4.6 9; 0.1 0 0; 0 0.6 0]))));
+
+plot(b2, lam, &#x27;Color&#x27;, [0 0.447 0.741]); hold on
+plot([0 10], [1 1], &#x27;k-&#x27;); plot([4.6 4.6], [0.75 1.2], &#x27;k:&#x27;); hold off
+xlabel(&#x27;b_2&#x27;); ylabel(&#x27;\lambda_1&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 2.13: dominanter Eigenwert des Leslie-Modells in Abhängigkeit von b_2 (Buch, Abschnitt 2.3, Gl. 2.19)</span>
+<span class="k"># b_1 = 0, b_3 = 9, s_1 = 0.1, s_2 = 0.6; bei R = b_1 + s_1 b_2 + s_1 s_2 b_3 = 1, also b_2 = 4.6, ist lambda_1 = 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+b2 = np.linspace(0, 10, 201)
+lam = [max(abs(np.linalg.eigvals(np.array([[0, b, 9], [0.1, 0, 0], [0, 0.6, 0]])))) for b in b2]
+R = 0.1 * b2 + 0.1 * 0.6 * 9                    <span class="k"># Nettoreproduktionszahl</span>
+print(f&quot;b_2 mit R = 1: {(1 - 0.54) / 0.1:.2f}&quot;)
+print(f&quot;lambda_1 bei b_2 = 4.6: {max(abs(np.linalg.eigvals(np.array([[0, 4.6, 9], [0.1, 0, 0], [0, 0.6, 0]])))):.6f}&quot;)
+
+plt.plot(b2, lam, color=(0, 0.447, 0.741))
+plt.axhline(1, color=&quot;k&quot;, lw=0.8); plt.axvline(4.6, color=&quot;k&quot;, ls=&quot;:&quot;)
+plt.xlabel(&quot;b_2&quot;); plt.ylabel(&quot;λ_1&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 2.13: dominanter Eigenwert des Leslie-Modells in Abhängigkeit von b_2 (Buch, Abschnitt 2.3, Gl. 2.19)</span>
+<span class="k"># b_1 = 0, b_3 = 9, s_1 = 0.1, s_2 = 0.6; bei R = b_1 + s_1 b_2 + s_1 s_2 b_3 = 1, also b_2 = 4.6, ist lambda_1 = 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+b2 &lt;- seq(0, 10, length.out = 201)
+lam &lt;- sapply(b2, function(b) max(Mod(eigen(matrix(c(0, b, 9, 0.1, 0, 0, 0, 0.6, 0), nrow = 3, byrow = TRUE))$values)))
+cat(sprintf(&quot;b_2 mit R = 1: %.2f\n&quot;, (1 - 0.54) / 0.1))
+cat(sprintf(&quot;lambda_1 bei b_2 = 4.6: %.6f\n&quot;, max(Mod(eigen(matrix(c(0, 4.6, 9, 0.1, 0, 0, 0, 0.6, 0), nrow = 3, byrow = TRUE))$values))))
+
+plot(b2, lam, type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2, xlab = &quot;b_2&quot;, ylab = &quot;lambda_1&quot;)
+abline(h = 1); lines(c(4.6, 4.6), c(0.75, 1.2), lty = 3)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>b_2 mit R = 1: 4.60
+lambda_1 bei b_2 = 4.6: 1.000000</code></pre></details>
+    </div>
+  </div>
+</section>
+  <section class="apps" id="app-leslie">
+  <div class="fig-head"><p class="eyebrow">Im Browser ausprobieren · ohne Installation</p><h2>Leslie-Modell mit drei Altersklassen</h2><p class="lead">Stellen Sie Geburten- und Überlebensraten ein. Ob die Population wächst oder ausstirbt, entscheidet der positive Eigenwert λ<sub>1</sub> der Leslie-Matrix, gleichwertig die Kennzahl R.</p></div>
+  <div class="app" data-app="leslie">
+    <canvas width="720" height="560" aria-label="Leslie-Modell mit drei Altersklassen"></canvas>
+    <div class="regler"><label><span>Geburtenrate b<sub>1</sub></span> <output data-o="b1"></output><input type="range" data-r="b1" min="0" max="5" step="0.1" value="0" aria-label="Geburtenrate b1"></label><label><span>Geburtenrate b<sub>2</sub></span> <output data-o="b2"></output><input type="range" data-r="b2" min="0" max="10" step="0.1" value="0" aria-label="Geburtenrate b2"></label><label><span>Geburtenrate b<sub>3</sub></span> <output data-o="b3"></output><input type="range" data-r="b3" min="0" max="20" step="0.1" value="9" aria-label="Geburtenrate b3"></label><label><span>Überlebensrate s<sub>1</sub></span> <output data-o="s1"></output><input type="range" data-r="s1" min="0" max="1" step="0.01" value="0.1" aria-label="Überlebensrate s1"></label><label><span>Überlebensrate s<sub>2</sub></span> <output data-o="s2"></output><input type="range" data-r="s2" min="0" max="1" step="0.01" value="0.6" aria-label="Überlebensrate s2"></label><label><span>Schritte</span> <output data-o="n"></output><input type="range" data-r="n" min="3" max="60" step="1" value="20" aria-label="Schritte"></label><p class="zustand"></p><pre class="werte"></pre></div>
+  </div>
+</section>
+  
+  <nav class="weiter" aria-label="Weiterblättern"><a href="abschnitt-2-2.html"><small>Zurück</small>2.2 Matrix-Modelle</a><a href="abschnitt-2-4.html"><small>Weiter</small>2.4 Nichtlineare Systeme: SIR-Modell</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Begleitmaterial zum Buch „Dynamische Systeme in den Lebenswissenschaften“ von Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programme unter <a href="../LICENSE.txt">MIT-Lizenz</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

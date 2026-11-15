@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>1.2 Lineare Differenzengleichungen – Dynamische Systeme in den Lebenswissenschaften</title>
+<meta name="description" content="Programme in Julia, MATLAB, Python und R zu Abschnitt 1.2 des Buchs Dynamische Systeme in den Lebenswissenschaften">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamische Systeme in den Lebenswissenschaften</a>
+  <nav aria-label="Kapitel"><a href="../index.html">Start</a> <a href="../kapitel1/index.html" aria-current="page">Kapitel 1</a> <a href="../kapitel2/index.html">Kapitel 2</a> <a href="../kapitel3/index.html">Kapitel 3</a> <a href="../kapitel4/index.html">Kapitel 4</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Abschnitte"><h2><a href="index.html">Kapitel 1</a></h2><ol><li><a href="abschnitt-1-1.html"><span class="nr">1.1</span><span>Folgen und Differenzengleichungen</span></a></li><li><a href="abschnitt-1-2.html" aria-current="page"><span class="nr">1.2</span><span>Lineare Differenzengleichungen</span></a></li><li><a href="abschnitt-1-3.html"><span class="nr">1.3</span><span>Logistisches Wachstumsmodell</span></a></li><li><a href="abschnitt-1-4.html"><span class="nr">1.4</span><span>Stationäre Zustände und Stabilität</span></a></li><li><a href="abschnitt-1-5.html"><span class="nr">1.5</span><span>Newton-Verfahren</span></a></li><li><a href="abschnitt-1-6.html"><span class="nr">1.6</span><span>Vertiefung: Herzmodelle</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Kapitel 1 · Diskrete dynamische Systeme mit einer Variablen</p>
+      <h1><span class="num">1.2</span>Lineare Differenzengleichungen</h1>
+      <p>Bei arithmetischen Folgen kommt in jedem Schritt derselbe Betrag hinzu, bei geometrischen wird mit demselben Faktor multipliziert. Beides sind Spezialfälle der linearen Differenzengleichung x<sub>n+1</sub> = a x<sub>n</sub> + b, zu der auch das Newtonsche Abkühlungsgesetz gehört. Mit veränderlichem Zufluss b<sub>n</sub> beschreibt sie den Spiegel eines Medikaments.</p>
+      <p>Zu jeder Abbildung des Abschnitts finden Sie das Programm, das sie erzeugt. Ändern Sie Parameter und Startwerte und beobachten Sie, was passiert. Abbildungs- und Gleichungsnummern beziehen sich auf das Buch.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programmiersprache</legend>
+  <div class="seg" role="radiogroup" aria-label="Programmiersprache">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Gilt für alle Seiten. MATLAB-Programme laufen auch im kostenlosen GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>Auf dieser Seite</b><ul><li><a href="#arithmetisch-geometrisch"><span class="abb">Abb. 1.11</span>Arithmetische und geometrische Folge</a></li><li><a href="#arithmetisch-geometrisch-treppe"><span class="abb">Abb. 1.12</span>Aktualisierungsfunktionen und Treppendiagramme</a></li><li><a href="#abkuehlung"><span class="abb">Abb. 1.15</span>Newtonsches Abkühlungsgesetz</a></li><li><a href="#medikament"><span class="abb">Abb. 1.16</span>Medikamentenspiegel mit täglicher Dosis</a></li><li><a href="#app-linear"><span class="abb">App</span>im Browser ausprobieren</a></li></ul></div>
+  
+<section class="fig" id="arithmetisch-geometrisch">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 1.11</p>
+    <h2>Arithmetische und geometrische Folge</h2>
+    <p class="formel">x<sub>n+1</sub> = x<sub>n</sub> + b &emsp;bzw.&emsp; x<sub>n+1</sub> = a x<sub>n</sub></p>
+    <p class="lead">Arithmetische Folgen wachsen oder fallen linear, geometrische exponentiell. Für 0 &lt; a &lt; 1 strebt die geometrische Folge gegen 0, für a &gt; 1 wächst sie über alle Grenzen.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/arithmetisch_geometrisch.png" alt="Ergebnis des Programms arithmetisch_geometrisch.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="arithmetisch_geometrisch.jl" data-m="arithmetisch_geometrisch.m" data-py="arithmetisch_geometrisch.py" data-r="arithmetisch_geometrisch.R">arithmetisch_geometrisch.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/arithmetisch_geometrisch.py" data-jl="code/arithmetisch_geometrisch.jl" data-m="code/arithmetisch_geometrisch.m" data-py="code/arithmetisch_geometrisch.py" data-r="code/arithmetisch_geometrisch.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 1.11: arithmetische und geometrische Folge (Buch, Abschnitt 1.2, Gl. 1.11 und 1.13)</span>
+<span class="k"># oben: x_{n+1} = x_n + b mit x_0 = 20;  unten: x_{n+1} = a x_n mit x_0 = 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+
+rot = [RGB(0.43, 0.04, 0.12), RGB(0.64, 0.08, 0.18), RGB(0.89, 0.44, 0.49)]   <span class="k"># Rottöne für mehrere Folgen</span>
+zeichen = [:circle, :rect, :diamond]
+
+p1 = plot(xlabel = &quot;n&quot;, ylabel = &quot;x_n&quot;, legend = :topleft)
+n = 0:10
+for (i, b) in enumerate([2, 1, -1])
+    x = 20 .+ b .* n                     <span class="k"># Lösungsformel (1.12)</span>
+    plot!(p1, n, x, ls = :dash, marker = zeichen[i], color = rot[i], label = &quot;b = $b&quot;)
+    @printf(&quot;b = %g:  x_10 = %g\n&quot;, b, x[end])
+end
+
+p2 = plot(xlabel = &quot;n&quot;, ylabel = &quot;x_n&quot;, legend = :topleft)
+n = 0:5
+for (i, a) in enumerate([1.2, 1.01, 0.5])
+    x = a .^ n                           <span class="k"># Lösungsformel (1.14) mit x_0 = 1</span>
+    plot!(p2, n, x, ls = :dash, marker = zeichen[i], color = rot[i], label = &quot;a = $a&quot;)
+    @printf(&quot;a = %g:  x_5 = %.4f\n&quot;, a, x[end])
+end
+display(plot(p1, p2, layout = (2, 1), size = (700, 650)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 1.11: arithmetische und geometrische Folge (Buch, Abschnitt 1.2, Gl. 1.11 und 1.13)</span>
+<span class="k">% oben: x_{n+1} = x_n + b mit x_0 = 20;  unten: x_{n+1} = a x_n mit x_0 = 1</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+rot = [0.43 0.04 0.12; 0.64 0.08 0.18; 0.89 0.44 0.49];   <span class="k">% Rottöne für mehrere Folgen</span>
+marker = &#x27;osd&#x27;;
+
+subplot(2, 1, 1); hold on
+n = 0:10; bs = [2 1 -1];
+for i = 1:3
+    x = 20 + bs(i) * n;                  <span class="k">% Lösungsformel (1.12)</span>
+    plot(n, x, [&#x27;--&#x27; marker(i)], &#x27;Color&#x27;, rot(i, :), &#x27;DisplayName&#x27;, sprintf(&#x27;b = %g&#x27;, bs(i)));
+    fprintf(&#x27;b = %g:  x_10 = %g\n&#x27;, bs(i), x(end));
+end
+hold off; xlabel(&#x27;n&#x27;); ylabel(&#x27;x_n&#x27;); legend(&#x27;show&#x27;);
+
+subplot(2, 1, 2); hold on
+n = 0:5; as = [1.2 1.01 0.5];
+for i = 1:3
+    x = as(i) .^ n;                      <span class="k">% Lösungsformel (1.14) mit x_0 = 1</span>
+    plot(n, x, [&#x27;--&#x27; marker(i)], &#x27;Color&#x27;, rot(i, :), &#x27;DisplayName&#x27;, sprintf(&#x27;a = %g&#x27;, as(i)));
+    fprintf(&#x27;a = %g:  x_5 = %.4f\n&#x27;, as(i), x(end));
+end
+hold off; xlabel(&#x27;n&#x27;); ylabel(&#x27;x_n&#x27;); legend(&#x27;show&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 1.11: arithmetische und geometrische Folge (Buch, Abschnitt 1.2, Gl. 1.11 und 1.13)</span>
+<span class="k"># oben: x_{n+1} = x_n + b mit x_0 = 20;  unten: x_{n+1} = a x_n mit x_0 = 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+rot = [(0.43, 0.04, 0.12), (0.64, 0.08, 0.18), (0.89, 0.44, 0.49)]   <span class="k"># Rottöne für mehrere Folgen</span>
+fig, axs = plt.subplots(2, 1, figsize=(7, 7))
+
+n = np.arange(11)
+for b, c, m in zip([2, 1, -1], rot, &quot;osD&quot;):
+    x = 20 + b * n                       <span class="k"># Lösungsformel (1.12)</span>
+    axs[0].plot(n, x, &quot;--&quot;, marker=m, color=c, label=f&quot;b = {b}&quot;)
+    print(f&quot;b = {b}:  x_10 = {x[-1]}&quot;)
+axs[0].set_xlabel(&quot;n&quot;); axs[0].set_ylabel(&quot;x_n&quot;); axs[0].legend()
+
+n = np.arange(6)
+for a, c, m in zip([1.2, 1.01, 0.5], rot, &quot;osD&quot;):
+    x = a**n                             <span class="k"># Lösungsformel (1.14) mit x_0 = 1</span>
+    axs[1].plot(n, x, &quot;--&quot;, marker=m, color=c, label=f&quot;a = {a}&quot;)
+    print(f&quot;a = {a}:  x_5 = {x[-1]:.4f}&quot;)
+axs[1].set_xlabel(&quot;n&quot;); axs[1].set_ylabel(&quot;x_n&quot;); axs[1].legend()
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 1.11: arithmetische und geometrische Folge (Buch, Abschnitt 1.2, Gl. 1.11 und 1.13)</span>
+<span class="k"># oben: x_{n+1} = x_n + b mit x_0 = 20;  unten: x_{n+1} = a x_n mit x_0 = 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+rot &lt;- c(rgb(0.43, 0.04, 0.12), rgb(0.64, 0.08, 0.18), rgb(0.89, 0.44, 0.49))   <span class="k"># Rottöne für mehrere Folgen</span>
+zeichen &lt;- c(16, 15, 18)
+par(mfrow = c(2, 1))
+
+n &lt;- 0:10; bs &lt;- c(2, 1, -1)
+plot(NULL, xlim = c(0, 10), ylim = c(8, 42), xlab = &quot;n&quot;, ylab = &quot;x_n&quot;)
+for (i in 1:3) {
+  x &lt;- 20 + bs[i] * n                    <span class="k"># Lösungsformel (1.12)</span>
+  lines(n, x, type = &quot;o&quot;, lty = 2, pch = zeichen[i], col = rot[i])
+  cat(sprintf(&quot;b = %g:  x_10 = %g\n&quot;, bs[i], x[length(x)]))
+}
+legend(&quot;topleft&quot;, legend = sprintf(&quot;b = %g&quot;, bs), col = rot, pch = zeichen, lty = 2)
+
+n &lt;- 0:5; as &lt;- c(1.2, 1.01, 0.5)
+plot(NULL, xlim = c(0, 5), ylim = c(0, 2.6), xlab = &quot;n&quot;, ylab = &quot;x_n&quot;)
+for (i in 1:3) {
+  x &lt;- as[i]^n                           <span class="k"># Lösungsformel (1.14) mit x_0 = 1</span>
+  lines(n, x, type = &quot;o&quot;, lty = 2, pch = zeichen[i], col = rot[i])
+  cat(sprintf(&quot;a = %g:  x_5 = %.4f\n&quot;, as[i], x[length(x)]))
+}
+legend(&quot;topleft&quot;, legend = sprintf(&quot;a = %g&quot;, as), col = rot, pch = zeichen, lty = 2)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>b = 2:  x_10 = 40
+b = 1:  x_10 = 30
+b = -1:  x_10 = 10
+a = 1.2:  x_5 = 2.4883
+a = 1.01:  x_5 = 1.0510
+a = 0.5:  x_5 = 0.0312</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="arithmetisch-geometrisch-treppe">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 1.12</p>
+    <h2>Aktualisierungsfunktionen und Treppendiagramme</h2>
+    <p class="formel">f(x) = x + b &emsp;bzw.&emsp; f(x) = a x</p>
+    <p class="lead">Die Gerade f(x) = x + b ist parallel zur Winkelhalbierenden und schneidet sie nie. Die Gerade f(x) = a x geht durch den Ursprung; ob die Treppe zu ihm hin- oder von ihm wegläuft, hängt von a ab.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/arithmetisch_geometrisch_treppe.png" alt="Ergebnis des Programms arithmetisch_geometrisch_treppe.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="arithmetisch_geometrisch_treppe.jl" data-m="arithmetisch_geometrisch_treppe.m" data-py="arithmetisch_geometrisch_treppe.py" data-r="arithmetisch_geometrisch_treppe.R">arithmetisch_geometrisch_treppe.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/arithmetisch_geometrisch_treppe.py" data-jl="code/arithmetisch_geometrisch_treppe.jl" data-m="code/arithmetisch_geometrisch_treppe.m" data-py="code/arithmetisch_geometrisch_treppe.py" data-r="code/arithmetisch_geometrisch_treppe.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 1.12: Aktualisierungsfunktionen und Treppendiagramme (Buch, Abschnitt 1.2)</span>
+<span class="k"># links: arithmetische Folge f(x) = x + 2 mit x_0 = 20;  rechts: geometrische Folge f(x) = a x mit a = 1.2 und 0.5, x_0 = 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+
+blau = RGB(0, 0.447, 0.741); hellblau = RGB(0.45, 0.70, 0.90)
+rot = RGB(0.64, 0.08, 0.18); hellrot = RGB(0.89, 0.44, 0.49)
+function treppe(x)                       <span class="k"># Punkte der Treppe: senkrecht zum Graphen, waagrecht zur Winkelhalbierenden</span>
+    px = [x[1]]; py = [0.0]
+    for k in 1:length(x) - 1
+        append!(px, [x[k], x[k + 1]]); append!(py, [x[k + 1], x[k + 1]])
+    end
+    return px, py
+end
+
+p1 = plot([18, 33], [20, 35], color = blau, lw = 2, label = &quot;f(x) = x + 2&quot;, xlims = (18, 33), ylims = (18, 33),
+          xlabel = &quot;x&quot;, ylabel = &quot;f(x)&quot;, legend = :bottomright)
+plot!(p1, [18, 33], [18, 33], color = :black, label = &quot;y = x&quot;)
+x = zeros(7); x[1] = 20
+for k in 1:6
+    x[k + 1] = x[k] + 2
+end
+plot!(p1, treppe(x)..., ls = :dash, color = rot, label = &quot;&quot;)
+println(&quot;arithmetisch: &quot;, join([@sprintf(&quot;%g&quot;, v) for v in x], &quot;  &quot;))
+
+p2 = plot([0, 2.6], [0, 2.6], color = :black, legend = false, xlims = (0, 2.6), ylims = (0, 2.6), xlabel = &quot;x&quot;, ylabel = &quot;f(x)&quot;)
+for (a, N, cF, cT) in [(1.2, 5, blau, rot), (0.5, 4, hellblau, hellrot)]
+    plot!(p2, [0, 2.6], [0, a * 2.6], color = cF, lw = 2)
+    x = zeros(N + 1); x[1] = 1
+    for k in 1:N
+        x[k + 1] = a * x[k]
+    end
+    plot!(p2, treppe(x)..., ls = :dash, color = cT)
+    println(@sprintf(&quot;geometrisch a = %g: &quot;, a), join([@sprintf(&quot;%.4f&quot;, v) for v in x], &quot;  &quot;))
+end
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 1.12: Aktualisierungsfunktionen und Treppendiagramme (Buch, Abschnitt 1.2)</span>
+<span class="k">% links: arithmetische Folge f(x) = x + 2 mit x_0 = 20;  rechts: geometrische Folge f(x) = a x mit a = 1.2 und 0.5, x_0 = 1</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+blau = [0 0.447 0.741]; hellblau = [0.45 0.70 0.90];
+rot = [0.64 0.08 0.18]; hellrot = [0.89 0.44 0.49];
+
+subplot(1, 2, 1); hold on
+plot([18 33], [20 35], &#x27;Color&#x27;, blau);
+plot([18 33], [18 33], &#x27;k-&#x27;);
+x = zeros(1, 7); x(1) = 20;
+for k = 1:6
+    x(k + 1) = x(k) + 2;
+end
+px = x(1); py = 0;
+for k = 1:6
+    px = [px x(k) x(k + 1)]; py = [py x(k + 1) x(k + 1)];
+end
+plot(px, py, &#x27;--&#x27;, &#x27;Color&#x27;, rot);
+fprintf(&#x27;arithmetisch: &#x27;); fprintf(&#x27;%g  &#x27;, x); fprintf(&#x27;\n&#x27;);
+hold off; axis([18 33 18 33]); xlabel(&#x27;x&#x27;); ylabel(&#x27;f(x)&#x27;); legend(&#x27;f(x) = x + 2&#x27;, &#x27;y = x&#x27;, &#x27;Location&#x27;, &#x27;southeast&#x27;);
+
+subplot(1, 2, 2); hold on
+as = [1.2 0.5]; schritte = [5 4]; farbeF = [blau; hellblau]; farbeT = [rot; hellrot];
+for i = 1:2
+    a = as(i); N = schritte(i);
+    plot([0 2.6], [0 a * 2.6], &#x27;Color&#x27;, farbeF(i, :));
+    x = zeros(1, N + 1); x(1) = 1;
+    for k = 1:N
+        x(k + 1) = a * x(k);
+    end
+    px = x(1); py = 0;
+    for k = 1:N
+        px = [px x(k) x(k + 1)]; py = [py x(k + 1) x(k + 1)];
+    end
+    plot(px, py, &#x27;--&#x27;, &#x27;Color&#x27;, farbeT(i, :));
+    fprintf(&#x27;geometrisch a = %g: &#x27;, a); fprintf(&#x27;%.4f &#x27;, x); fprintf(&#x27;\n&#x27;);
+end
+plot([0 2.6], [0 2.6], &#x27;k-&#x27;);
+hold off; axis([0 2.6 0 2.6]); xlabel(&#x27;x&#x27;); ylabel(&#x27;f(x)&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 1.12: Aktualisierungsfunktionen und Treppendiagramme (Buch, Abschnitt 1.2)</span>
+<span class="k"># links: arithmetische Folge f(x) = x + 2 mit x_0 = 20;  rechts: geometrische Folge f(x) = a x mit a = 1.2 und 0.5, x_0 = 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+blau, rot = (0, 0.447, 0.741), (0.64, 0.08, 0.18)
+
+def treppe(ax, f, x0, N, farbe):
+    x = [x0]
+    for _ in range(N):
+        x.append(f(x[-1]))
+    px, py = [x[0]], [0]
+    for k in range(N):
+        px += [x[k], x[k + 1]]; py += [x[k + 1], x[k + 1]]
+    ax.plot(px, py, &quot;--&quot;, color=farbe)
+    return x
+
+fig, axs = plt.subplots(1, 2, figsize=(10, 4.8))
+ax = axs[0]
+xx = np.array([18, 33])
+ax.plot(xx, xx + 2, color=blau, label=&quot;f(x) = x + 2&quot;)
+ax.plot(xx, xx, &quot;k&quot;, lw=0.8, label=&quot;y = x&quot;)
+x = treppe(ax, lambda v: v + 2, 20, 6, rot)
+print(&quot;arithmetisch:&quot;, &quot;  &quot;.join(str(v) for v in x))
+ax.set_xlim(18, 33); ax.set_ylim(18, 33); ax.set_xlabel(&quot;x&quot;); ax.set_ylabel(&quot;f(x)&quot;); ax.legend()
+
+ax = axs[1]
+xx = np.array([0, 2.6])
+for a, farbe, N in [(1.2, rot, 5), (0.5, (0.89, 0.44, 0.49), 4)]:
+    ax.plot(xx, a * xx, color=blau if a &gt; 1 else (0.45, 0.70, 0.90), label=f&quot;f(x) = {a} x&quot;)
+    x = treppe(ax, lambda v, a=a: a * v, 1.0, N, farbe)
+    print(f&quot;geometrisch a = {a}:&quot;, &quot;  &quot;.join(f&quot;{v:.4f}&quot; for v in x))
+ax.plot(xx, xx, &quot;k&quot;, lw=0.8, label=&quot;y = x&quot;)
+ax.set_xlim(0, 2.6); ax.set_ylim(0, 2.6); ax.set_xlabel(&quot;x&quot;); ax.set_ylabel(&quot;f(x)&quot;); ax.legend()
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 1.12: Aktualisierungsfunktionen und Treppendiagramme (Buch, Abschnitt 1.2)</span>
+<span class="k"># links: arithmetische Folge f(x) = x + 2 mit x_0 = 20;  rechts: geometrische Folge f(x) = a x mit a = 1.2 und 0.5, x_0 = 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+blau &lt;- rgb(0, 0.447, 0.741); hellblau &lt;- rgb(0.45, 0.70, 0.90)
+rot &lt;- rgb(0.64, 0.08, 0.18); hellrot &lt;- rgb(0.89, 0.44, 0.49)
+treppe &lt;- function(x) {                  <span class="k"># Punkte der Treppe: senkrecht zum Graphen, waagrecht zur Winkelhalbierenden</span>
+  px &lt;- x[1]; py &lt;- 0
+  for (k in 1:(length(x) - 1)) { px &lt;- c(px, x[k], x[k + 1]); py &lt;- c(py, x[k + 1], x[k + 1]) }
+  list(px = px, py = py)
+}
+par(mfrow = c(1, 2))
+
+plot(c(18, 33), c(20, 35), type = &quot;l&quot;, col = blau, lwd = 2, xlim = c(18, 33), ylim = c(18, 33), xlab = &quot;x&quot;, ylab = &quot;f(x)&quot;)
+abline(0, 1)
+x &lt;- numeric(7); x[1] &lt;- 20
+for (k in 1:6) x[k + 1] &lt;- x[k] + 2
+t &lt;- treppe(x); lines(t$px, t$py, lty = 2, col = rot)
+cat(&quot;arithmetisch:&quot;, sprintf(&quot;%g&quot;, x), &quot;\n&quot;)
+legend(&quot;bottomright&quot;, legend = c(&quot;f(x) = x + 2&quot;, &quot;y = x&quot;), col = c(blau, &quot;black&quot;), lwd = c(2, 1))
+
+plot(NULL, xlim = c(0, 2.6), ylim = c(0, 2.6), xlab = &quot;x&quot;, ylab = &quot;f(x)&quot;)
+abline(0, 1)
+as &lt;- c(1.2, 0.5); schritte &lt;- c(5, 4); farbeF &lt;- c(blau, hellblau); farbeT &lt;- c(rot, hellrot)
+for (i in 1:2) {
+  a &lt;- as[i]; N &lt;- schritte[i]
+  lines(c(0, 2.6), c(0, a * 2.6), col = farbeF[i], lwd = 2)
+  x &lt;- numeric(N + 1); x[1] &lt;- 1
+  for (k in 1:N) x[k + 1] &lt;- a * x[k]
+  t &lt;- treppe(x); lines(t$px, t$py, lty = 2, col = farbeT[i])
+  cat(sprintf(&quot;geometrisch a = %g:&quot;, a), sprintf(&quot;%.4f&quot;, x), &quot;\n&quot;)
+}</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>arithmetisch: 20  22  24  26  28  30  32
+geometrisch a = 1.2: 1.0000  1.2000  1.4400  1.7280  2.0736  2.4883
+geometrisch a = 0.5: 1.0000  0.5000  0.2500  0.1250  0.0625</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="abkuehlung">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 1.15</p>
+    <h2>Newtonsches Abkühlungsgesetz</h2>
+    <p class="formel">T<sub>n+1</sub> = T<sub>n</sub> + α (T<sup>u</sup> − T<sub>n</sub>)</p>
+    <p class="lead">Für 0 &lt; α ≤ 1 nähert sich die Temperatur monoton der Umgebungstemperatur T<sup>u</sup> = 23. Für 1 &lt; α &lt; 2 schwingt sie um T<sup>u</sup>, für α = 2 springt sie zwischen zwei Werten, für α &gt; 2 schaukeln sich die Schwingungen auf.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/abkuehlung.png" alt="Ergebnis des Programms abkuehlung.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="abkuehlung.jl" data-m="abkuehlung.m" data-py="abkuehlung.py" data-r="abkuehlung.R">abkuehlung.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/abkuehlung.py" data-jl="code/abkuehlung.jl" data-m="code/abkuehlung.m" data-py="code/abkuehlung.py" data-r="code/abkuehlung.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 1.15: Newtonsches Abkühlungsgesetz (Buch, Abschnitt 1.2, Gl. 1.21)</span>
+<span class="k"># T_{n+1} = T_n + alpha (T^u - T_n) mit T_0 = 35 und T^u = 23</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+
+T0 = 35; Tu = 23; N = 20
+n = 0:N
+rot = [RGB(0.43, 0.04, 0.12), RGB(0.64, 0.08, 0.18), RGB(0.89, 0.44, 0.49)]; zeichen = [:circle, :rect, :diamond]
+bilder = [plot(xlabel = &quot;n&quot;, ylabel = &quot;T_n&quot;) for _ in 1:4]
+for (i, alpha) in enumerate([0.1, 0.2, 0.5, 1.9, 2.0, 2.1])
+    T = zeros(N + 1)
+    T[1] = T0
+    for k in 1:N
+        T[k + 1] = T[k] + alpha * (Tu - T[k])
+    end
+    if i &lt;= 3                            <span class="k"># 0 &lt; alpha &lt; 1: monotone Annäherung an T^u, alle in einem Bild</span>
+        plot!(bilder[1], n, T, ls = :dash, marker = zeichen[i], color = rot[i], label = &quot;α = $alpha&quot;)
+    else                                 <span class="k"># 1 &lt; alpha: Schwingungen</span>
+        plot!(bilder[i - 2], n, T, ls = :dash, marker = :circle, color = rot[2], label = &quot;α = $alpha&quot;)
+        @printf(&quot;alpha = %g:  T_19 = %.3f,  T_20 = %.3f\n&quot;, alpha, T[20], T[21])
+    end
+end
+for b in bilder
+    hline!(b, [Tu], color = :black, label = &quot;&quot;)
+end
+display(plot(bilder..., layout = (2, 2), size = (900, 650)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 1.15: Newtonsches Abkühlungsgesetz (Buch, Abschnitt 1.2, Gl. 1.21)</span>
+<span class="k">% T_{n+1} = T_n + alpha (T^u - T_n) mit T_0 = 35 und T^u = 23</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+T0 = 35; Tu = 23; N = 20;
+n = 0:N;
+rot = [0.43 0.04 0.12; 0.64 0.08 0.18; 0.89 0.44 0.49]; marker = &#x27;osd&#x27;;
+alphas = [0.1 0.2 0.5 1.9 2.0 2.1];
+
+for i = 1:6
+    alpha = alphas(i);
+    T = zeros(1, N + 1);
+    T(1) = T0;
+    for k = 1:N
+        T(k + 1) = T(k) + alpha * (Tu - T(k));
+    end
+    if i &lt;= 3                            <span class="k">% 0 &lt; alpha &lt; 1: monotone Annäherung an T^u, alle in einem Bild</span>
+        subplot(2, 2, 1); hold on
+        plot(n, T, [&#x27;--&#x27; marker(i)], &#x27;Color&#x27;, rot(i, :), &#x27;DisplayName&#x27;, sprintf(&#x27;\\alpha = %g&#x27;, alpha));
+    else                                 <span class="k">% 1 &lt; alpha: Schwingungen</span>
+        subplot(2, 2, i - 2); hold on
+        plot(n, T, &#x27;--o&#x27;, &#x27;Color&#x27;, rot(2, :), &#x27;DisplayName&#x27;, sprintf(&#x27;\\alpha = %g&#x27;, alpha));
+        fprintf(&#x27;alpha = %g:  T_19 = %.3f,  T_20 = %.3f\n&#x27;, alpha, T(20), T(21));
+    end
+    plot([0 N], [Tu Tu], &#x27;k-&#x27;, &#x27;HandleVisibility&#x27;, &#x27;off&#x27;);
+    hold off; xlabel(&#x27;n&#x27;); ylabel(&#x27;T_n&#x27;); legend(&#x27;show&#x27;, &#x27;Location&#x27;, &#x27;northeast&#x27;);
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 1.15: Newtonsches Abkühlungsgesetz (Buch, Abschnitt 1.2, Gl. 1.21)</span>
+<span class="k"># T_{n+1} = T_n + alpha (T^u - T_n) mit T_0 = 35 und T^u = 23</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+T0, Tu, N = 35.0, 23.0, 20
+n = np.arange(N + 1)
+
+def abkuehlung(alpha):
+    T = np.zeros(N + 1)
+    T[0] = T0
+    for k in range(N):
+        T[k + 1] = T[k] + alpha * (Tu - T[k])
+    return T
+
+fig, axs = plt.subplots(2, 2, figsize=(10, 7))
+rot = [(0.43, 0.04, 0.12), (0.64, 0.08, 0.18), (0.89, 0.44, 0.49)]
+for alpha, c, m in zip([0.1, 0.2, 0.5], rot, &quot;osD&quot;):        <span class="k"># 0 &lt; alpha &lt; 1: monotone Annäherung an T^u</span>
+    axs[0, 0].plot(n, abkuehlung(alpha), &quot;--&quot;, marker=m, color=c, label=f&quot;α = {alpha}&quot;)
+for ax, alpha in zip([axs[0, 1], axs[1, 0], axs[1, 1]], [1.9, 2.0, 2.1]):   <span class="k"># 1 &lt; alpha: Schwingungen</span>
+    T = abkuehlung(alpha)
+    ax.plot(n, T, &quot;o--&quot;, color=rot[1], label=f&quot;α = {alpha}&quot;)
+    print(f&quot;α = {alpha}:  T_19 = {T[19]:.3f},  T_20 = {T[20]:.3f}&quot;)
+for ax in axs.flat:
+    ax.axhline(Tu, color=&quot;k&quot;, lw=0.8)
+    ax.set_xlabel(&quot;n&quot;); ax.set_ylabel(&quot;T_n&quot;); ax.legend(loc=&quot;upper right&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 1.15: Newtonsches Abkühlungsgesetz (Buch, Abschnitt 1.2, Gl. 1.21)</span>
+<span class="k"># T_{n+1} = T_n + alpha (T^u - T_n) mit T_0 = 35 und T^u = 23</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+T0 &lt;- 35; Tu &lt;- 23; N &lt;- 20
+n &lt;- 0:N
+rot &lt;- c(rgb(0.43, 0.04, 0.12), rgb(0.64, 0.08, 0.18), rgb(0.89, 0.44, 0.49)); zeichen &lt;- c(16, 15, 18)
+alphas &lt;- c(0.1, 0.2, 0.5, 1.9, 2.0, 2.1)
+par(mfrow = c(2, 2))
+for (i in 1:6) {
+  alpha &lt;- alphas[i]
+  T &lt;- numeric(N + 1)
+  T[1] &lt;- T0
+  for (k in 1:N) T[k + 1] &lt;- T[k] + alpha * (Tu - T[k])
+  if (i &lt;= 3) {                          <span class="k"># 0 &lt; alpha &lt; 1: monotone Annäherung an T^u, alle in einem Bild</span>
+    if (i == 1) { plot(NULL, xlim = c(0, N), ylim = c(22, 36), xlab = &quot;n&quot;, ylab = &quot;T_n&quot;); abline(h = Tu) }
+    lines(n, T, type = &quot;o&quot;, lty = 2, pch = zeichen[i], col = rot[i])
+    if (i == 3) legend(&quot;topright&quot;, legend = sprintf(&quot;alpha = %g&quot;, alphas[1:3]), col = rot, pch = zeichen, lty = 2)
+  } else {                               <span class="k"># 1 &lt; alpha: Schwingungen</span>
+    plot(n, T, type = &quot;o&quot;, lty = 2, pch = 16, col = rot[2], xlab = &quot;n&quot;, ylab = &quot;T_n&quot;, main = sprintf(&quot;alpha = %g&quot;, alpha))
+    abline(h = Tu)
+    cat(sprintf(&quot;alpha = %g:  T_19 = %.3f,  T_20 = %.3f\n&quot;, alpha, T[20], T[21]))
+  }
+}</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>α = 1.9:  T_19 = 21.379,  T_20 = 24.459
+α = 2.0:  T_19 = 11.000,  T_20 = 35.000
+α = 2.1:  T_19 = -50.391,  T_20 = 103.730</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="medikament">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 1.16</p>
+    <h2>Medikamentenspiegel mit täglicher Dosis</h2>
+    <p class="formel">x<sub>n+1</sub> = a x<sub>n</sub> + b<sub>n</sub>,&ensp; b<sub>n</sub> = d alle 24 Stunden</p>
+    <p class="lead">Ein nicht-autonomes Beispiel: Zwischen den Gaben wird der Wirkstoff abgebaut, alle 24 Stunden kommt die Dosis d = 0.4 hinzu. Die Spitzenwerte nähern sich x<sub>max</sub> = d/(1 − a<sup>24</sup>) ≈ 1.8664.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/medikament.png" alt="Ergebnis des Programms medikament.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="medikament.jl" data-m="medikament.m" data-py="medikament.py" data-r="medikament.R">medikament.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/medikament.py" data-jl="code/medikament.jl" data-m="code/medikament.m" data-py="code/medikament.py" data-r="code/medikament.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 1.16: Medikamentenspiegel mit täglicher Dosis (Buch, Abschnitt 1.2, Gl. 1.23)</span>
+<span class="k"># x_{n+1} = a x_n + b_n, b_n = d falls n durch 24 teilbar, sonst 0;  a = 0.99, d = 0.4, x_0 = 0, n in Stunden</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+
+a = 0.99; d = 0.4; x0 = 0.0
+N = 504                                  <span class="k"># 21 Tage</span>
+x = zeros(N + 1)
+x[1] = x0                                <span class="k"># x[1] ist x_0</span>
+for k in 1:N
+    n = k - 1                            <span class="k"># Zeitschritt n</span>
+    b = n % 24 == 0 ? d : 0.0            <span class="k"># alle 24 Stunden eine Dosis</span>
+    x[k + 1] = a * x[k] + b
+end
+
+xmax = d / (1 - a^24)                    <span class="k"># Grenzwert der Spitzenwerte</span>
+@printf(&quot;x_max = %.4f\n&quot;, xmax)
+@printf(&quot;Spitzenwert nach 20 Tagen: x_481 = %.4f\n&quot;, x[482])
+
+rot = RGB(0.64, 0.08, 0.18)
+bilder = [begin
+    p = plot(0:ende - 1, x[1:ende], ls = :dash, marker = :circle, ms = 2, color = rot, legend = false,
+             xlabel = &quot;n (Stunden)&quot;, ylabel = &quot;x_n&quot;)
+    hline!(p, [xmax], color = :black)
+end for ende in (73, N + 1)]
+display(plot(bilder..., layout = (2, 1), size = (800, 600)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 1.16: Medikamentenspiegel mit täglicher Dosis (Buch, Abschnitt 1.2, Gl. 1.23)</span>
+<span class="k">% x_{n+1} = a x_n + b_n, b_n = d falls n durch 24 teilbar, sonst 0;  a = 0.99, d = 0.4, x_0 = 0, n in Stunden</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+a = 0.99; d = 0.4; x0 = 0;
+N = 504;                                 <span class="k">% 21 Tage</span>
+x = zeros(1, N + 1);
+x(1) = x0;                               <span class="k">% x(1) ist x_0</span>
+for k = 1:N
+    n = k - 1;                           <span class="k">% Zeitschritt n</span>
+    if mod(n, 24) == 0                   <span class="k">% alle 24 Stunden eine Dosis</span>
+        b = d;
+    else
+        b = 0;
+    end
+    x(k + 1) = a * x(k) + b;
+end
+
+xmax = d / (1 - a^24);                   <span class="k">% Grenzwert der Spitzenwerte</span>
+fprintf(&#x27;x_max = %.4f\n&#x27;, xmax);
+fprintf(&#x27;Spitzenwert nach 20 Tagen: x_481 = %.4f\n&#x27;, x(482));
+
+rot = [0.64 0.08 0.18];
+enden = [73 N + 1];
+for p = 1:2
+    subplot(2, 1, p);
+    plot(0:enden(p) - 1, x(1:enden(p)), &#x27;--o&#x27;, &#x27;Color&#x27;, rot, &#x27;MarkerSize&#x27;, 3); hold on
+    plot([0 enden(p) - 1], [xmax xmax], &#x27;k-&#x27;); hold off
+    xlabel(&#x27;n (Stunden)&#x27;); ylabel(&#x27;x_n&#x27;);
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 1.16: Medikamentenspiegel mit täglicher Dosis (Buch, Abschnitt 1.2, Gl. 1.23)</span>
+<span class="k"># x_{n+1} = a x_n + b_n, b_n = d falls n durch 24 teilbar, sonst 0;  a = 0.99, d = 0.4, x_0 = 0, n in Stunden</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+a, d, x0 = 0.99, 0.4, 0.0
+N = 504                                 <span class="k"># 21 Tage</span>
+x = np.zeros(N + 1)
+x[0] = x0
+for n in range(N):
+    b = d if n % 24 == 0 else 0.0       <span class="k"># alle 24 Stunden eine Dosis</span>
+    x[n + 1] = a * x[n] + b
+
+xmax = d / (1 - a**24)                  <span class="k"># Grenzwert der Spitzenwerte</span>
+print(f&quot;x_max = {xmax:.4f}&quot;)
+print(f&quot;Spitzenwert nach 20 Tagen: x_481 = {x[481]:.4f}&quot;)
+
+fig, axs = plt.subplots(2, 1, figsize=(8, 7))
+for ax, ende in zip(axs, (73, N + 1)):
+    ax.plot(np.arange(ende), x[:ende], &quot;o--&quot;, color=(0.64, 0.08, 0.18), ms=3, lw=0.6)
+    ax.axhline(xmax, color=&quot;k&quot;, lw=0.8)
+    ax.set_xlabel(&quot;n (Stunden)&quot;); ax.set_ylabel(&quot;x_n&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 1.16: Medikamentenspiegel mit täglicher Dosis (Buch, Abschnitt 1.2, Gl. 1.23)</span>
+<span class="k"># x_{n+1} = a x_n + b_n, b_n = d falls n durch 24 teilbar, sonst 0;  a = 0.99, d = 0.4, x_0 = 0, n in Stunden</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+a &lt;- 0.99; d &lt;- 0.4; x0 &lt;- 0
+N &lt;- 504                                 <span class="k"># 21 Tage</span>
+x &lt;- numeric(N + 1)
+x[1] &lt;- x0                               <span class="k"># x[1] ist x_0</span>
+for (k in 1:N) {
+  n &lt;- k - 1                             <span class="k"># Zeitschritt n</span>
+  b &lt;- if (n %% 24 == 0) d else 0        <span class="k"># alle 24 Stunden eine Dosis</span>
+  x[k + 1] &lt;- a * x[k] + b
+}
+
+xmax &lt;- d / (1 - a^24)                   <span class="k"># Grenzwert der Spitzenwerte</span>
+cat(sprintf(&quot;x_max = %.4f\n&quot;, xmax))
+cat(sprintf(&quot;Spitzenwert nach 20 Tagen: x_481 = %.4f\n&quot;, x[482]))
+
+rot &lt;- rgb(0.64, 0.08, 0.18)
+par(mfrow = c(2, 1))
+for (ende in c(73, N + 1)) {
+  plot(0:(ende - 1), x[1:ende], type = &quot;o&quot;, lty = 2, pch = 16, cex = 0.4, col = rot, xlab = &quot;n (Stunden)&quot;, ylab = &quot;x_n&quot;)
+  abline(h = xmax)
+}</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>x_max = 1.8664
+Spitzenwert nach 20 Tagen: x_481 = 1.8546</code></pre></details>
+    </div>
+  </div>
+</section>
+  <section class="apps" id="app-linear">
+  <div class="fig-head"><p class="eyebrow">Im Browser ausprobieren · ohne Installation</p><h2>Lineare Differenzengleichung</h2><p class="lead">x<sub>n+1</sub> = a x<sub>n</sub> + b. Mit a = 1 erhalten Sie eine arithmetische Folge, mit b = 0 eine geometrische, mit a = 1 − α und b = α T<sup>u</sup> das Abkühlungsgesetz.</p></div>
+  <div class="app" data-app="linear">
+    <canvas width="720" height="560" aria-label="Lineare Differenzengleichung"></canvas>
+    <div class="regler"><label><span>Faktor a</span> <output data-o="a"></output><input type="range" data-r="a" min="-1.5" max="1.5" step="0.01" value="0.8" aria-label="Faktor a"></label><label><span>Zufluss b</span> <output data-o="b"></output><input type="range" data-r="b" min="-10" max="10" step="0.5" value="4" aria-label="Zufluss b"></label><label><span>Startwert x<sub>0</sub></span> <output data-o="x0"></output><input type="range" data-r="x0" min="-20" max="40" step="0.5" value="35" aria-label="Startwert x0"></label><p class="zustand"></p><pre class="werte"></pre></div>
+  </div>
+</section>
+  <section class="matlab-apps"><h3>MATLAB-Apps aus der Vorlesung</h3><p>Herunterladen, in einen Ordner legen und in MATLAB den Namen ohne Endung eingeben, z. B. <code>arithmetik_app</code>. Die Apps nutzen die grafische Oberfläche von MATLAB und laufen nicht in GNU Octave.</p><ul><li><a href="apps/arithmetik_app.m" download>arithmetik_app.m</a><span>Arithmetische Folge mit Treppendiagramm</span></li><li><a href="apps/geometrik_app.m" download>geometrik_app.m</a><span>Geometrische Folge mit Treppendiagramm</span></li><li><a href="apps/linear_app.m" download>linear_app.m</a><span>Lineare Differenzengleichung mit Treppendiagramm</span></li><li><a href="apps/lineare_dgl_app.m" download>lineare_dgl_app.m</a><span>Folgen und lineare Differenzengleichungen</span></li><li><a href="apps/newton_abkuehlung_app.m" download>newton_abkuehlung_app.m</a><span>Newtonsches Abkühlungsgesetz</span></li></ul></section>
+  <nav class="weiter" aria-label="Weiterblättern"><a href="abschnitt-1-1.html"><small>Zurück</small>1.1 Folgen und Differenzengleichungen</a><a href="abschnitt-1-3.html"><small>Weiter</small>1.3 Logistisches Wachstumsmodell</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Begleitmaterial zum Buch „Dynamische Systeme in den Lebenswissenschaften“ von Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programme unter <a href="../LICENSE.txt">MIT-Lizenz</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

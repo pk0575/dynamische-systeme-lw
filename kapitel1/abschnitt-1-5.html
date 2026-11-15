@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>1.5 Newton-Verfahren – Dynamische Systeme in den Lebenswissenschaften</title>
+<meta name="description" content="Programme in Julia, MATLAB, Python und R zu Abschnitt 1.5 des Buchs Dynamische Systeme in den Lebenswissenschaften">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamische Systeme in den Lebenswissenschaften</a>
+  <nav aria-label="Kapitel"><a href="../index.html">Start</a> <a href="../kapitel1/index.html" aria-current="page">Kapitel 1</a> <a href="../kapitel2/index.html">Kapitel 2</a> <a href="../kapitel3/index.html">Kapitel 3</a> <a href="../kapitel4/index.html">Kapitel 4</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Abschnitte"><h2><a href="index.html">Kapitel 1</a></h2><ol><li><a href="abschnitt-1-1.html"><span class="nr">1.1</span><span>Folgen und Differenzengleichungen</span></a></li><li><a href="abschnitt-1-2.html"><span class="nr">1.2</span><span>Lineare Differenzengleichungen</span></a></li><li><a href="abschnitt-1-3.html"><span class="nr">1.3</span><span>Logistisches Wachstumsmodell</span></a></li><li><a href="abschnitt-1-4.html"><span class="nr">1.4</span><span>Stationäre Zustände und Stabilität</span></a></li><li><a href="abschnitt-1-5.html" aria-current="page"><span class="nr">1.5</span><span>Newton-Verfahren</span></a></li><li><a href="abschnitt-1-6.html"><span class="nr">1.6</span><span>Vertiefung: Herzmodelle</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Kapitel 1 · Diskrete dynamische Systeme mit einer Variablen</p>
+      <h1><span class="num">1.5</span>Newton-Verfahren</h1>
+      <p>Viele Gleichungen lassen sich nicht nach x auflösen. Das Newton-Verfahren ersetzt die Funktion durch ihre Tangente und nimmt deren Nullstelle als nächste Näherung. Es ist selbst eine Differenzengleichung und konvergiert, wenn es konvergiert, sehr schnell.</p>
+      <p>Zu jeder Abbildung des Abschnitts finden Sie das Programm, das sie erzeugt. Ändern Sie Parameter und Startwerte und beobachten Sie, was passiert. Abbildungs- und Gleichungsnummern beziehen sich auf das Buch.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programmiersprache</legend>
+  <div class="seg" role="radiogroup" aria-label="Programmiersprache">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Gilt für alle Seiten. MATLAB-Programme laufen auch im kostenlosen GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>Auf dieser Seite</b><ul><li><a href="#fixpunkt-exp"><span class="abb">Abb. 1.32</span>Stationärer Zustand als Nullstelle</a></li><li><a href="#newton-schritte"><span class="abb">Abb. 1.33</span>Die ersten Schritte des Newton-Verfahrens</a></li><li><a href="#newton-zyklus"><span class="abb">Abb. 1.34</span>Newton-Verfahren ohne Konvergenz</a></li><li><a href="#newton-wirkstoff"><span class="abb">Abb. 1.35</span>Wirkstoffspiegel unter 1 mg/l</a></li><li><a href="#app-newton"><span class="abb">App</span>im Browser ausprobieren</a></li></ul></div>
+  
+<section class="fig" id="fixpunkt-exp">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 1.32</p>
+    <h2>Stationärer Zustand als Nullstelle</h2>
+    <p class="formel">e<sup>−x</sup> = x &emsp;⇔&emsp; g(x) = e<sup>−x</sup> − x = 0</p>
+    <p class="lead">Der Schnittpunkt mit der Winkelhalbierenden ist zugleich die Nullstelle von g. Die Fixpunktiteration braucht hier viele Schritte.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/fixpunkt_exp.png" alt="Ergebnis des Programms fixpunkt_exp.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="fixpunkt_exp.jl" data-m="fixpunkt_exp.m" data-py="fixpunkt_exp.py" data-r="fixpunkt_exp.R">fixpunkt_exp.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/fixpunkt_exp.py" data-jl="code/fixpunkt_exp.jl" data-m="code/fixpunkt_exp.m" data-py="code/fixpunkt_exp.py" data-r="code/fixpunkt_exp.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 1.32: stationärer Zustand von x_{n+1} = exp(-x_n) (Buch, Abschnitt 1.5)</span>
+<span class="k"># links: Schnittpunkt von f(x) = exp(-x) mit y = x;  rechts: gleichwertig die Nullstelle von g(x) = exp(-x) - x</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+
+x = 0.5
+for n in 1:100                           <span class="k"># Fixpunktiteration x_{n+1} = exp(-x_n)</span>
+    global x = exp(-x)
+end
+@printf(&quot;Fixpunktiteration nach 100 Schritten: x = %.10f\n&quot;, x)
+@printf(&quot;g(x) = exp(-x) - x = %.1e\n&quot;, exp(-x) - x)
+
+blau = RGB(0, 0.447, 0.741)
+xx = range(0, 1, length = 200)
+p1 = plot(xx, exp.(-xx), color = blau, lw = 2, label = &quot;f(x) = exp(-x)&quot;, xlabel = &quot;x&quot;)
+plot!(p1, [0, 1], [0, 1], color = :black, label = &quot;y = x&quot;); scatter!(p1, [x], [x], color = :black, label = &quot;&quot;)
+p2 = plot(xx, exp.(-xx) .- xx, color = blau, lw = 2, label = &quot;g(x) = exp(-x) - x&quot;, xlabel = &quot;x&quot;)
+hline!(p2, [0], color = :black, label = &quot;&quot;); scatter!(p2, [x], [0], color = :black, label = &quot;&quot;)
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 1.32: stationärer Zustand von x_{n+1} = exp(-x_n) (Buch, Abschnitt 1.5)</span>
+<span class="k">% links: Schnittpunkt von f(x) = exp(-x) mit y = x;  rechts: gleichwertig die Nullstelle von g(x) = exp(-x) - x</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+x = 0.5;
+for n = 1:100                            <span class="k">% Fixpunktiteration x_{n+1} = exp(-x_n)</span>
+    x = exp(-x);
+end
+fprintf(&#x27;Fixpunktiteration nach 100 Schritten: x = %.10f\n&#x27;, x);
+fprintf(&#x27;g(x) = exp(-x) - x = %.1e\n&#x27;, exp(-x) - x);
+
+blau = [0 0.447 0.741];
+xx = linspace(0, 1, 200);
+subplot(1, 2, 1);
+plot(xx, exp(-xx), &#x27;Color&#x27;, blau); hold on
+plot([0 1], [0 1], &#x27;k-&#x27;); plot(x, x, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+xlabel(&#x27;x&#x27;); legend(&#x27;f(x) = exp(-x)&#x27;, &#x27;y = x&#x27;);
+subplot(1, 2, 2);
+plot(xx, exp(-xx) - xx, &#x27;Color&#x27;, blau); hold on
+plot([0 1], [0 0], &#x27;k-&#x27;); plot(x, 0, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+xlabel(&#x27;x&#x27;); legend(&#x27;g(x) = exp(-x) - x&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 1.32: stationärer Zustand von x_{n+1} = exp(-x_n) (Buch, Abschnitt 1.5)</span>
+<span class="k"># links: Schnittpunkt von f(x) = exp(-x) mit y = x;  rechts: gleichwertig die Nullstelle von g(x) = exp(-x) - x</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = 0.5
+for n in range(100):                     <span class="k"># Fixpunktiteration x_{n+1} = exp(-x_n)</span>
+    x = np.exp(-x)
+print(f&quot;Fixpunktiteration nach 100 Schritten: x = {x:.10f}&quot;)
+print(f&quot;g(x) = exp(-x) - x = {np.exp(-x) - x:.1e}&quot;)
+
+xx = np.linspace(0, 1, 200)
+fig, axs = plt.subplots(1, 2, figsize=(10, 4.8))
+axs[0].plot(xx, np.exp(-xx), color=(0, 0.447, 0.741), label=&quot;f(x) = exp(-x)&quot;)
+axs[0].plot([0, 1], [0, 1], &quot;k&quot;, lw=0.8, label=&quot;y = x&quot;)
+axs[0].plot(x, x, &quot;ko&quot;)
+axs[1].plot(xx, np.exp(-xx) - xx, color=(0, 0.447, 0.741), label=&quot;g(x) = exp(-x) - x&quot;)
+axs[1].axhline(0, color=&quot;k&quot;, lw=0.8)
+axs[1].plot(x, 0, &quot;ko&quot;)
+for ax in axs:
+    ax.set_xlabel(&quot;x&quot;); ax.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 1.32: stationärer Zustand von x_{n+1} = exp(-x_n) (Buch, Abschnitt 1.5)</span>
+<span class="k"># links: Schnittpunkt von f(x) = exp(-x) mit y = x;  rechts: gleichwertig die Nullstelle von g(x) = exp(-x) - x</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+x &lt;- 0.5
+for (n in 1:100) x &lt;- exp(-x)            <span class="k"># Fixpunktiteration x_{n+1} = exp(-x_n)</span>
+cat(sprintf(&quot;Fixpunktiteration nach 100 Schritten: x = %.10f\n&quot;, x))
+cat(sprintf(&quot;g(x) = exp(-x) - x = %.1e\n&quot;, exp(-x) - x))
+
+blau &lt;- rgb(0, 0.447, 0.741)
+xx &lt;- seq(0, 1, length.out = 200)
+par(mfrow = c(1, 2))
+plot(xx, exp(-xx), type = &quot;l&quot;, col = blau, lwd = 2, xlab = &quot;x&quot;, ylab = &quot;&quot;)
+abline(0, 1); points(x, x, pch = 16)
+legend(&quot;topright&quot;, legend = c(&quot;f(x) = exp(-x)&quot;, &quot;y = x&quot;), col = c(blau, &quot;black&quot;), lwd = c(2, 1))
+plot(xx, exp(-xx) - xx, type = &quot;l&quot;, col = blau, lwd = 2, xlab = &quot;x&quot;, ylab = &quot;&quot;)
+abline(h = 0); points(x, 0, pch = 16)
+legend(&quot;topright&quot;, legend = &quot;g(x) = exp(-x) - x&quot;, col = blau, lwd = 2)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>Fixpunktiteration nach 100 Schritten: x = 0.5671432904
+g(x) = exp(-x) - x = 0.0e+00</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="newton-schritte">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 1.33</p>
+    <h2>Die ersten Schritte des Newton-Verfahrens</h2>
+    <p class="formel">x<sub>n+1</sub> = x<sub>n</sub> − g(x<sub>n</sub>) / g′(x<sub>n</sub>)</p>
+    <p class="lead">Für g(x) = e<sup>−5x</sup> − x und x<sub>0</sub> = 0.05: Die Nullstelle jeder Tangente liefert die nächste Näherung. Die Zahl der richtigen Stellen verdoppelt sich etwa pro Schritt.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/newton_schritte.png" alt="Ergebnis des Programms newton_schritte.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="newton_schritte.jl" data-m="newton_schritte.m" data-py="newton_schritte.py" data-r="newton_schritte.R">newton_schritte.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/newton_schritte.py" data-jl="code/newton_schritte.jl" data-m="code/newton_schritte.m" data-py="code/newton_schritte.py" data-r="code/newton_schritte.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 1.33: die ersten Schritte des Newton-Verfahrens (Buch, Abschnitt 1.5, Gl. 1.44)</span>
+<span class="k"># x_{n+1} = x_n - g(x_n)/g&#x27;(x_n) für g(x) = exp(-5x) - x mit x_0 = 0.05</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+
+g(x) = exp(-5x) - x
+dg(x) = -5exp(-5x) - 1
+
+x = zeros(7); x[1] = 0.05
+for k in 1:6
+    x[k + 1] = x[k] - g(x[k]) / dg(x[k])
+end
+for k in 1:7
+    @printf(&quot;x_%d = %.12f\n&quot;, k - 1, x[k])   <span class="k"># die Anzahl richtiger Stellen verdoppelt sich etwa pro Schritt</span>
+end
+
+xx = range(0, 0.35, length = 300)
+bilder = []
+for p in 1:2
+    b = plot(xx, g.(xx), color = RGB(0, 0.447, 0.741), lw = 2, legend = false, xlims = (0, 0.35), ylims = (-0.35, 1), xlabel = &quot;x&quot;)
+    hline!(b, [0], color = :black)
+    for j in 1:p                         <span class="k"># Tangente an der Stelle x_{j-1}, ihre Nullstelle ist x_j</span>
+        plot!(b, xx, g(x[j]) .+ dg(x[j]) .* (xx .- x[j]), color = :black)
+        plot!(b, [x[j], x[j]], [0, g(x[j])], ls = :dot, color = :black)
+    end
+    scatter!(b, x[1:p + 1], zeros(p + 1), color = RGB(0.64, 0.08, 0.18))
+    push!(bilder, b)
+end
+display(plot(bilder..., layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 1.33: die ersten Schritte des Newton-Verfahrens (Buch, Abschnitt 1.5, Gl. 1.44)</span>
+<span class="k">% x_{n+1} = x_n - g(x_n)/g&#x27;(x_n) für g(x) = exp(-5x) - x mit x_0 = 0.05</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+g = @(x) exp(-5 * x) - x;
+dg = @(x) -5 * exp(-5 * x) - 1;
+
+x = zeros(1, 7); x(1) = 0.05;
+for k = 1:6
+    x(k + 1) = x(k) - g(x(k)) / dg(x(k));
+end
+for k = 1:7
+    fprintf(&#x27;x_%d = %.12f\n&#x27;, k - 1, x(k));   <span class="k">% die Anzahl richtiger Stellen verdoppelt sich etwa pro Schritt</span>
+end
+
+xx = linspace(0, 0.35, 300);
+for p = 1:2
+    subplot(1, 2, p);
+    plot(xx, g(xx), &#x27;Color&#x27;, [0 0.447 0.741]); hold on
+    plot([0 0.35], [0 0], &#x27;k-&#x27;);
+    for j = 1:p                          <span class="k">% Tangente an der Stelle x_{j-1}, ihre Nullstelle ist x_j</span>
+        plot(xx, g(x(j)) + dg(x(j)) * (xx - x(j)), &#x27;k-&#x27;);
+        plot([x(j) x(j)], [0 g(x(j))], &#x27;k:&#x27;);
+    end
+    plot(x(1:p + 1), zeros(1, p + 1), &#x27;o&#x27;, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;MarkerFaceColor&#x27;, [0.64 0.08 0.18]);
+    hold off; axis([0 0.35 -0.35 1]); xlabel(&#x27;x&#x27;);
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 1.33: die ersten Schritte des Newton-Verfahrens (Buch, Abschnitt 1.5, Gl. 1.44)</span>
+<span class="k"># x_{n+1} = x_n - g(x_n)/g&#x27;(x_n) für g(x) = exp(-5x) - x mit x_0 = 0.05</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+g = lambda x: np.exp(-5 * x) - x
+dg = lambda x: -5 * np.exp(-5 * x) - 1
+
+x = [0.05]
+for n in range(6):
+    x.append(x[-1] - g(x[-1]) / dg(x[-1]))
+for n, v in enumerate(x):
+    print(f&quot;x_{n} = {v:.12f}&quot;)           <span class="k"># die Anzahl richtiger Stellen verdoppelt sich etwa pro Schritt</span>
+
+xx = np.linspace(0, 0.35, 300)
+fig, axs = plt.subplots(1, 2, figsize=(10, 4.8))
+for ax, k in zip(axs, (1, 2)):
+    ax.plot(xx, g(xx), color=(0, 0.447, 0.741), label=&quot;g(x)&quot;)
+    ax.axhline(0, color=&quot;k&quot;, lw=0.8)
+    for j in range(k):                   <span class="k"># Tangente an der Stelle x_j, ihre Nullstelle ist x_{j+1}</span>
+        ax.plot(xx, g(x[j]) + dg(x[j]) * (xx - x[j]), &quot;k--&quot; if j &lt; k - 1 else &quot;k-&quot;, lw=1)
+        ax.plot([x[j], x[j]], [0, g(x[j])], &quot;k:&quot;)
+    ax.plot(x[:k + 1], np.zeros(k + 1), &quot;o&quot;, color=(0.64, 0.08, 0.18))
+    ax.set_xlim(0, 0.35); ax.set_ylim(-0.35, 1); ax.set_xlabel(&quot;x&quot;); ax.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 1.33: die ersten Schritte des Newton-Verfahrens (Buch, Abschnitt 1.5, Gl. 1.44)</span>
+<span class="k"># x_{n+1} = x_n - g(x_n)/g&#x27;(x_n) für g(x) = exp(-5x) - x mit x_0 = 0.05</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+g &lt;- function(x) exp(-5 * x) - x
+dg &lt;- function(x) -5 * exp(-5 * x) - 1
+
+x &lt;- numeric(7); x[1] &lt;- 0.05
+for (k in 1:6) x[k + 1] &lt;- x[k] - g(x[k]) / dg(x[k])
+for (k in 1:7) cat(sprintf(&quot;x_%d = %.12f\n&quot;, k - 1, x[k]))   <span class="k"># die Anzahl richtiger Stellen verdoppelt sich etwa pro Schritt</span>
+
+xx &lt;- seq(0, 0.35, length.out = 300)
+par(mfrow = c(1, 2))
+for (p in 1:2) {
+  plot(xx, g(xx), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2, xlim = c(0, 0.35), ylim = c(-0.35, 1), xlab = &quot;x&quot;, ylab = &quot;&quot;)
+  abline(h = 0)
+  for (j in 1:p) {                       <span class="k"># Tangente an der Stelle x_{j-1}, ihre Nullstelle ist x_j</span>
+    lines(xx, g(x[j]) + dg(x[j]) * (xx - x[j]))
+    lines(c(x[j], x[j]), c(0, g(x[j])), lty = 3)
+  }
+  points(x[1:(p + 1)], rep(0, p + 1), pch = 16, col = rgb(0.64, 0.08, 0.18))
+}</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>x_0 = 0.050000000000
+x_1 = 0.198917082143
+x_2 = 0.258915906327
+x_3 = 0.265285835375
+x_4 = 0.265344928070
+x_5 = 0.265344933048
+x_6 = 0.265344933048</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="newton-zyklus">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 1.34</p>
+    <h2>Newton-Verfahren ohne Konvergenz</h2>
+    <p class="formel">g(x) = x<sup>3</sup> − 2x + 2,&ensp; x<sub>0</sub> = 0</p>
+    <p class="lead">Die Näherungen springen zwischen 0 und 1 hin und her. Mit dem Startwert −1 findet das Verfahren die Nullstelle x* ≈ −1.769 sofort.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/newton_zyklus.png" alt="Ergebnis des Programms newton_zyklus.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="newton_zyklus.jl" data-m="newton_zyklus.m" data-py="newton_zyklus.py" data-r="newton_zyklus.R">newton_zyklus.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/newton_zyklus.py" data-jl="code/newton_zyklus.jl" data-m="code/newton_zyklus.m" data-py="code/newton_zyklus.py" data-r="code/newton_zyklus.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 1.34: Newton-Verfahren ohne Konvergenz (Buch, Abschnitt 1.5, Gl. 1.44)</span>
+<span class="k"># g(x) = x^3 - 2x + 2 mit x_0 = 0: die Näherungen springen zwischen 0 und 1, die Nullstelle bei -1.769 wird nicht gefunden</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+
+g(x) = x^3 - 2x + 2
+dg(x) = 3x^2 - 2
+
+x = zeros(7)
+for k in 1:6
+    x[k + 1] = x[k] - g(x[k]) / dg(x[k])
+end
+println(&quot;x_0 ... x_6 = &quot;, join([@sprintf(&quot;%g&quot;, v) for v in x], &quot;  &quot;))
+
+xs = -1.0                                <span class="k"># mit einem besseren Startwert klappt es</span>
+for k in 1:8
+    global xs = xs - g(xs) / dg(xs)
+end
+@printf(&quot;Start bei -1: Nullstelle x* = %.6f\n&quot;, xs)
+
+xx = range(-2.2, 1.8, length = 400)
+p = plot(xx, g.(xx), color = RGB(0, 0.447, 0.741), lw = 2, legend = false, ylims = (-2.2, 4.5), xlabel = &quot;x&quot;)
+hline!(p, [0], color = :black)
+zz = range(-0.6, 1.6, length = 10)
+for a in (0, 1)                          <span class="k"># die beiden Tangenten</span>
+    plot!(p, zz, g(a) .+ dg(a) .* (zz .- a), color = :black)
+end
+scatter!(p, [0, 1], [0, 0], color = RGB(0.64, 0.08, 0.18))
+scatter!(p, [xs], [0], color = :black)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 1.34: Newton-Verfahren ohne Konvergenz (Buch, Abschnitt 1.5, Gl. 1.44)</span>
+<span class="k">% g(x) = x^3 - 2x + 2 mit x_0 = 0: die Näherungen springen zwischen 0 und 1, die Nullstelle bei -1.769 wird nicht gefunden</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+g = @(x) x.^3 - 2 * x + 2;
+dg = @(x) 3 * x.^2 - 2;
+
+x = zeros(1, 7);
+for k = 1:6
+    x(k + 1) = x(k) - g(x(k)) / dg(x(k));
+end
+fprintf(&#x27;x_0 ... x_6 = &#x27;); fprintf(&#x27;%g  &#x27;, x); fprintf(&#x27;\n&#x27;);
+
+xs = -1;                                 <span class="k">% mit einem besseren Startwert klappt es</span>
+for k = 1:8
+    xs = xs - g(xs) / dg(xs);
+end
+fprintf(&#x27;Start bei -1: Nullstelle x* = %.6f\n&#x27;, xs);
+
+xx = linspace(-2.2, 1.8, 400);
+plot(xx, g(xx), &#x27;Color&#x27;, [0 0.447 0.741]); hold on
+plot([-2.2 1.8], [0 0], &#x27;k-&#x27;);
+zz = linspace(-0.6, 1.6, 10);
+for a = [0 1]                            <span class="k">% die beiden Tangenten</span>
+    plot(zz, g(a) + dg(a) * (zz - a), &#x27;k-&#x27;);
+end
+plot([0 1], [0 0], &#x27;o&#x27;, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;MarkerFaceColor&#x27;, [0.64 0.08 0.18]);
+plot(xs, 0, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;);
+hold off; ylim([-2.2 4.5]); xlabel(&#x27;x&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 1.34: Newton-Verfahren ohne Konvergenz (Buch, Abschnitt 1.5, Gl. 1.44)</span>
+<span class="k"># g(x) = x^3 - 2x + 2 mit x_0 = 0: die Näherungen springen zwischen 0 und 1, die Nullstelle bei -1.769 wird nicht gefunden</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+g = lambda x: x**3 - 2 * x + 2
+dg = lambda x: 3 * x**2 - 2
+
+x = [0.0]
+for n in range(6):
+    x.append(x[-1] - g(x[-1]) / dg(x[-1]))
+print(&quot;x_0 ... x_6 =&quot;, &quot;  &quot;.join(f&quot;{v:g}&quot; for v in x))
+
+xs = -1.0                                <span class="k"># mit einem besseren Startwert klappt es</span>
+for n in range(8):
+    xs = xs - g(xs) / dg(xs)
+print(f&quot;Start bei -1: Nullstelle x* = {xs:.6f}&quot;)
+
+xx = np.linspace(-2.2, 1.8, 400)
+plt.plot(xx, g(xx), color=(0, 0.447, 0.741), label=&quot;g(x) = x^3 - 2x + 2&quot;)
+plt.axhline(0, color=&quot;k&quot;, lw=0.8)
+zz = np.linspace(-0.6, 1.6, 10)
+for a in (0, 1):                         <span class="k"># die beiden Tangenten</span>
+    plt.plot(zz, g(a) + dg(a) * (zz - a), &quot;k&quot;, lw=1)
+plt.plot([0, 1], [0, 0], &quot;o&quot;, color=(0.64, 0.08, 0.18))
+plt.plot(xs, 0, &quot;ko&quot;)
+plt.ylim(-2.2, 4.5); plt.xlabel(&quot;x&quot;); plt.legend(loc=&quot;upper left&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 1.34: Newton-Verfahren ohne Konvergenz (Buch, Abschnitt 1.5, Gl. 1.44)</span>
+<span class="k"># g(x) = x^3 - 2x + 2 mit x_0 = 0: die Näherungen springen zwischen 0 und 1, die Nullstelle bei -1.769 wird nicht gefunden</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+g &lt;- function(x) x^3 - 2 * x + 2
+dg &lt;- function(x) 3 * x^2 - 2
+
+x &lt;- numeric(7)
+for (k in 1:6) x[k + 1] &lt;- x[k] - g(x[k]) / dg(x[k])
+cat(&quot;x_0 ... x_6 =&quot;, sprintf(&quot;%g&quot;, x), &quot;\n&quot;)
+
+xs &lt;- -1                                 <span class="k"># mit einem besseren Startwert klappt es</span>
+for (k in 1:8) xs &lt;- xs - g(xs) / dg(xs)
+cat(sprintf(&quot;Start bei -1: Nullstelle x* = %.6f\n&quot;, xs))
+
+xx &lt;- seq(-2.2, 1.8, length.out = 400)
+plot(xx, g(xx), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2, ylim = c(-2.2, 4.5), xlab = &quot;x&quot;, ylab = &quot;&quot;)
+abline(h = 0)
+zz &lt;- seq(-0.6, 1.6, length.out = 10)
+for (a in c(0, 1)) lines(zz, g(a) + dg(a) * (zz - a))   <span class="k"># die beiden Tangenten</span>
+points(c(0, 1), c(0, 0), pch = 16, col = rgb(0.64, 0.08, 0.18))
+points(xs, 0, pch = 16)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>x_0 ... x_6 = 0  1  0  1  0  1  0
+Start bei -1: Nullstelle x* = -1.769292</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="newton-wirkstoff">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 1.35</p>
+    <h2>Wirkstoffspiegel unter 1 mg/l</h2>
+    <p class="formel">c(t) = 5 (e<sup>−0.2t</sup> − e<sup>−t</sup>) = 1</p>
+    <p class="lead">Ab wann fällt die Konzentration unter 1 mg/l? Das Newton-Verfahren mit Startwert 10 h liefert t* ≈ 8.04 h nach wenigen Schritten.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/newton_wirkstoff.png" alt="Ergebnis des Programms newton_wirkstoff.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="newton_wirkstoff.jl" data-m="newton_wirkstoff.m" data-py="newton_wirkstoff.py" data-r="newton_wirkstoff.R">newton_wirkstoff.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/newton_wirkstoff.py" data-jl="code/newton_wirkstoff.jl" data-m="code/newton_wirkstoff.m" data-py="code/newton_wirkstoff.py" data-r="code/newton_wirkstoff.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 1.35: Wann fällt der Wirkstoffspiegel unter 1 mg/l? (Buch, Abschnitt 1.5, Gl. 1.44)</span>
+<span class="k"># c(t) = 5 (exp(-0.2 t) - exp(-t)); Newton-Verfahren für g(t) = c(t) - 1 mit Startwert t_0 = 10 h</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+
+c(t) = 5 * (exp(-0.2t) - exp(-t))
+dc(t) = 5 * (-0.2exp(-0.2t) + exp(-t))
+
+t = zeros(6); t[1] = 10
+for k in 1:5
+    t[k + 1] = t[k] - (c(t[k]) - 1) / dc(t[k])
+end
+for k in 1:6
+    @printf(&quot;t_%d = %.6f h\n&quot;, k - 1, t[k])
+end
+
+tt = range(0, 24, length = 500)
+p = plot(tt, c.(tt), color = RGB(0.64, 0.08, 0.18), lw = 2, legend = false, xlims = (0, 24), ylims = (0, 3),
+         xlabel = &quot;Zeit t (h)&quot;, ylabel = &quot;c(t) (mg/l)&quot;)
+hline!(p, [1], color = :black); scatter!(p, [t[end]], [1], color = :black)
+annotate!(p, t[end] + 0.5, 1.15, text(@sprintf(&quot;t* = %.2f h&quot;, t[end]), 9, :left))
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 1.35: Wann fällt der Wirkstoffspiegel unter 1 mg/l? (Buch, Abschnitt 1.5, Gl. 1.44)</span>
+<span class="k">% c(t) = 5 (exp(-0.2 t) - exp(-t)); Newton-Verfahren für g(t) = c(t) - 1 mit Startwert t_0 = 10 h</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+c = @(t) 5 * (exp(-0.2 * t) - exp(-t));
+dc = @(t) 5 * (-0.2 * exp(-0.2 * t) + exp(-t));
+
+t = zeros(1, 6); t(1) = 10;
+for k = 1:5
+    t(k + 1) = t(k) - (c(t(k)) - 1) / dc(t(k));
+end
+for k = 1:6
+    fprintf(&#x27;t_%d = %.6f h\n&#x27;, k - 1, t(k));
+end
+
+tt = linspace(0, 24, 500);
+plot(tt, c(tt), &#x27;Color&#x27;, [0.64 0.08 0.18]); hold on
+plot([0 24], [1 1], &#x27;k-&#x27;); plot(t(end), 1, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;);
+text(t(end) + 0.5, 1.15, sprintf(&#x27;t* = %.2f h&#x27;, t(end)));
+hold off; axis([0 24 0 3]); xlabel(&#x27;Zeit t (h)&#x27;); ylabel(&#x27;c(t) (mg/l)&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 1.35: Wann fällt der Wirkstoffspiegel unter 1 mg/l? (Buch, Abschnitt 1.5, Gl. 1.44)</span>
+<span class="k"># c(t) = 5 (exp(-0.2 t) - exp(-t)); Newton-Verfahren für g(t) = c(t) - 1 mit Startwert t_0 = 10 h</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+c = lambda t: 5 * (np.exp(-0.2 * t) - np.exp(-t))
+dc = lambda t: 5 * (-0.2 * np.exp(-0.2 * t) + np.exp(-t))
+
+t = [10.0]
+for n in range(5):
+    t.append(t[-1] - (c(t[-1]) - 1) / dc(t[-1]))
+for n, v in enumerate(t):
+    print(f&quot;t_{n} = {v:.6f} h&quot;)
+
+tt = np.linspace(0, 24, 500)
+plt.plot(tt, c(tt), color=(0.64, 0.08, 0.18), label=&quot;c(t)&quot;)
+plt.axhline(1, color=&quot;k&quot;, lw=0.8)
+plt.plot(t[-1], 1, &quot;ko&quot;)
+plt.text(t[-1] + 0.5, 1.15, f&quot;t* ≈ {t[-1]:.2f} h&quot;)
+plt.xlim(0, 24); plt.ylim(0, 3)
+plt.xlabel(&quot;Zeit t (h)&quot;); plt.ylabel(&quot;c(t) (mg/l)&quot;); plt.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 1.35: Wann fällt der Wirkstoffspiegel unter 1 mg/l? (Buch, Abschnitt 1.5, Gl. 1.44)</span>
+<span class="k"># c(t) = 5 (exp(-0.2 t) - exp(-t)); Newton-Verfahren für g(t) = c(t) - 1 mit Startwert t_0 = 10 h</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+konz &lt;- function(t) 5 * (exp(-0.2 * t) - exp(-t))   <span class="k"># c(t); in R ist c() schon vergeben</span>
+dc &lt;- function(t) 5 * (-0.2 * exp(-0.2 * t) + exp(-t))
+
+t &lt;- numeric(6); t[1] &lt;- 10
+for (k in 1:5) t[k + 1] &lt;- t[k] - (konz(t[k]) - 1) / dc(t[k])
+for (k in 1:6) cat(sprintf(&quot;t_%d = %.6f h\n&quot;, k - 1, t[k]))
+
+tt &lt;- seq(0, 24, length.out = 500)
+plot(tt, konz(tt), type = &quot;l&quot;, col = rgb(0.64, 0.08, 0.18), lwd = 2, xlim = c(0, 24), ylim = c(0, 3),
+     xlab = &quot;Zeit t (h)&quot;, ylab = &quot;c(t) (mg/l)&quot;)
+abline(h = 1); points(t[6], 1, pch = 16)
+text(t[6] + 0.5, 1.15, sprintf(&quot;t* = %.2f h&quot;, t[6]), adj = 0)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>t_0 = 10.000000 h
+t_1 = 7.605250 h
+t_2 = 8.021572 h
+t_3 = 8.039102 h
+t_4 = 8.039131 h
+t_5 = 8.039131 h</code></pre></details>
+    </div>
+  </div>
+</section>
+  <section class="apps" id="app-newton">
+  <div class="fig-head"><p class="eyebrow">Im Browser ausprobieren · ohne Installation</p><h2>Newton-Verfahren ausprobieren</h2><p class="lead">Wählen Sie eine Funktion und einen Startwert. Die App zeichnet die Tangenten und listet die Näherungen auf.</p></div>
+  <div class="app" data-app="newton">
+    <canvas width="720" height="560" aria-label="Newton-Verfahren ausprobieren"></canvas>
+    <div class="regler"><label><span>Funktion</span><select aria-label="Funktion"><option value="expo">g(x) = e^(−5x) − x</option><option value="kubisch">g(x) = x³ − 2x + 2</option><option value="wurzel">g(x) = x² − 2</option><option value="wirkstoff">Wirkstoff: c(t) − 1</option></select></label><label><span>Startwert x<sub>0</sub></span> <output data-o="x0"></output><input type="range" data-r="x0" min="0" max="1" step="0.01" value="0.05" aria-label="Startwert x0"></label><label><span>Schritte</span> <output data-o="n"></output><input type="range" data-r="n" min="1" max="8" step="1" value="5" aria-label="Schritte"></label><p class="zustand"></p><pre class="werte"></pre></div>
+  </div>
+</section>
+  <section class="matlab-apps"><h3>MATLAB-Apps aus der Vorlesung</h3><p>Herunterladen, in einen Ordner legen und in MATLAB den Namen ohne Endung eingeben, z. B. <code>heron_newton_app</code>. Die Apps nutzen die grafische Oberfläche von MATLAB und laufen nicht in GNU Octave.</p><ul><li><a href="apps/heron_newton_app.m" download>heron_newton_app.m</a><span>Heron-Folge und Newton-Verfahren</span></li></ul></section>
+  <nav class="weiter" aria-label="Weiterblättern"><a href="abschnitt-1-4.html"><small>Zurück</small>1.4 Stationäre Zustände und Stabilität</a><a href="abschnitt-1-6.html"><small>Weiter</small>1.6 Vertiefung: Herzmodelle</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Begleitmaterial zum Buch „Dynamische Systeme in den Lebenswissenschaften“ von Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programme unter <a href="../LICENSE.txt">MIT-Lizenz</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

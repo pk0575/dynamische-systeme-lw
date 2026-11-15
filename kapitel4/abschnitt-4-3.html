@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>4.3 Michaelis-Menten-Kinetik – Dynamische Systeme in den Lebenswissenschaften</title>
+<meta name="description" content="Programme in Julia, MATLAB, Python und R zu Abschnitt 4.3 des Buchs Dynamische Systeme in den Lebenswissenschaften">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamische Systeme in den Lebenswissenschaften</a>
+  <nav aria-label="Kapitel"><a href="../index.html">Start</a> <a href="../kapitel1/index.html">Kapitel 1</a> <a href="../kapitel2/index.html">Kapitel 2</a> <a href="../kapitel3/index.html">Kapitel 3</a> <a href="../kapitel4/index.html" aria-current="page">Kapitel 4</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Abschnitte"><h2><a href="index.html">Kapitel 4</a></h2><ol><li><a href="abschnitt-4-1.html"><span class="nr">4.1</span><span>Systeme von Differentialgleichungen</span></a></li><li><a href="abschnitt-4-2.html"><span class="nr">4.2</span><span>Lineare Systeme</span></a></li><li><a href="abschnitt-4-3.html" aria-current="page"><span class="nr">4.3</span><span>Michaelis-Menten-Kinetik</span></a></li><li><a href="abschnitt-4-4.html"><span class="nr">4.4</span><span>Stationäre Zustände und Stabilität</span></a></li><li><a href="abschnitt-4-5.html"><span class="nr">4.5</span><span>Vertiefung: Erregbarkeit in der Phasenebene</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Kapitel 4 · Kontinuierliche dynamische Systeme mit mehreren Variablen</p>
+      <h1><span class="num">4.3</span>Michaelis-Menten-Kinetik</h1>
+      <p>Ein Enzym E bindet ein Substrat S zu einem Komplex SE, der in Produkt P und freies Enzym zerfällt. Das Massenwirkungsgesetz liefert ein System für vier Konzentrationen. Ist wenig Enzym vorhanden, stellt sich der Komplex schnell auf einen quasistationären Wert ein, und man erhält die Michaelis-Menten-Rate.</p>
+      <p>Zu jeder Abbildung des Abschnitts finden Sie das Programm, das sie erzeugt. Ändern Sie Parameter und Startwerte und beobachten Sie, was passiert. Abbildungs- und Gleichungsnummern beziehen sich auf das Buch.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programmiersprache</legend>
+  <div class="seg" role="radiogroup" aria-label="Programmiersprache">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Gilt für alle Seiten. MATLAB-Programme laufen auch im kostenlosen GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>Auf dieser Seite</b><ul><li><a href="#mm-voll"><span class="abb">Abb. 4.13</span>Das volle System</a></li><li><a href="#mm-rate"><span class="abb">Abb. 4.14</span>Michaelis-Menten-Rate</a></li><li><a href="#mm-phase"><span class="abb">Abb. 4.15</span>Die ([S], [SE])-Ebene</a></li><li><a href="#mm-vergleich"><span class="abb">Abb. 4.16</span>Volles System und quasistationäre Näherung</a></li></ul></div>
+  
+<section class="fig" id="mm-voll">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 4.13</p>
+    <h2>Das volle System</h2>
+    <p class="formel">d[S]/dt = −k<sub>1</sub> [S][E] + k<sub>2</sub> [SE],&ensp; d[SE]/dt = k<sub>1</sub> [S][E] − (k<sub>2</sub> + k<sub>3</sub>) [SE], …</p>
+    <p class="lead">Substrat wird zu Produkt umgesetzt, die Enzymmenge [E] + [SE] bleibt dabei erhalten.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/mm_voll.png" alt="Ergebnis des Programms mm_voll.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="mm_voll.jl" data-m="mm_voll.m" data-py="mm_voll.py" data-r="mm_voll.R">mm_voll.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/mm_voll.py" data-jl="code/mm_voll.jl" data-m="code/mm_voll.m" data-py="code/mm_voll.py" data-r="code/mm_voll.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 4.13: Michaelis-Menten-System mit allen vier Konzentrationen (Buch, Abschnitt 4.3, Gl. 4.12)</span>
+<span class="k"># k1 = 1, k2 = 1e-4, k3 = 0.1, [S]0 = 0.5 µM, [E]0 = 0.2 µM, [SE]0 = [P]0 = 0</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># Paket OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># löst dz/dt = f(t, z) und gibt die Lösung zu den Zeitpunkten t zurück (Zeile i = Komponente i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+idx(t, tt) = findfirst(t .&gt;= tt - 1e-9)    <span class="k"># erster Index mit t &gt;= tt</span>
+k1 = 1.0; k2 = 1e-4; k3 = 0.1             <span class="k"># Raten in 1/(µM s) bzw. 1/s</span>
+S0 = 0.5                                 <span class="k"># µM</span>
+k50 = (k2 + k3) / k1
+function mm(t, z)
+    S, E, C, P = z                       <span class="k"># Substrat, Enzym, Komplex SE, Produkt</span>
+    r1 = k1 * S * E; r2 = k2 * C; r3 = k3 * C
+    return [-r1 + r2, -r1 + r2 + r3, r1 - r2 - r3, r3]
+end
+
+E0 = 0.2
+t = range(0, 60, length = 3001)
+z = loese(mm, [S0, E0, 0, 0], t, abstol = 1e-13); S, E, C, P = eachrow(z)
+println(&quot;Erhaltung [E] + [SE] = E0 bis auf Rundungsfehler (&lt; 1e-12): &quot;, maximum(abs.(E .+ C .- E0)) &lt; 1e-12 ? &quot;ja&quot; : &quot;nein&quot;)
+for tt in (5, 20, 60)
+    i = idx(t, tt)
+    @printf(&quot;t = %2d s: [S] = %.4f, [E] = %.4f, [SE] = %.4f, [P] = %.4f\n&quot;, tt, S[i], E[i], C[i], P[i])
+end
+farben = [R1, R2, R3, RGB(0.95, 0.70, 0.73)]
+p = plot(xlabel = &quot;t (s)&quot;, ylabel = &quot;Konzentration (µM)&quot;, legend_columns = 2)
+for (y, name, fa, m) in zip([S, E, C, P], [&quot;Substrat [S]&quot;, &quot;Enzym [E]&quot;, &quot;Komplex [SE]&quot;, &quot;Produkt [P]&quot;], farben, [:circle, :rect, :diamond, :utriangle])
+    plot!(p, t, y, color = fa, lw = 2, label = name)
+    scatter!(p, t[1:250:end], y[1:250:end], color = fa, marker = m, label = &quot;&quot;)
+end
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 4.13: Michaelis-Menten-System mit allen vier Konzentrationen (Buch, Abschnitt 4.3, Gl. 4.12)</span>
+<span class="k">% k1 = 1, k2 = 1e-4, k3 = 0.1, [S]0 = 0.5 µM, [E]0 = 0.2 µM, [SE]0 = [P]0 = 0</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+k1 = 1; k2 = 1e-4; k3 = 0.1;               <span class="k">% Raten in 1/(µM s) bzw. 1/s</span>
+S0 = 0.5;                                   <span class="k">% µM</span>
+k50 = (k2 + k3) / k1;
+<span class="k">% z = ([S], [E], [SE], [P]): Substrat, Enzym, Komplex, Produkt</span>
+mm = @(t, z) [-k1 * z(1) * z(2) + k2 * z(3); -k1 * z(1) * z(2) + (k2 + k3) * z(3); k1 * z(1) * z(2) - (k2 + k3) * z(3); k3 * z(3)];
+opt = odeset(&#x27;RelTol&#x27;, 1e-10, &#x27;AbsTol&#x27;, 1e-13);
+E0 = 0.2;
+[t, z] = ode45(mm, linspace(0, 60, 3001), [S0; E0; 0; 0], opt);
+if max(abs(z(:, 2) + z(:, 3) - E0)) &lt; 1e-12, ok = &#x27;ja&#x27;; else, ok = &#x27;nein&#x27;; end
+fprintf(&#x27;Erhaltung [E] + [SE] = E0 bis auf Rundungsfehler (&lt; 1e-12): %s\n&#x27;, ok);
+for tt = [5 20 60]
+    i = find(t &gt;= tt - 1e-9, 1);
+    fprintf(&#x27;t = %2d s: [S] = %.4f, [E] = %.4f, [SE] = %.4f, [P] = %.4f\n&#x27;, tt, z(i, :));
+end
+farben = [0.43 0.04 0.12; 0.64 0.08 0.18; 0.89 0.44 0.49; 0.95 0.70 0.73]; marker = &#x27;osd^&#x27;;
+hold on
+for j = 1:4
+    plot(t, z(:, j), &#x27;Color&#x27;, farben(j, :), &#x27;LineWidth&#x27;, 2);
+    plot(t(1:250:end), z(1:250:end, j), marker(j), &#x27;Color&#x27;, farben(j, :), &#x27;MarkerFaceColor&#x27;, farben(j, :), &#x27;HandleVisibility&#x27;, &#x27;off&#x27;);
+end
+hold off
+xlabel(&#x27;t (s)&#x27;); ylabel(&#x27;Konzentration (µM)&#x27;); legend(&#x27;Substrat [S]&#x27;, &#x27;Enzym [E]&#x27;, &#x27;Komplex [SE]&#x27;, &#x27;Produkt [P]&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 4.13: Michaelis-Menten-System mit allen vier Konzentrationen (Buch, Abschnitt 4.3, Gl. 4.12)</span>
+<span class="k"># k1 = 1, k2 = 1e-4, k3 = 0.1, [S]0 = 0.5 µM, [E]0 = 0.2 µM, [SE]0 = [P]0 = 0</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+k1, k2, k3 = 1.0, 1e-4, 0.1                <span class="k"># Raten in 1/(µM s) bzw. 1/s</span>
+S0 = 0.5                                   <span class="k"># µM</span>
+k50 = (k2 + k3) / k1
+def mm(t, z):
+    S, E, C, P = z                         <span class="k"># Substrat, Enzym, Komplex SE, Produkt</span>
+    r1, r2, r3 = k1 * S * E, k2 * C, k3 * C
+    return [-r1 + r2, -r1 + r2 + r3, r1 - r2 - r3, r3]
+
+E0 = 0.2
+t = np.linspace(0, 60, 3001)
+s = solve_ivp(mm, [0, 60], [S0, E0, 0, 0], t_eval=t, method=&quot;LSODA&quot;, rtol=1e-10, atol=1e-13)
+S, E, C, P = s.y
+print(&quot;Erhaltung [E] + [SE] = E0 bis auf Rundungsfehler (&lt; 1e-12):&quot;, &quot;ja&quot; if np.max(abs(E + C - E0)) &lt; 1e-12 else &quot;nein&quot;)
+for tt in [5, 20, 60]:
+    i = np.searchsorted(t, tt)
+    print(f&quot;t = {tt:2d} s: [S] = {S[i]:.4f}, [E] = {E[i]:.4f}, [SE] = {C[i]:.4f}, [P] = {P[i]:.4f}&quot;)
+farben = [(0.43, 0.04, 0.12), (0.64, 0.08, 0.18), (0.89, 0.44, 0.49), (0.95, 0.70, 0.73)]
+for y, name, fa, m in zip([S, E, C, P], [&quot;Substrat [S]&quot;, &quot;Enzym [E]&quot;, &quot;Komplex [SE]&quot;, &quot;Produkt [P]&quot;], farben, &quot;osD^&quot;):
+    plt.plot(t, y, &quot;-&quot; + m, color=fa, lw=2, markevery=250, label=name)
+plt.xlabel(&quot;t (s)&quot;); plt.ylabel(&quot;Konzentration (µM)&quot;); plt.legend(ncol=2)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 4.13: Michaelis-Menten-System mit allen vier Konzentrationen (Buch, Abschnitt 4.3, Gl. 4.12)</span>
+<span class="k"># k1 = 1, k2 = 1e-4, k3 = 0.1, [S]0 = 0.5 µM, [E]0 = 0.2 µM, [SE]0 = [P]0 = 0</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+library(deSolve)                         <span class="k"># Paket deSolve: install.packages(&quot;deSolve&quot;)</span>
+k1 &lt;- 1; k2 &lt;- 1e-4; k3 &lt;- 0.1                 <span class="k"># Raten in 1/(µM s) bzw. 1/s</span>
+S0 &lt;- 0.5                                      <span class="k"># µM</span>
+k50 &lt;- (k2 + k3) / k1
+<span class="k"># z = ([S], [E], [SE], [P]): Substrat, Enzym, Komplex, Produkt</span>
+mm &lt;- function(t, z) c(-k1 * z[1] * z[2] + k2 * z[3], -k1 * z[1] * z[2] + (k2 + k3) * z[3],
+                       k1 * z[1] * z[2] - (k2 + k3) * z[3], k3 * z[3])
+loese &lt;- function(f, z0, t) ode(z0, t, function(t, z, p) list(f(t, z)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-14)
+
+E0 &lt;- 0.2
+x &lt;- loese(mm, c(S0, E0, 0, 0), seq(0, 60, length.out = 3001))   <span class="k"># Spalten: Zeit, [S], [E], [SE], [P]</span>
+cat(&quot;Erhaltung [E] + [SE] = E0 bis auf Rundungsfehler (&lt; 1e-12):&quot;, if (max(abs(x[, 3] + x[, 4] - E0)) &lt; 1e-12) &quot;ja&quot; else &quot;nein&quot;, &quot;\n&quot;)
+for (tt in c(5, 20, 60)) {
+  i &lt;- which(x[, 1] &gt;= tt - 1e-9)[1]
+  cat(sprintf(&quot;t = %2d s: [S] = %.4f, [E] = %.4f, [SE] = %.4f, [P] = %.4f\n&quot;, tt, x[i, 2], x[i, 3], x[i, 4], x[i, 5]))
+}
+farben &lt;- c(rgb(0.43, 0.04, 0.12), rgb(0.64, 0.08, 0.18), rgb(0.89, 0.44, 0.49), rgb(0.95, 0.70, 0.73)); zeichen &lt;- c(16, 15, 18, 17)
+plot(NULL, xlim = c(0, 60), ylim = c(0, 0.55), xlab = &quot;t (s)&quot;, ylab = &quot;Konzentration (µM)&quot;)
+for (j in 1:4) {
+  lines(x[, 1], x[, j + 1], col = farben[j], lwd = 2)
+  idx &lt;- seq(1, nrow(x), 250); points(x[idx, 1], x[idx, j + 1], pch = zeichen[j], col = farben[j])
+}
+legend(&quot;right&quot;, legend = c(&quot;Substrat [S]&quot;, &quot;Enzym [E]&quot;, &quot;Komplex [SE]&quot;, &quot;Produkt [P]&quot;), col = farben, pch = zeichen, lwd = 2)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>Erhaltung [E] + [SE] = E0 bis auf Rundungsfehler (&lt; 1e-12): ja
+t =  5 s: [S] = 0.3077, [E] = 0.0591, [SE] = 0.1409, [P] = 0.0514
+t = 20 s: [S] = 0.1205, [E] = 0.0780, [SE] = 0.1220, [P] = 0.2576
+t = 60 s: [S] = 0.0004, [E] = 0.1895, [SE] = 0.0105, [P] = 0.4891</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="mm-rate">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 4.14</p>
+    <h2>Michaelis-Menten-Rate</h2>
+    <p class="formel">K([S]) = k<sub>max</sub> [S]/(k<sub>50</sub> + [S])</p>
+    <p class="lead">Bei kleinem Substrat steigt die Rate linear, bei großem nähert sie sich k<sub>max</sub>. Bei [S] = k<sub>50</sub> ist die halbe Maximalrate erreicht.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/mm_rate.png" alt="Ergebnis des Programms mm_rate.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="mm_rate.jl" data-m="mm_rate.m" data-py="mm_rate.py" data-r="mm_rate.R">mm_rate.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/mm_rate.py" data-jl="code/mm_rate.jl" data-m="code/mm_rate.m" data-py="code/mm_rate.py" data-r="code/mm_rate.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 4.14: Michaelis-Menten-Rate (Buch, Abschnitt 4.3, Gl. 4.14)</span>
+<span class="k"># K([S]) = kmax [S]/(k50 + [S]) mit kmax = k3 [E]tot = 0.02 µM/s und k50 = (k2 + k3)/k1 ≈ 0.1 µM</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+
+k1 = 1.0; k2 = 1e-4; k3 = 0.1; Etot = 0.2
+kmax = k3 * Etot; k50 = (k2 + k3) / k1
+@printf(&quot;kmax = %g µM/s,  k50 = %.4f µM\n&quot;, kmax, k50)
+S = range(0, 1, length = 400)
+p = plot(S, kmax .* S ./ (k50 .+ S), color = BL, lw = 2.5, label = &quot;K([S]) = kmax [S]/(k50 + [S])&quot;, ylims = (0, 0.024),
+         legend = :bottomright, xlabel = &quot;Substrat [S] (µM)&quot;, ylabel = &quot;Rate (µM/s)&quot;)
+hline!(p, [kmax], color = :black, ls = :dash, label = &quot;&quot;)
+plot!(p, [k50, k50, 0], [0, kmax / 2, kmax / 2], color = :black, ls = :dot, label = &quot;&quot;)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 4.14: Michaelis-Menten-Rate (Buch, Abschnitt 4.3, Gl. 4.14)</span>
+<span class="k">% K([S]) = kmax [S]/(k50 + [S]) mit kmax = k3 [E]tot = 0.02 µM/s und k50 = (k2 + k3)/k1 ≈ 0.1 µM</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+k1 = 1; k2 = 1e-4; k3 = 0.1; Etot = 0.2;
+kmax = k3 * Etot; k50 = (k2 + k3) / k1;
+fprintf(&#x27;kmax = %g µM/s,  k50 = %.4f µM\n&#x27;, kmax, k50);
+S = linspace(0, 1, 400);
+plot(S, kmax * S ./ (k50 + S), &#x27;Color&#x27;, [0 0.447 0.741], &#x27;LineWidth&#x27;, 2.5); hold on
+plot([0 1], [kmax kmax], &#x27;k--&#x27;); plot([k50 k50 0], [0 kmax / 2 kmax / 2], &#x27;k:&#x27;); hold off
+xlabel(&#x27;Substrat [S] (µM)&#x27;); ylabel(&#x27;Rate (µM/s)&#x27;); ylim([0 0.024]);
+legend(&#x27;K([S]) = k_{max} [S]/(k_{50} + [S])&#x27;, &#x27;Location&#x27;, &#x27;southeast&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 4.14: Michaelis-Menten-Rate (Buch, Abschnitt 4.3, Gl. 4.14)</span>
+<span class="k"># K([S]) = kmax [S]/(k50 + [S]) mit kmax = k3 [E]tot = 0.02 µM/s und k50 = (k2 + k3)/k1 ≈ 0.1 µM</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+k1, k2, k3, Etot = 1.0, 1e-4, 0.1, 0.2
+kmax, k50 = k3 * Etot, (k2 + k3) / k1
+print(f&quot;kmax = {kmax:g} µM/s,  k50 = {k50:.4f} µM&quot;)
+S = np.linspace(0, 1, 400)
+plt.plot(S, kmax * S / (k50 + S), color=(0, 0.447, 0.741), lw=2.5, label=&quot;K([S]) = kmax [S]/(k50 + [S])&quot;)
+plt.axhline(kmax, color=&quot;k&quot;, ls=&quot;--&quot;, lw=1)
+plt.plot([k50, k50, 0], [0, kmax / 2, kmax / 2], &quot;k:&quot;)
+plt.xlabel(&quot;Substrat [S] (µM)&quot;); plt.ylabel(&quot;Rate (µM/s)&quot;); plt.ylim(0, 0.024); plt.legend(loc=&quot;lower right&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 4.14: Michaelis-Menten-Rate (Buch, Abschnitt 4.3, Gl. 4.14)</span>
+<span class="k"># K([S]) = kmax [S]/(k50 + [S]) mit kmax = k3 [E]tot = 0.02 µM/s und k50 = (k2 + k3)/k1 ≈ 0.1 µM</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+k1 &lt;- 1; k2 &lt;- 1e-4; k3 &lt;- 0.1; Etot &lt;- 0.2
+kmax &lt;- k3 * Etot; k50 &lt;- (k2 + k3) / k1
+cat(sprintf(&quot;kmax = %g µM/s,  k50 = %.4f µM\n&quot;, kmax, k50))
+S &lt;- seq(0, 1, length.out = 400)
+plot(S, kmax * S / (k50 + S), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2.5, ylim = c(0, 0.024), xlab = &quot;Substrat [S] (µM)&quot;, ylab = &quot;Rate (µM/s)&quot;)
+abline(h = kmax, lty = 2); lines(c(k50, k50, 0), c(0, kmax / 2, kmax / 2), lty = 3)
+legend(&quot;bottomright&quot;, legend = &quot;K([S]) = kmax [S]/(k50 + [S])&quot;, col = rgb(0, 0.447, 0.741), lwd = 2.5)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>kmax = 0.02 µM/s,  k50 = 0.1001 µM</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="mm-phase">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 4.15</p>
+    <h2>Die ([S], [SE])-Ebene</h2>
+    <p class="formel">d[SE]/dt = 0:&ensp; [SE] = [E]<sub>tot</sub> [S]/([S] + k<sub>50</sub>)</p>
+    <p class="lead">Die Lösung erreicht rasch die Kurve, auf der d[SE]/dt = 0 ist, und läuft dann an ihr entlang. Mit weniger Enzym (rechts) geschieht das relativ zur Umsatzzeit noch schneller.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/mm_phase.png" alt="Ergebnis des Programms mm_phase.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="mm_phase.jl" data-m="mm_phase.m" data-py="mm_phase.py" data-r="mm_phase.R">mm_phase.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/mm_phase.py" data-jl="code/mm_phase.jl" data-m="code/mm_phase.m" data-py="code/mm_phase.py" data-r="code/mm_phase.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 4.15: Michaelis-Menten-System in der ([S], [SE])-Ebene (Buch, Abschnitt 4.3, Gl. 4.13)</span>
+<span class="k"># Lösung mit Zeitmarken und die Kurve d[SE]/dt = 0, also [SE] = [E]tot [S]/([S] + k50); links [E]tot = 0.2 µM, rechts 0.02 µM</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># Paket OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># löst dz/dt = f(t, z) und gibt die Lösung zu den Zeitpunkten t zurück (Zeile i = Komponente i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+idx(t, tt) = findfirst(t .&gt;= tt - 1e-9)    <span class="k"># erster Index mit t &gt;= tt</span>
+k1 = 1.0; k2 = 1e-4; k3 = 0.1             <span class="k"># Raten in 1/(µM s) bzw. 1/s</span>
+S0 = 0.5                                 <span class="k"># µM</span>
+k50 = (k2 + k3) / k1
+function mm(t, z)
+    S, E, C, P = z                       <span class="k"># Substrat, Enzym, Komplex SE, Produkt</span>
+    r1 = k1 * S * E; r2 = k2 * C; r3 = k3 * C
+    return [-r1 + r2, -r1 + r2 + r3, r1 - r2 - r3, r3]
+end
+
+bilder = []
+for (E0, T, marken) in [(0.2, 60, [2, 10, 30]), (0.02, 600, [5, 100, 300])]
+    t = range(0, T, length = 4001)
+    z = loese(mm, [S0, E0, 0, 0], t, abstol = 1e-14); S = z[1, :]; C = z[3, :]
+    Sg = range(0, 0.52, length = 300)
+    p = plot(Sg, E0 .* Sg ./ (Sg .+ k50), color = BL, lw = 2, label = &quot;d[SE]/dt = 0&quot;, ylims = (0, E0), legend = :topleft,
+             title = @sprintf(&quot;[E]tot = %g µM&quot;, E0), xlabel = &quot;[S] (µM)&quot;, ylabel = &quot;[SE] (µM)&quot;)
+    plot!(p, S, C, color = R2, lw = 2, label = &quot;Lösung&quot;)
+    for tm in marken
+        i = idx(t, tm)
+        scatter!(p, [S[i]], [C[i]], color = :black, label = &quot;&quot;); annotate!(p, S[i] + 0.01, C[i], text(&quot;$tm s&quot;, 9, :left))
+        @printf(&quot;[E]tot = %g: t = %3d s: [S] = %.4f, [SE] = %.5f\n&quot;, E0, tm, S[i], C[i])
+    end
+    push!(bilder, p)
+end
+display(plot(bilder..., layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 4.15: Michaelis-Menten-System in der ([S], [SE])-Ebene (Buch, Abschnitt 4.3, Gl. 4.13)</span>
+<span class="k">% Lösung mit Zeitmarken und die Kurve d[SE]/dt = 0, also [SE] = [E]tot [S]/([S] + k50); links [E]tot = 0.2 µM, rechts 0.02 µM</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+k1 = 1; k2 = 1e-4; k3 = 0.1;               <span class="k">% Raten in 1/(µM s) bzw. 1/s</span>
+S0 = 0.5;                                   <span class="k">% µM</span>
+k50 = (k2 + k3) / k1;
+<span class="k">% z = ([S], [E], [SE], [P]): Substrat, Enzym, Komplex, Produkt</span>
+mm = @(t, z) [-k1 * z(1) * z(2) + k2 * z(3); -k1 * z(1) * z(2) + (k2 + k3) * z(3); k1 * z(1) * z(2) - (k2 + k3) * z(3); k3 * z(3)];
+opt = odeset(&#x27;RelTol&#x27;, 1e-10, &#x27;AbsTol&#x27;, 1e-13);
+opt = odeset(&#x27;RelTol&#x27;, 1e-10, &#x27;AbsTol&#x27;, 1e-14);
+E0s = [0.2 0.02]; Ts = [60 600]; marken = [2 10 30; 5 100 300];
+for j = 1:2
+    E0 = E0s(j);
+    [t, z] = ode45(mm, linspace(0, Ts(j), 4001), [S0; E0; 0; 0], opt);
+    S = z(:, 1); C = z(:, 3);
+    subplot(1, 2, j);
+    Sg = linspace(0, 0.52, 300);
+    plot(Sg, E0 * Sg ./ (Sg + k50), &#x27;Color&#x27;, [0 0.447 0.741], &#x27;LineWidth&#x27;, 2); hold on
+    plot(S, C, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2);
+    for tm = marken(j, :)
+        i = find(t &gt;= tm - 1e-9, 1);
+        plot(S(i), C(i), &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); text(S(i) + 0.01, C(i), sprintf(&#x27;%d s&#x27;, tm));
+        fprintf(&#x27;[E]tot = %g: t = %3d s: [S] = %.4f, [SE] = %.5f\n&#x27;, E0, tm, S(i), C(i));
+    end
+    hold off
+    xlabel(&#x27;[S] (µM)&#x27;); ylabel(&#x27;[SE] (µM)&#x27;); ylim([0 E0]); title(sprintf(&#x27;[E]tot = %g µM&#x27;, E0));
+    legend(&#x27;d[SE]/dt = 0&#x27;, &#x27;Lösung&#x27;, &#x27;Location&#x27;, &#x27;northwest&#x27;);
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 4.15: Michaelis-Menten-System in der ([S], [SE])-Ebene (Buch, Abschnitt 4.3, Gl. 4.13)</span>
+<span class="k"># Lösung mit Zeitmarken und die Kurve d[SE]/dt = 0, also [SE] = [E]tot [S]/([S] + k50); links [E]tot = 0.2 µM, rechts 0.02 µM</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+k1, k2, k3 = 1.0, 1e-4, 0.1                <span class="k"># Raten in 1/(µM s) bzw. 1/s</span>
+S0 = 0.5                                   <span class="k"># µM</span>
+k50 = (k2 + k3) / k1
+def mm(t, z):
+    S, E, C, P = z                         <span class="k"># Substrat, Enzym, Komplex SE, Produkt</span>
+    r1, r2, r3 = k1 * S * E, k2 * C, k3 * C
+    return [-r1 + r2, -r1 + r2 + r3, r1 - r2 - r3, r3]
+
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+for ax, E0, T, marken in [(axs[0], 0.2, 60, [2, 10, 30]), (axs[1], 0.02, 600, [5, 100, 300])]:
+    t = np.linspace(0, T, 4001)
+    s = solve_ivp(mm, [0, T], [S0, E0, 0, 0], t_eval=t, method=&quot;LSODA&quot;, rtol=1e-10, atol=1e-14)
+    S, C = s.y[0], s.y[2]
+    Sg = np.linspace(0, 0.52, 300)
+    ax.plot(Sg, E0 * Sg / (Sg + k50), color=(0, 0.447, 0.741), lw=2, label=&quot;d[SE]/dt = 0&quot;)
+    ax.plot(S, C, color=(0.64, 0.08, 0.18), lw=2, label=&quot;Lösung&quot;)
+    for tm in marken:
+        i = np.searchsorted(t, tm)
+        ax.plot(S[i], C[i], &quot;ko&quot;); ax.text(S[i] + 0.01, C[i], f&quot;{tm} s&quot;)
+        print(f&quot;[E]tot = {E0:g}: t = {tm:3d} s: [S] = {S[i]:.4f}, [SE] = {C[i]:.5f}&quot;)
+    ax.set_xlabel(&quot;[S] (µM)&quot;); ax.set_ylabel(&quot;[SE] (µM)&quot;); ax.set_ylim(0, E0); ax.set_title(f&quot;[E]tot = {E0:g} µM&quot;); ax.legend(loc=&quot;upper left&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 4.15: Michaelis-Menten-System in der ([S], [SE])-Ebene (Buch, Abschnitt 4.3, Gl. 4.13)</span>
+<span class="k"># Lösung mit Zeitmarken und die Kurve d[SE]/dt = 0, also [SE] = [E]tot [S]/([S] + k50); links [E]tot = 0.2 µM, rechts 0.02 µM</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+library(deSolve)                         <span class="k"># Paket deSolve: install.packages(&quot;deSolve&quot;)</span>
+k1 &lt;- 1; k2 &lt;- 1e-4; k3 &lt;- 0.1                 <span class="k"># Raten in 1/(µM s) bzw. 1/s</span>
+S0 &lt;- 0.5                                      <span class="k"># µM</span>
+k50 &lt;- (k2 + k3) / k1
+<span class="k"># z = ([S], [E], [SE], [P]): Substrat, Enzym, Komplex, Produkt</span>
+mm &lt;- function(t, z) c(-k1 * z[1] * z[2] + k2 * z[3], -k1 * z[1] * z[2] + (k2 + k3) * z[3],
+                       k1 * z[1] * z[2] - (k2 + k3) * z[3], k3 * z[3])
+loese &lt;- function(f, z0, t) ode(z0, t, function(t, z, p) list(f(t, z)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-14)
+
+par(mfrow = c(1, 2))
+for (fall in list(list(0.2, 60, c(2, 10, 30)), list(0.02, 600, c(5, 100, 300)))) {
+  E0 &lt;- fall[[1]]; T &lt;- fall[[2]]
+  x &lt;- loese(mm, c(S0, E0, 0, 0), seq(0, T, length.out = 4001))
+  Sg &lt;- seq(0, 0.52, length.out = 300)
+  plot(Sg, E0 * Sg / (Sg + k50), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2, ylim = c(0, E0),
+       xlab = &quot;[S] (µM)&quot;, ylab = &quot;[SE] (µM)&quot;, main = sprintf(&quot;[E]tot = %g µM&quot;, E0))
+  lines(x[, 2], x[, 4], col = rgb(0.64, 0.08, 0.18), lwd = 2)
+  for (tm in fall[[3]]) {
+    i &lt;- which(x[, 1] &gt;= tm - 1e-9)[1]
+    points(x[i, 2], x[i, 4], pch = 16); text(x[i, 2] + 0.01, x[i, 4], sprintf(&quot;%d s&quot;, tm), adj = 0)
+    cat(sprintf(&quot;[E]tot = %g: t = %3d s: [S] = %.4f, [SE] = %.5f\n&quot;, E0, tm, x[i, 2], x[i, 4]))
+  }
+  legend(&quot;topleft&quot;, legend = c(&quot;d[SE]/dt = 0&quot;, &quot;Lösung&quot;), col = c(rgb(0, 0.447, 0.741), rgb(0.64, 0.08, 0.18)), lwd = 2)
+}</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>[E]tot = 0.2: t =   2 s: [S] = 0.3810, [SE] = 0.10593
+[E]tot = 0.2: t =  10 s: [S] = 0.2328, [SE] = 0.14355
+[E]tot = 0.2: t =  30 s: [S] = 0.0472, [SE] = 0.08900
+[E]tot = 0.02: t =   5 s: [S] = 0.4785, [SE] = 0.01573
+[E]tot = 0.02: t = 100 s: [S] = 0.3270, [SE] = 0.01535
+[E]tot = 0.02: t = 300 s: [S] = 0.0775, [SE] = 0.00902</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="mm-vergleich">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 4.16</p>
+    <h2>Volles System und quasistationäre Näherung</h2>
+    <p class="formel">d[S]/dt = −k<sub>max</sub> [S]/(k<sub>50</sub> + [S])</p>
+    <p class="lead">Mit [E]<sub>tot</sub> = 0.02 µM stimmt die Näherung viel besser als mit 0.2 µM; die Ausgabe nennt die größte Abweichung.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/mm_vergleich.png" alt="Ergebnis des Programms mm_vergleich.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="mm_vergleich.jl" data-m="mm_vergleich.m" data-py="mm_vergleich.py" data-r="mm_vergleich.R">mm_vergleich.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/mm_vergleich.py" data-jl="code/mm_vergleich.jl" data-m="code/mm_vergleich.m" data-py="code/mm_vergleich.py" data-r="code/mm_vergleich.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 4.16: volles System und quasistationäre Näherung (Buch, Abschnitt 4.3, Gl. 4.12 und 4.14)</span>
+<span class="k"># d[S]/dt = -kmax [S]/(k50 + [S]) mit kmax = k3 [E]tot; links [E]tot = 0.2 µM, rechts 0.02 µM</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># Paket OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># löst dz/dt = f(t, z) und gibt die Lösung zu den Zeitpunkten t zurück (Zeile i = Komponente i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+k1 = 1.0; k2 = 1e-4; k3 = 0.1             <span class="k"># Raten in 1/(µM s) bzw. 1/s</span>
+S0 = 0.5                                 <span class="k"># µM</span>
+k50 = (k2 + k3) / k1
+function mm(t, z)
+    S, E, C, P = z                       <span class="k"># Substrat, Enzym, Komplex SE, Produkt</span>
+    r1 = k1 * S * E; r2 = k2 * C; r3 = k3 * C
+    return [-r1 + r2, -r1 + r2 + r3, r1 - r2 - r3, r3]
+end
+
+bilder = []
+for (E0, T) in [(0.2, 60), (0.02, 600)]
+    t = range(0, T, length = 4001)
+    voll = loese(mm, [S0, E0, 0, 0], t, abstol = 1e-14)[1, :]
+    kmax = k3 * E0
+    qss = loese((t, S) -&gt; [-kmax * S[1] / (k50 + S[1])], [S0], t, abstol = 1e-13)[1, :]
+    @printf(&quot;[E]tot = %g: größte Abweichung %.4f µM\n&quot;, E0, maximum(abs.(voll .- qss)))
+    p = plot(t, voll, color = R1, lw = 2, label = &quot;volles System&quot;, title = @sprintf(&quot;[E]tot = %g µM&quot;, E0),
+             xlabel = &quot;t (s)&quot;, ylabel = &quot;Substrat [S] (µM)&quot;)
+    plot!(p, t, qss, color = R3, lw = 2, label = &quot;quasistationär&quot;)
+    push!(bilder, p)
+end
+display(plot(bilder..., layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 4.16: volles System und quasistationäre Näherung (Buch, Abschnitt 4.3, Gl. 4.12 und 4.14)</span>
+<span class="k">% d[S]/dt = -kmax [S]/(k50 + [S]) mit kmax = k3 [E]tot; links [E]tot = 0.2 µM, rechts 0.02 µM</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+k1 = 1; k2 = 1e-4; k3 = 0.1;               <span class="k">% Raten in 1/(µM s) bzw. 1/s</span>
+S0 = 0.5;                                   <span class="k">% µM</span>
+k50 = (k2 + k3) / k1;
+<span class="k">% z = ([S], [E], [SE], [P]): Substrat, Enzym, Komplex, Produkt</span>
+mm = @(t, z) [-k1 * z(1) * z(2) + k2 * z(3); -k1 * z(1) * z(2) + (k2 + k3) * z(3); k1 * z(1) * z(2) - (k2 + k3) * z(3); k3 * z(3)];
+opt = odeset(&#x27;RelTol&#x27;, 1e-10, &#x27;AbsTol&#x27;, 1e-13);
+opt = odeset(&#x27;RelTol&#x27;, 1e-10, &#x27;AbsTol&#x27;, 1e-14);
+E0s = [0.2 0.02]; Ts = [60 600];
+for j = 1:2
+    E0 = E0s(j); T = Ts(j);
+    [t, z] = ode45(mm, linspace(0, T, 4001), [S0; E0; 0; 0], opt);
+    kmax = k3 * E0;
+    [t, q] = ode45(@(t, S) -kmax * S / (k50 + S), t, S0, odeset(&#x27;RelTol&#x27;, 1e-10, &#x27;AbsTol&#x27;, 1e-13));
+    fprintf(&#x27;[E]tot = %g: größte Abweichung %.4f µM\n&#x27;, E0, max(abs(z(:, 1) - q)));
+    subplot(1, 2, j);
+    plot(t, z(:, 1), &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2); hold on
+    plot(t, q, &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;LineWidth&#x27;, 2); hold off
+    xlabel(&#x27;t (s)&#x27;); ylabel(&#x27;Substrat [S] (µM)&#x27;); title(sprintf(&#x27;[E]tot = %g µM&#x27;, E0)); legend(&#x27;volles System&#x27;, &#x27;quasistationär&#x27;);
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 4.16: volles System und quasistationäre Näherung (Buch, Abschnitt 4.3, Gl. 4.12 und 4.14)</span>
+<span class="k"># d[S]/dt = -kmax [S]/(k50 + [S]) mit kmax = k3 [E]tot; links [E]tot = 0.2 µM, rechts 0.02 µM</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+k1, k2, k3 = 1.0, 1e-4, 0.1                <span class="k"># Raten in 1/(µM s) bzw. 1/s</span>
+S0 = 0.5                                   <span class="k"># µM</span>
+k50 = (k2 + k3) / k1
+def mm(t, z):
+    S, E, C, P = z                         <span class="k"># Substrat, Enzym, Komplex SE, Produkt</span>
+    r1, r2, r3 = k1 * S * E, k2 * C, k3 * C
+    return [-r1 + r2, -r1 + r2 + r3, r1 - r2 - r3, r3]
+
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+for ax, E0, T in [(axs[0], 0.2, 60), (axs[1], 0.02, 600)]:
+    t = np.linspace(0, T, 4001)
+    voll = solve_ivp(mm, [0, T], [S0, E0, 0, 0], t_eval=t, method=&quot;LSODA&quot;, rtol=1e-10, atol=1e-14).y[0]
+    kmax = k3 * E0
+    qss = solve_ivp(lambda t, S: -kmax * S / (k50 + S), [0, T], [S0], t_eval=t, rtol=1e-10, atol=1e-13).y[0]
+    print(f&quot;[E]tot = {E0:g}: größte Abweichung {np.max(abs(voll - qss)):.4f} µM&quot;)
+    ax.plot(t, voll, color=(0.43, 0.04, 0.12), lw=2, label=&quot;volles System&quot;)
+    ax.plot(t, qss, color=(0.89, 0.44, 0.49), lw=2, label=&quot;quasistationär&quot;)
+    ax.set_xlabel(&quot;t (s)&quot;); ax.set_ylabel(&quot;Substrat [S] (µM)&quot;); ax.set_title(f&quot;[E]tot = {E0:g} µM&quot;); ax.legend()
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 4.16: volles System und quasistationäre Näherung (Buch, Abschnitt 4.3, Gl. 4.12 und 4.14)</span>
+<span class="k"># d[S]/dt = -kmax [S]/(k50 + [S]) mit kmax = k3 [E]tot; links [E]tot = 0.2 µM, rechts 0.02 µM</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+library(deSolve)                         <span class="k"># Paket deSolve: install.packages(&quot;deSolve&quot;)</span>
+k1 &lt;- 1; k2 &lt;- 1e-4; k3 &lt;- 0.1                 <span class="k"># Raten in 1/(µM s) bzw. 1/s</span>
+S0 &lt;- 0.5                                      <span class="k"># µM</span>
+k50 &lt;- (k2 + k3) / k1
+<span class="k"># z = ([S], [E], [SE], [P]): Substrat, Enzym, Komplex, Produkt</span>
+mm &lt;- function(t, z) c(-k1 * z[1] * z[2] + k2 * z[3], -k1 * z[1] * z[2] + (k2 + k3) * z[3],
+                       k1 * z[1] * z[2] - (k2 + k3) * z[3], k3 * z[3])
+loese &lt;- function(f, z0, t) ode(z0, t, function(t, z, p) list(f(t, z)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-14)
+
+par(mfrow = c(1, 2))
+for (fall in list(c(0.2, 60), c(0.02, 600))) {
+  E0 &lt;- fall[1]; T &lt;- fall[2]
+  t &lt;- seq(0, T, length.out = 4001)
+  voll &lt;- loese(mm, c(S0, E0, 0, 0), t)[, 2]
+  kmax &lt;- k3 * E0
+  qss &lt;- ode(S0, t, function(t, S, p) list(-kmax * S / (k50 + S)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-13)[, 2]
+  cat(sprintf(&quot;[E]tot = %g: größte Abweichung %.4f µM\n&quot;, E0, max(abs(voll - qss))))
+  plot(t, voll, type = &quot;l&quot;, col = rgb(0.43, 0.04, 0.12), lwd = 2, ylim = c(0, 0.5), xlab = &quot;t (s)&quot;, ylab = &quot;Substrat [S] (µM)&quot;,
+       main = sprintf(&quot;[E]tot = %g µM&quot;, E0))
+  lines(t, qss, col = rgb(0.89, 0.44, 0.49), lwd = 2)
+  legend(&quot;topright&quot;, legend = c(&quot;volles System&quot;, &quot;quasistationär&quot;), col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)), lwd = 2)
+}</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>[E]tot = 0.2: größte Abweichung 0.1114 µM
+[E]tot = 0.02: größte Abweichung 0.0136 µM</code></pre></details>
+    </div>
+  </div>
+</section>
+  
+  <section class="matlab-apps"><h3>MATLAB-Apps aus der Vorlesung</h3><p>Herunterladen, in einen Ordner legen und in MATLAB den Namen ohne Endung eingeben, z. B. <code>michaelis_menten_app</code>. Die Apps nutzen die grafische Oberfläche von MATLAB und laufen nicht in GNU Octave.</p><ul><li><a href="apps/michaelis_menten_app.m" download>michaelis_menten_app.m</a><span>Enzymkinetik: volles System und quasistationäre Näherung</span></li></ul></section>
+  <nav class="weiter" aria-label="Weiterblättern"><a href="abschnitt-4-2.html"><small>Zurück</small>4.2 Lineare Systeme</a><a href="abschnitt-4-4.html"><small>Weiter</small>4.4 Stationäre Zustände und Stabilität</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Begleitmaterial zum Buch „Dynamische Systeme in den Lebenswissenschaften“ von Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programme unter <a href="../LICENSE.txt">MIT-Lizenz</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

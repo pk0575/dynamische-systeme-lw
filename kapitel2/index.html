@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kapitel 2: Diskrete dynamische Systeme mit mehreren Variablen – Dynamische Systeme in den Lebenswissenschaften</title>
+<meta name="description" content="Programme und Apps zu Kapitel 2 des Buchs Dynamische Systeme in den Lebenswissenschaften">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamische Systeme in den Lebenswissenschaften</a>
+  <nav aria-label="Kapitel"><a href="../index.html">Start</a> <a href="../kapitel1/index.html">Kapitel 1</a> <a href="../kapitel2/index.html" aria-current="page">Kapitel 2</a> <a href="../kapitel3/index.html">Kapitel 3</a> <a href="../kapitel4/index.html">Kapitel 4</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Abschnitte"><h2><a href="index.html">Kapitel 2</a></h2><ol><li><a href="abschnitt-2-1.html"><span class="nr">2.1</span><span>Beispiele: Fibonacci und Räuber-Beute</span></a></li><li><a href="abschnitt-2-2.html"><span class="nr">2.2</span><span>Matrix-Modelle</span></a></li><li><a href="abschnitt-2-3.html"><span class="nr">2.3</span><span>Eigenwerte und Langzeitverhalten</span></a></li><li><a href="abschnitt-2-4.html"><span class="nr">2.4</span><span>Nichtlineare Systeme: SIR-Modell</span></a></li><li><a href="abschnitt-2-5.html"><span class="nr">2.5</span><span>Vertiefung: Ausbreitung des Aktionspotentials</span></a></li></ol></aside>
+<main>
+  <div class="intro"><div><p class="eyebrow">Kapitel 2</p><h1>Diskrete dynamische Systeme mit mehreren Variablen</h1><p>Räuber und Beute, Matrix-Modelle, Eigenwerte, das SIR-Modell und die Ausbreitung des Aktionspotentials. Zu jedem Abschnitt gibt es die Programme zu allen berechneten Abbildungen, Apps zum Ausprobieren im Browser und die MATLAB-Apps der Vorlesung.</p>
+  <p><a href="kapitel2_programme.zip" download>Alle Programme zu Kapitel 2 herunterladen (ZIP)</a></p></div><fieldset class="lang">
+  <legend>Programmiersprache</legend>
+  <div class="seg" role="radiogroup" aria-label="Programmiersprache">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Gilt für alle Seiten. MATLAB-Programme laufen auch im kostenlosen GNU Octave.</small>
+</fieldset></div>
+  <ul class="abschnitte"><li><a href="abschnitt-2-1.html"><span class="nr">2.1</span><span class="t">Beispiele: Fibonacci und Räuber-Beute<small>Viele Vorgänge lassen sich nur mit mehreren Größen zugleich beschreiben: junge und erwachsene Hasenpaare, Beute und Räuber. Jede Größe erhält eine eigene Rekursionsvorschrift, und die Vorschriften hängen voneinander ab. So entsteht ein System von Differenzengleichungen.</small></span><span class="zahl">3 Abb. · Apps</span></a></li><li><a href="abschnitt-2-2.html"><span class="nr">2.2</span><span class="t">Matrix-Modelle<small>Sind alle Rekursionsvorschriften linear, schreibt man das System kompakt als x<sub>n+1</sub> = A x<sub>n</sub> mit einer Matrix A und dem Zustandsvektor x<sub>n</sub>. Ein Schritt ist dann eine Multiplikation Matrix mal Vektor. Beispiele sind ein Krankheitsverlauf mit drei Gruppen und das Leslie-Modell für Altersklassen.</small></span><span class="zahl">2 Abb. · Apps</span></a></li><li><a href="abschnitt-2-3.html"><span class="nr">2.3</span><span class="t">Eigenwerte und Langzeitverhalten<small>Die Lösung x<sub>n</sub> = A<sup>n</sup> x<sub>0</sub> lässt sich mit Eigenwerten und Eigenvektoren zerlegen. Auf lange Sicht setzt sich der betragsgrößte, dominante Eigenwert λ<sub>1</sub> durch: Er bestimmt, ob das System wächst, schrumpft oder zur Ruhe kommt, und sein Eigenvektor gibt die Verteilung auf die Komponenten an.</small></span><span class="zahl">4 Abb. · Apps</span></a></li><li><a href="abschnitt-2-4.html"><span class="nr">2.4</span><span class="t">Nichtlineare Systeme: SIR-Modell<small>Im SIR-Modell wird eine Bevölkerung in Empfängliche (S), Infizierte (I) und Genesene (R) eingeteilt. Neuinfektionen entstehen bei Kontakten zwischen S und I, daher das Produkt β S<sub>n</sub> I<sub>n</sub>: Das System ist nichtlinear. Ob sich eine Krankheit hält, entscheidet die Basisreproduktionszahl R<sub>0</sub>.</small></span><span class="zahl">4 Abb. · Apps</span></a></li><li><a href="abschnitt-2-5.html"><span class="nr">2.5</span><span class="t">Vertiefung: Ausbreitung des Aktionspotentials<small>Mit zwei Variablen pro Zelle beschreibt das Chialvo-Modell ein Aktionspotential. Koppelt man viele solcher Zellen auf einem Ring oder in einer Ebene, breitet sich die Erregung als Welle aus. Eine ungünstig getimte zweite Anregung oder eine kurze Blockade kann eine kreisende Erregung auslösen, ein Modell für Reentry-Rhythmusstörungen.</small></span><span class="zahl">6 Abb.</span></a></li></ul>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Begleitmaterial zum Buch „Dynamische Systeme in den Lebenswissenschaften“ von Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programme unter <a href="../LICENSE.txt">MIT-Lizenz</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

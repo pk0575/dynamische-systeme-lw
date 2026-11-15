@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>4.2 Lineare Systeme – Dynamische Systeme in den Lebenswissenschaften</title>
+<meta name="description" content="Programme in Julia, MATLAB, Python und R zu Abschnitt 4.2 des Buchs Dynamische Systeme in den Lebenswissenschaften">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamische Systeme in den Lebenswissenschaften</a>
+  <nav aria-label="Kapitel"><a href="../index.html">Start</a> <a href="../kapitel1/index.html">Kapitel 1</a> <a href="../kapitel2/index.html">Kapitel 2</a> <a href="../kapitel3/index.html">Kapitel 3</a> <a href="../kapitel4/index.html" aria-current="page">Kapitel 4</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Abschnitte"><h2><a href="index.html">Kapitel 4</a></h2><ol><li><a href="abschnitt-4-1.html"><span class="nr">4.1</span><span>Systeme von Differentialgleichungen</span></a></li><li><a href="abschnitt-4-2.html" aria-current="page"><span class="nr">4.2</span><span>Lineare Systeme</span></a></li><li><a href="abschnitt-4-3.html"><span class="nr">4.3</span><span>Michaelis-Menten-Kinetik</span></a></li><li><a href="abschnitt-4-4.html"><span class="nr">4.4</span><span>Stationäre Zustände und Stabilität</span></a></li><li><a href="abschnitt-4-5.html"><span class="nr">4.5</span><span>Vertiefung: Erregbarkeit in der Phasenebene</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Kapitel 4 · Kontinuierliche dynamische Systeme mit mehreren Variablen</p>
+      <h1><span class="num">4.2</span>Lineare Systeme</h1>
+      <p>Für lineare Systeme dx/dt = A x liefern die Eigenwerte von A die Lösungen. Bei zwei Variablen entscheiden Spur und Determinante, ob der Ursprung ein Knoten, eine Spirale, ein Zentrum oder ein Sattel ist und ob er stabil ist. Ein Beispiel aus der Pharmakologie ist die Aufnahme eines Wirkstoffs aus dem Magen ins Blut.</p>
+      <p>Zu jeder Abbildung des Abschnitts finden Sie das Programm, das sie erzeugt. Ändern Sie Parameter und Startwerte und beobachten Sie, was passiert. Abbildungs- und Gleichungsnummern beziehen sich auf das Buch.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programmiersprache</legend>
+  <div class="seg" role="radiogroup" aria-label="Programmiersprache">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Gilt für alle Seiten. MATLAB-Programme laufen auch im kostenlosen GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>Auf dieser Seite</b><ul><li><a href="#pharmakokinetik"><span class="abb">Abb. 4.9</span>Wirkstoff in Magen und Blut</a></li><li><a href="#lineare-systeme"><span class="abb">Abb. 4.10</span>Knoten, Spirale und Zentrum</a></li><li><a href="#spur-determinante"><span class="abb">Abb. 4.11</span>Spur-Determinanten-Ebene</a></li><li><a href="#dauerinfusion"><span class="abb">Abb. 4.12</span>Dauerinfusion</a></li><li><a href="#app-linear2d"><span class="abb">App</span>im Browser ausprobieren</a></li></ul></div>
+  
+<section class="fig" id="pharmakokinetik">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 4.9</p>
+    <h2>Wirkstoff in Magen und Blut</h2>
+    <p class="formel">dm/dt = −k<sub>a</sub> m,&ensp; db/dt = k<sub>a</sub> m − k<sub>e</sub> b</p>
+    <p class="lead">Der Magen leert sich exponentiell, der Spiegel im Blut steigt an und fällt wieder ab. Das Maximum liegt bei t = ln(5)/0.8 ≈ 2 Stunden.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/pharmakokinetik.png" alt="Ergebnis des Programms pharmakokinetik.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="pharmakokinetik.jl" data-m="pharmakokinetik.m" data-py="pharmakokinetik.py" data-r="pharmakokinetik.R">pharmakokinetik.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/pharmakokinetik.py" data-jl="code/pharmakokinetik.jl" data-m="code/pharmakokinetik.m" data-py="code/pharmakokinetik.py" data-r="code/pharmakokinetik.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 4.9: Wirkstoff in Magen und Blut (Buch, Abschnitt 4.2, Gl. 4.9)</span>
+<span class="k"># dm/dt = -ka m,  db/dt = ka m - ke b  mit ka = 1, ke = 0.2 pro Stunde, m(0) = 4, b(0) = 0:  m(t) = 4 e^(-t), b(t) = 5 (e^(-0.2t) - e^(-t))</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+using LinearAlgebra
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+
+t = range(0, 20, length = 600)
+m = 4 .* exp.(-t)
+b = 5 .* (exp.(-0.2 .* t) .- exp.(-t))
+tmax = log(5) / 0.8                      <span class="k"># db/dt = 0: e^(-0.2t) = 5 e^(-t)</span>
+@printf(&quot;höchster Spiegel im Blut b = %.3f mg nach t = %.3f h\n&quot;, 5 * (exp(-0.2tmax) - exp(-tmax)), tmax)
+A = [-1 0; 1 -0.2]
+println(&quot;Eigenwerte von A: &quot;, join([@sprintf(&quot;%g&quot;, l) for l in sort(real.(eigvals(A)))], &quot;  &quot;))
+p = plot(t, m, color = R1, lw = 2, label = &quot;Magen m(t)&quot;, xlabel = &quot;t (Stunden)&quot;, ylabel = &quot;Wirkstoff (mg)&quot;)
+plot!(p, t, b, color = R3, lw = 2, label = &quot;Blut b(t)&quot;)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 4.9: Wirkstoff in Magen und Blut (Buch, Abschnitt 4.2, Gl. 4.9)</span>
+<span class="k">% dm/dt = -ka m,  db/dt = ka m - ke b  mit ka = 1, ke = 0.2 pro Stunde, m(0) = 4, b(0) = 0:  m(t) = 4 e^(-t), b(t) = 5 (e^(-0.2t) - e^(-t))</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+t = linspace(0, 20, 600);
+m = 4 * exp(-t);
+b = 5 * (exp(-0.2 * t) - exp(-t));
+tmax = log(5) / 0.8;                                     <span class="k">% db/dt = 0: e^(-0.2t) = 5 e^(-t)</span>
+fprintf(&#x27;höchster Spiegel im Blut b = %.3f mg nach t = %.3f h\n&#x27;, 5 * (exp(-0.2 * tmax) - exp(-tmax)), tmax);
+A = [-1 0; 1 -0.2];
+fprintf(&#x27;Eigenwerte von A: %g  %g\n&#x27;, sort(eig(A)));
+plot(t, m, &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2); hold on
+plot(t, b, &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;LineWidth&#x27;, 2); hold off
+xlabel(&#x27;t (Stunden)&#x27;); ylabel(&#x27;Wirkstoff (mg)&#x27;); legend(&#x27;Magen m(t)&#x27;, &#x27;Blut b(t)&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 4.9: Wirkstoff in Magen und Blut (Buch, Abschnitt 4.2, Gl. 4.9)</span>
+<span class="k"># dm/dt = -ka m,  db/dt = ka m - ke b  mit ka = 1, ke = 0.2 pro Stunde, m(0) = 4, b(0) = 0:  m(t) = 4 e^(-t), b(t) = 5 (e^(-0.2t) - e^(-t))</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+t = np.linspace(0, 20, 600)
+m = 4 * np.exp(-t)
+b = 5 * (np.exp(-0.2 * t) - np.exp(-t))
+tmax = np.log(5) / 0.8                                   <span class="k"># db/dt = 0: e^(-0.2t) = 5 e^(-t)</span>
+print(f&quot;höchster Spiegel im Blut b = {5 * (np.exp(-0.2 * tmax) - np.exp(-tmax)):.3f} mg nach t = {tmax:.3f} h&quot;)
+A = np.array([[-1, 0], [1, -0.2]])
+print(&quot;Eigenwerte von A:&quot;, &quot;  &quot;.join(f&quot;{l:g}&quot; for l in sorted(np.linalg.eigvals(A).real)))
+plt.plot(t, m, color=(0.43, 0.04, 0.12), lw=2, label=&quot;Magen m(t)&quot;)
+plt.plot(t, b, color=(0.89, 0.44, 0.49), lw=2, label=&quot;Blut b(t)&quot;)
+plt.xlabel(&quot;t (Stunden)&quot;); plt.ylabel(&quot;Wirkstoff (mg)&quot;); plt.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 4.9: Wirkstoff in Magen und Blut (Buch, Abschnitt 4.2, Gl. 4.9)</span>
+<span class="k"># dm/dt = -ka m,  db/dt = ka m - ke b  mit ka = 1, ke = 0.2 pro Stunde, m(0) = 4, b(0) = 0:  m(t) = 4 e^(-t), b(t) = 5 (e^(-0.2t) - e^(-t))</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+t &lt;- seq(0, 20, length.out = 600)
+m &lt;- 4 * exp(-t)
+b &lt;- 5 * (exp(-0.2 * t) - exp(-t))
+tmax &lt;- log(5) / 0.8                     <span class="k"># db/dt = 0: e^(-0.2t) = 5 e^(-t)</span>
+cat(sprintf(&quot;höchster Spiegel im Blut b = %.3f mg nach t = %.3f h\n&quot;, 5 * (exp(-0.2 * tmax) - exp(-tmax)), tmax))
+A &lt;- matrix(c(-1, 0, 1, -0.2), nrow = 2, byrow = TRUE)
+cat(&quot;Eigenwerte von A:&quot;, sprintf(&quot;%g&quot;, sort(eigen(A)$values)), &quot;\n&quot;)
+plot(t, m, type = &quot;l&quot;, col = rgb(0.43, 0.04, 0.12), lwd = 2, xlab = &quot;t (Stunden)&quot;, ylab = &quot;Wirkstoff (mg)&quot;)
+lines(t, b, col = rgb(0.89, 0.44, 0.49), lwd = 2)
+legend(&quot;topright&quot;, legend = c(&quot;Magen m(t)&quot;, &quot;Blut b(t)&quot;), col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)), lwd = 2)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>höchster Spiegel im Blut b = 2.675 mg nach t = 2.012 h
+Eigenwerte von A: -1  -0.2</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="lineare-systeme">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 4.10</p>
+    <h2>Knoten, Spirale und Zentrum</h2>
+    <p class="formel">dx/dt = A x,&ensp; x(0) = (1, 3)</p>
+    <p class="lead">Reelle negative Eigenwerte ergeben einen stabilen Knoten, komplexe mit negativem Realteil eine stabile Spirale, rein imaginäre ein Zentrum mit geschlossenen Bahnen.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/lineare_systeme.png" alt="Ergebnis des Programms lineare_systeme.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="lineare_systeme.jl" data-m="lineare_systeme.m" data-py="lineare_systeme.py" data-r="lineare_systeme.R">lineare_systeme.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/lineare_systeme.py" data-jl="code/lineare_systeme.jl" data-m="code/lineare_systeme.m" data-py="code/lineare_systeme.py" data-r="code/lineare_systeme.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 4.10: drei lineare Systeme dx/dt = A x mit x(0) = (1, 3) (Buch, Abschnitt 4.2, Gl. 4.8 und 4.10)</span>
+<span class="k"># oben stabiler Knoten A = (-2 1; 1 -2), Mitte stabile Spirale A = (-1 2; -2 -1), unten Zentrum A = (0 -2; 2 0)</span>
+<span class="k"># links Zeitverläufe (Lösungsformeln), rechts Phasenebene mit Richtungsfeld</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+using LinearAlgebra
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+
+beispiele = [
+    (&quot;stabiler Knoten&quot;, [-2 1; 1 -2], t -&gt; (2exp(-t) - exp(-3t), 2exp(-t) + exp(-3t))),
+    (&quot;stabile Spirale&quot;, [-1 2; -2 -1], t -&gt; (exp(-t) * (cos(2t) + 3sin(2t)), exp(-t) * (3cos(2t) - sin(2t)))),
+    (&quot;Zentrum&quot;, [0 -2; 2 0], t -&gt; (cos(2t) - 3sin(2t), 3cos(2t) + sin(2t))),
+]
+t = range(0, 6, length = 800)
+G = range(-3.6, 3.6, length = 15)
+bilder = []
+for (name, A, loesung) in beispiele
+    lam = sort(complex.(eigvals(A)), by = l -&gt; (imag(l), real(l)))
+    println(name, &quot;: Eigenwerte &quot;, join([@sprintf(&quot;%g%+gi&quot;, real(l), imag(l)) for l in lam], &quot;  &quot;))
+    x1 = first.(loesung.(t)); x2 = last.(loesung.(t))
+    p1 = hline([0], color = :black, label = &quot;&quot;, title = name, legend = :topright)
+    plot!(p1, t, x1, color = R1, lw = 2, label = &quot;x1(t)&quot;); plot!(p1, t, x2, color = R3, lw = 2, label = &quot;x2(t)&quot;)
+    X = [g for g in G, h in G][:]; Y = [h for g in G, h in G][:]
+    U = A[1, 1] .* X .+ A[1, 2] .* Y; W = A[2, 1] .* X .+ A[2, 2] .* Y; L = hypot.(U, W) .+ 1e-12
+    p2 = quiver(X, Y, quiver = (0.33 .* U ./ L, 0.33 .* W ./ L), color = GR, legend = false,
+                xlims = (-3.6, 3.6), ylims = (-3.6, 3.6), aspect_ratio = :equal)
+    plot!(p2, x1, x2, color = R2, lw = 2); scatter!(p2, [1], [3], color = R2); scatter!(p2, [0], [0], color = :black)
+    push!(bilder, p1, p2)
+end
+xlabel!(bilder[5], &quot;t&quot;); xlabel!(bilder[6], &quot;x1&quot;)
+display(plot(bilder..., layout = (3, 2), size = (850, 1100)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 4.10: drei lineare Systeme dx/dt = A x mit x(0) = (1, 3) (Buch, Abschnitt 4.2, Gl. 4.8 und 4.10)</span>
+<span class="k">% oben stabiler Knoten A = (-2 1; 1 -2), Mitte stabile Spirale A = (-1 2; -2 -1), unten Zentrum A = (0 -2; 2 0)</span>
+<span class="k">% links Zeitverläufe (Lösungsformeln), rechts Phasenebene mit Richtungsfeld</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+namen = {&#x27;stabiler Knoten&#x27;, &#x27;stabile Spirale&#x27;, &#x27;Zentrum&#x27;};
+As = {[-2 1; 1 -2], [-1 2; -2 -1], [0 -2; 2 0]};
+t = linspace(0, 6, 800);
+X1 = {2 * exp(-t) - exp(-3 * t), exp(-t) .* (cos(2 * t) + 3 * sin(2 * t)), cos(2 * t) - 3 * sin(2 * t)};   <span class="k">% Lösungsformeln</span>
+X2 = {2 * exp(-t) + exp(-3 * t), exp(-t) .* (3 * cos(2 * t) - sin(2 * t)), 3 * cos(2 * t) + sin(2 * t)};
+[G1, G2] = meshgrid(linspace(-3.6, 3.6, 15));
+for z = 1:3
+    A = As{z};
+    lam = eig(A); lam = sortrows([imag(lam) real(lam)]);   <span class="k">% nach Imaginär-, dann Realteil ordnen</span>
+    fprintf(&#x27;%s: Eigenwerte %s\n&#x27;, namen{z}, sprintf(&#x27;%g%+gi  &#x27;, lam(:, [2 1])&#x27;));
+    subplot(3, 2, 2 * z - 1);
+    plot([0 6], [0 0], &#x27;k&#x27;); hold on
+    plot(t, X1{z}, &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2);
+    plot(t, X2{z}, &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;LineWidth&#x27;, 2); hold off
+    title(namen{z}); legend(&#x27;&#x27;, &#x27;x1(t)&#x27;, &#x27;x2(t)&#x27;);
+    subplot(3, 2, 2 * z);
+    U = A(1, 1) * G1 + A(1, 2) * G2; V = A(2, 1) * G1 + A(2, 2) * G2; L = sqrt(U.^2 + V.^2) + 1e-12;
+    quiver(G1, G2, U ./ L, V ./ L, 0.4, &#x27;Color&#x27;, [0.2 0.6 0.25]); hold on
+    plot(X1{z}, X2{z}, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2);
+    plot(1, 3, &#x27;o&#x27;, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;MarkerFaceColor&#x27;, [0.64 0.08 0.18]); plot(0, 0, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+    axis equal; xlim([-3.6 3.6]); ylim([-3.6 3.6]);
+end
+subplot(3, 2, 5); xlabel(&#x27;t&#x27;); subplot(3, 2, 6); xlabel(&#x27;x1&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 4.10: drei lineare Systeme dx/dt = A x mit x(0) = (1, 3) (Buch, Abschnitt 4.2, Gl. 4.8 und 4.10)</span>
+<span class="k"># oben stabiler Knoten A = (-2 1; 1 -2), Mitte stabile Spirale A = (-1 2; -2 -1), unten Zentrum A = (0 -2; 2 0)</span>
+<span class="k"># links Zeitverläufe (Lösungsformeln), rechts Phasenebene mit Richtungsfeld</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+beispiele = [
+    (&quot;stabiler Knoten&quot;, np.array([[-2, 1], [1, -2]]),
+     lambda t: (2 * np.exp(-t) - np.exp(-3 * t), 2 * np.exp(-t) + np.exp(-3 * t))),
+    (&quot;stabile Spirale&quot;, np.array([[-1, 2], [-2, -1]]),
+     lambda t: (np.exp(-t) * (np.cos(2 * t) + 3 * np.sin(2 * t)), np.exp(-t) * (3 * np.cos(2 * t) - np.sin(2 * t)))),
+    (&quot;Zentrum&quot;, np.array([[0, -2], [2, 0]]),
+     lambda t: (np.cos(2 * t) - 3 * np.sin(2 * t), 3 * np.cos(2 * t) + np.sin(2 * t))),
+]
+t = np.linspace(0, 6, 800)
+G = np.linspace(-3.6, 3.6, 15); X1, X2 = np.meshgrid(G, G)
+fig, axs = plt.subplots(3, 2, figsize=(10, 12))
+for z, (name, A, loesung) in enumerate(beispiele):
+    lam = np.linalg.eigvals(A)
+    print(f&quot;{name}: Eigenwerte&quot;, &quot;  &quot;.join(f&quot;{l.real:g}{l.imag:+g}i&quot; for l in sorted(lam, key=lambda l: (l.imag, l.real))))
+    x1, x2 = loesung(t)
+    axs[z, 0].axhline(0, color=&quot;k&quot;, lw=1)
+    axs[z, 0].plot(t, x1, color=(0.43, 0.04, 0.12), lw=2, label=&quot;x1(t)&quot;)
+    axs[z, 0].plot(t, x2, color=(0.89, 0.44, 0.49), lw=2, label=&quot;x2(t)&quot;)
+    axs[z, 0].set_title(name); axs[z, 0].legend(loc=&quot;upper right&quot;)
+    U = A[0, 0] * X1 + A[0, 1] * X2; V = A[1, 0] * X1 + A[1, 1] * X2; L = np.hypot(U, V) + 1e-12
+    axs[z, 1].quiver(X1, X2, U / L, V / L, color=(0.2, 0.6, 0.25), angles=&quot;xy&quot;, scale=22, width=0.004)
+    axs[z, 1].plot(x1, x2, color=(0.64, 0.08, 0.18), lw=2); axs[z, 1].plot(1, 3, &quot;o&quot;, color=(0.64, 0.08, 0.18)); axs[z, 1].plot(0, 0, &quot;ko&quot;)
+    axs[z, 1].set_xlim(-3.6, 3.6); axs[z, 1].set_ylim(-3.6, 3.6); axs[z, 1].set_aspect(&quot;equal&quot;)
+axs[2, 0].set_xlabel(&quot;t&quot;); axs[2, 1].set_xlabel(&quot;x1&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 4.10: drei lineare Systeme dx/dt = A x mit x(0) = (1, 3) (Buch, Abschnitt 4.2, Gl. 4.8 und 4.10)</span>
+<span class="k"># oben stabiler Knoten A = (-2 1; 1 -2), Mitte stabile Spirale A = (-1 2; -2 -1), unten Zentrum A = (0 -2; 2 0)</span>
+<span class="k"># links Zeitverläufe (Lösungsformeln), rechts Phasenebene mit Richtungsfeld</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+namen &lt;- c(&quot;stabiler Knoten&quot;, &quot;stabile Spirale&quot;, &quot;Zentrum&quot;)
+As &lt;- list(matrix(c(-2, 1, 1, -2), 2, byrow = TRUE), matrix(c(-1, 2, -2, -1), 2, byrow = TRUE), matrix(c(0, -2, 2, 0), 2, byrow = TRUE))
+t &lt;- seq(0, 6, length.out = 800)
+X1 &lt;- list(2 * exp(-t) - exp(-3 * t), exp(-t) * (cos(2 * t) + 3 * sin(2 * t)), cos(2 * t) - 3 * sin(2 * t))   <span class="k"># Lösungsformeln</span>
+X2 &lt;- list(2 * exp(-t) + exp(-3 * t), exp(-t) * (3 * cos(2 * t) - sin(2 * t)), 3 * cos(2 * t) + sin(2 * t))
+g &lt;- expand.grid(x1 = seq(-3.6, 3.6, length.out = 15), x2 = seq(-3.6, 3.6, length.out = 15))
+par(mfrow = c(3, 2), mar = c(4, 4, 2, 1))
+for (z in 1:3) {
+  A &lt;- As[[z]]
+  lam &lt;- eigen(A)$values; lam &lt;- lam[order(Im(lam), Re(lam))]   <span class="k"># nach Imaginär-, dann Realteil ordnen</span>
+  cat(namen[z], &quot;: Eigenwerte &quot;, paste(sprintf(&quot;%g%+gi&quot;, Re(lam), Im(lam)), collapse = &quot;  &quot;), &quot;\n&quot;, sep = &quot;&quot;)
+  plot(t, X1[[z]], type = &quot;l&quot;, col = rgb(0.43, 0.04, 0.12), lwd = 2, ylim = c(-3.5, 3.5), xlab = &quot;t&quot;, ylab = &quot;&quot;, main = namen[z])
+  lines(t, X2[[z]], col = rgb(0.89, 0.44, 0.49), lwd = 2); abline(h = 0)
+  legend(&quot;topright&quot;, legend = c(&quot;x1(t)&quot;, &quot;x2(t)&quot;), col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)), lwd = 2, cex = 0.8)
+  U &lt;- A[1, 1] * g$x1 + A[1, 2] * g$x2; V &lt;- A[2, 1] * g$x1 + A[2, 2] * g$x2; L &lt;- sqrt(U^2 + V^2) + 1e-12
+  plot(NULL, xlim = c(-3.6, 3.6), ylim = c(-3.6, 3.6), asp = 1, xlab = &quot;x1&quot;, ylab = &quot;x2&quot;)
+  arrows(g$x1, g$x2, g$x1 + 0.22 * U / L, g$x2 + 0.22 * V / L, length = 0.03, col = rgb(0.2, 0.6, 0.25))
+  lines(X1[[z]], X2[[z]], col = rgb(0.64, 0.08, 0.18), lwd = 2)
+  points(1, 3, pch = 16, col = rgb(0.64, 0.08, 0.18)); points(0, 0, pch = 16)
+}</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>stabiler Knoten: Eigenwerte -3+0i  -1+0i
+stabile Spirale: Eigenwerte -1-2i  -1+2i
+Zentrum: Eigenwerte 0-2i  0+2i</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="spur-determinante">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 4.11</p>
+    <h2>Spur-Determinanten-Ebene</h2>
+    <p class="formel">T = a<sub>11</sub> + a<sub>22</sub>,&ensp; det A = a<sub>11</sub> a<sub>22</sub> − a<sub>12</sub> a<sub>21</sub></p>
+    <p class="lead">Die Parabel det A = T²/4 trennt Knoten von Spiralen. Stabil ist der Ursprung genau für T &lt; 0 und det A &gt; 0 (grau).</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/spur_determinante.png" alt="Ergebnis des Programms spur_determinante.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="spur_determinante.jl" data-m="spur_determinante.m" data-py="spur_determinante.py" data-r="spur_determinante.R">spur_determinante.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/spur_determinante.py" data-jl="code/spur_determinante.jl" data-m="code/spur_determinante.m" data-py="code/spur_determinante.py" data-r="code/spur_determinante.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 4.11: Spur-Determinanten-Ebene (Buch, Abschnitt 4.2)</span>
+<span class="k"># Die Spur T und die Determinante det A einer 2x2-Matrix entscheiden über Typ und Stabilität des Ursprungs; grau: stabil</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+using LinearAlgebra
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+
+matrizen = [(&quot;Bsp. 1&quot;, [-2 1; 1 -2]), (&quot;Bsp. 2&quot;, [-1 2; -2 -1]), (&quot;Bsp. 3&quot;, [0 -2; 2 0]), (&quot;PK&quot;, [-1 0; 1 -0.2])]
+T = range(-5, 5, length = 400)
+p = plot(Shape([-5, 0, 0, -5], [0, 0, 7.5, 7.5]), color = :gray90, lw = 0, label = &quot;stabil&quot;,
+         xlims = (-5, 5), ylims = (-2.5, 7.5), xlabel = &quot;Spur T&quot;, ylabel = &quot;Determinante det A&quot;, legend = :bottomleft)
+plot!(p, T, T .^ 2 ./ 4, color = BL, lw = 2.5, label = &quot;det A = T²/4&quot;)
+hline!(p, [0], color = :black, label = &quot;&quot;); vline!(p, [0], color = :black, label = &quot;&quot;)
+for (name, A) in matrizen
+    Sp = tr(A); De = det(A)
+    typ = De &lt; 0 ? &quot;Sattel&quot; : Sp == 0 ? &quot;Zentrum&quot; : Sp^2 &gt;= 4De ? &quot;Knoten&quot; : &quot;Spirale&quot;
+    @printf(&quot;%s: Spur = %4.1f,  det A = %4.1f  -&gt; %s%s\n&quot;, name, Sp, De, typ, Sp &lt; 0 &amp;&amp; De &gt; 0 ? &quot;, stabil&quot; : &quot;&quot;)
+    scatter!(p, [Sp], [De], color = :black, label = &quot;&quot;); annotate!(p, Sp + 0.15, De + 0.2, text(name, 9, :left, :bottom))
+end
+for (x, y, txt) in [(-3.3, 0.9, &quot;Knoten stabil&quot;), (-3.6, 6.2, &quot;Spirale stabil&quot;), (3.3, 0.9, &quot;Knoten instabil&quot;),
+                    (2.2, 5.6, &quot;Spirale instabil&quot;), (2.2, -1.5, &quot;Sattel&quot;)]
+    annotate!(p, x, y, text(txt, 9))
+end
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 4.11: Spur-Determinanten-Ebene (Buch, Abschnitt 4.2)</span>
+<span class="k">% Die Spur T und die Determinante det A einer 2x2-Matrix entscheiden über Typ und Stabilität des Ursprungs; grau: stabil</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+namen = {&#x27;Bsp. 1&#x27;, &#x27;Bsp. 2&#x27;, &#x27;Bsp. 3&#x27;, &#x27;PK&#x27;};
+As = {[-2 1; 1 -2], [-1 2; -2 -1], [0 -2; 2 0], [-1 0; 1 -0.2]};
+T = linspace(-5, 5, 400);
+fill([-5 0 0 -5], [0 0 7.5 7.5], [0.9 0.9 0.9], &#x27;EdgeColor&#x27;, &#x27;none&#x27;); hold on
+plot(T, T.^2 / 4, &#x27;Color&#x27;, [0 0.447 0.741], &#x27;LineWidth&#x27;, 2.5);
+plot([-5 5], [0 0], &#x27;k&#x27;); plot([0 0], [-2.5 7.5], &#x27;k&#x27;);
+for i = 1:4
+    A = As{i}; Sp = trace(A); De = det(A);
+    if De &lt; 0, typ = &#x27;Sattel&#x27;;
+    elseif Sp == 0, typ = &#x27;Zentrum&#x27;;
+    elseif Sp^2 &gt;= 4 * De, typ = &#x27;Knoten&#x27;;
+    else, typ = &#x27;Spirale&#x27;;
+    end
+    if Sp &lt; 0 &amp;&amp; De &gt; 0, typ = [typ &#x27;, stabil&#x27;]; end
+    fprintf(&#x27;%s: Spur = %4.1f,  det A = %4.1f  -&gt; %s\n&#x27;, namen{i}, Sp, De, typ);
+    plot(Sp, De, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); text(Sp + 0.15, De + 0.2, namen{i});
+end
+text(-3.3, 0.9, &#x27;Knoten stabil&#x27;, &#x27;HorizontalAlignment&#x27;, &#x27;center&#x27;); text(-3.6, 6.2, &#x27;Spirale stabil&#x27;, &#x27;HorizontalAlignment&#x27;, &#x27;center&#x27;);
+text(3.3, 0.9, &#x27;Knoten instabil&#x27;, &#x27;HorizontalAlignment&#x27;, &#x27;center&#x27;); text(2.2, 5.6, &#x27;Spirale instabil&#x27;, &#x27;HorizontalAlignment&#x27;, &#x27;center&#x27;);
+text(2.2, -1.5, &#x27;Sattel&#x27;, &#x27;HorizontalAlignment&#x27;, &#x27;center&#x27;); hold off
+xlim([-5 5]); ylim([-2.5 7.5]); xlabel(&#x27;Spur T&#x27;); ylabel(&#x27;Determinante det A&#x27;);
+legend(&#x27;stabil&#x27;, &#x27;det A = T^2/4&#x27;, &#x27;Location&#x27;, &#x27;southwest&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 4.11: Spur-Determinanten-Ebene (Buch, Abschnitt 4.2)</span>
+<span class="k"># Die Spur T und die Determinante det A einer 2x2-Matrix entscheiden über Typ und Stabilität des Ursprungs; grau: stabil</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+matrizen = {&quot;Bsp. 1&quot;: [[-2, 1], [1, -2]], &quot;Bsp. 2&quot;: [[-1, 2], [-2, -1]], &quot;Bsp. 3&quot;: [[0, -2], [2, 0]], &quot;PK&quot;: [[-1, 0], [1, -0.2]]}
+T = np.linspace(-5, 5, 400)
+plt.fill_between([-5, 0], 0, 7.5, color=&quot;0.9&quot;, label=&quot;stabil&quot;)
+plt.plot(T, T**2 / 4, color=(0, 0.447, 0.741), lw=2.5, label=&quot;det A = T²/4&quot;)
+plt.axhline(0, color=&quot;k&quot;, lw=1); plt.axvline(0, color=&quot;k&quot;, lw=1)
+for name, A in matrizen.items():
+    A = np.array(A); Sp, De = np.trace(A), np.linalg.det(A)
+    if De &lt; 0: typ = &quot;Sattel&quot;
+    elif Sp == 0: typ = &quot;Zentrum&quot;
+    elif Sp**2 &gt;= 4 * De: typ = &quot;Knoten&quot;
+    else: typ = &quot;Spirale&quot;
+    print(f&quot;{name}: Spur = {Sp:4.1f},  det A = {De:4.1f}  -&gt; {typ}&quot; + (&quot;, stabil&quot; if Sp &lt; 0 and De &gt; 0 else &quot;&quot;))
+    plt.plot(Sp, De, &quot;ko&quot;); plt.text(Sp + 0.15, De + 0.2, name)
+for x, y, txt in [(-3.3, 0.9, &quot;Knoten stabil&quot;), (-3.6, 6.2, &quot;Spirale stabil&quot;), (3.3, 0.9, &quot;Knoten instabil&quot;),
+                  (2.2, 5.6, &quot;Spirale instabil&quot;), (2.2, -1.5, &quot;Sattel&quot;)]:
+    plt.text(x, y, txt, ha=&quot;center&quot;)
+plt.xlim(-5, 5); plt.ylim(-2.5, 7.5); plt.xlabel(&quot;Spur T&quot;); plt.ylabel(&quot;Determinante det A&quot;); plt.legend(loc=&quot;lower left&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 4.11: Spur-Determinanten-Ebene (Buch, Abschnitt 4.2)</span>
+<span class="k"># Die Spur T und die Determinante det A einer 2x2-Matrix entscheiden über Typ und Stabilität des Ursprungs; grau: stabil</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+namen &lt;- c(&quot;Bsp. 1&quot;, &quot;Bsp. 2&quot;, &quot;Bsp. 3&quot;, &quot;PK&quot;)
+As &lt;- list(matrix(c(-2, 1, 1, -2), 2, byrow = TRUE), matrix(c(-1, 2, -2, -1), 2, byrow = TRUE),
+           matrix(c(0, -2, 2, 0), 2, byrow = TRUE), matrix(c(-1, 0, 1, -0.2), 2, byrow = TRUE))
+T &lt;- seq(-5, 5, length.out = 400)
+plot(NULL, xlim = c(-5, 5), ylim = c(-2.5, 7.5), xlab = &quot;Spur T&quot;, ylab = &quot;Determinante det A&quot;)
+rect(-5, 0, 0, 7.5, col = &quot;grey90&quot;, border = NA)
+lines(T, T^2 / 4, col = rgb(0, 0.447, 0.741), lwd = 2.5); abline(h = 0, v = 0)
+for (i in 1:4) {
+  A &lt;- As[[i]]; Sp &lt;- sum(diag(A)); De &lt;- det(A)
+  typ &lt;- if (De &lt; 0) &quot;Sattel&quot; else if (Sp == 0) &quot;Zentrum&quot; else if (Sp^2 &gt;= 4 * De) &quot;Knoten&quot; else &quot;Spirale&quot;
+  if (Sp &lt; 0 &amp;&amp; De &gt; 0) typ &lt;- paste0(typ, &quot;, stabil&quot;)
+  cat(sprintf(&quot;%s: Spur = %4.1f,  det A = %4.1f  -&gt; %s\n&quot;, namen[i], Sp, De, typ))
+  points(Sp, De, pch = 16); text(Sp + 0.15, De + 0.2, namen[i], adj = 0)
+}
+text(c(-3.3, -3.6, 3.3, 2.2, 2.2), c(0.9, 6.2, 0.9, 5.6, -1.5), c(&quot;Knoten stabil&quot;, &quot;Spirale stabil&quot;, &quot;Knoten instabil&quot;, &quot;Spirale instabil&quot;, &quot;Sattel&quot;))
+legend(&quot;bottomleft&quot;, legend = c(&quot;stabil&quot;, &quot;det A = T^2/4&quot;), fill = c(&quot;grey90&quot;, NA), border = NA, col = c(NA, rgb(0, 0.447, 0.741)), lwd = c(NA, 2.5))</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>Bsp. 1: Spur = -4.0,  det A =  3.0  -&gt; Knoten, stabil
+Bsp. 2: Spur = -2.0,  det A =  5.0  -&gt; Spirale, stabil
+Bsp. 3: Spur =  0.0,  det A =  4.0  -&gt; Zentrum
+PK: Spur = -1.2,  det A =  0.2  -&gt; Knoten, stabil</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="dauerinfusion">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 4.12</p>
+    <h2>Dauerinfusion</h2>
+    <p class="formel">db/dt = k<sub>a</sub> m − k<sub>e</sub> b + u,&ensp; b* = u/k<sub>e</sub></p>
+    <p class="lead">Mit einer konstanten Infusion stellt sich unabhängig vom Anfangswert der Spiegel b* = 5u ein.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/dauerinfusion.png" alt="Ergebnis des Programms dauerinfusion.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="dauerinfusion.jl" data-m="dauerinfusion.m" data-py="dauerinfusion.py" data-r="dauerinfusion.R">dauerinfusion.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/dauerinfusion.py" data-jl="code/dauerinfusion.jl" data-m="code/dauerinfusion.m" data-py="code/dauerinfusion.py" data-r="code/dauerinfusion.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 4.12: Dauerinfusion (Buch, Abschnitt 4.2, Gl. 4.11)</span>
+<span class="k"># dm/dt = -ka m,  db/dt = ka m - ke b + u  mit u = 1 mg pro Stunde, m(0) = b(0) = 0:  b(t) = (u/ke)(1 - e^(-ke t)), b* = u/ke = 5</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+
+ke = 0.2; u = 1
+t = range(0, 30, length = 600)
+b = u / ke .* (1 .- exp.(-ke .* t))
+for tt in (5, 10, 20, 30)
+    @printf(&quot;t = %2d h: b = %.3f mg\n&quot;, tt, u / ke * (1 - exp(-ke * tt)))
+end
+p = hline([u / ke], color = :black, ls = :dash, label = &quot;&quot;, ylims = (0, 6), legend = :bottomright, xlabel = &quot;t (Stunden)&quot;, ylabel = &quot;Wirkstoff (mg)&quot;)
+plot!(p, t, b, color = R2, lw = 2.5, label = &quot;Blut b(t)&quot;)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 4.12: Dauerinfusion (Buch, Abschnitt 4.2, Gl. 4.11)</span>
+<span class="k">% dm/dt = -ka m,  db/dt = ka m - ke b + u  mit u = 1 mg pro Stunde, m(0) = b(0) = 0:  b(t) = (u/ke)(1 - e^(-ke t)), b* = u/ke = 5</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+ke = 0.2; u = 1;
+t = linspace(0, 30, 600);
+b = u / ke * (1 - exp(-ke * t));
+for tt = [5 10 20 30]
+    fprintf(&#x27;t = %2d h: b = %.3f mg\n&#x27;, tt, u / ke * (1 - exp(-ke * tt)));
+end
+plot([0 30], [u / ke u / ke], &#x27;k--&#x27;); hold on
+plot(t, b, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2.5); hold off
+xlabel(&#x27;t (Stunden)&#x27;); ylabel(&#x27;Wirkstoff (mg)&#x27;); ylim([0 6]); legend(&#x27;b* = u/k_e&#x27;, &#x27;Blut b(t)&#x27;, &#x27;Location&#x27;, &#x27;southeast&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 4.12: Dauerinfusion (Buch, Abschnitt 4.2, Gl. 4.11)</span>
+<span class="k"># dm/dt = -ka m,  db/dt = ka m - ke b + u  mit u = 1 mg pro Stunde, m(0) = b(0) = 0:  b(t) = (u/ke)(1 - e^(-ke t)), b* = u/ke = 5</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+ke, u = 0.2, 1
+t = np.linspace(0, 30, 600)
+b = u / ke * (1 - np.exp(-ke * t))
+for tt in [5, 10, 20, 30]:
+    print(f&quot;t = {tt:2d} h: b = {u / ke * (1 - np.exp(-ke * tt)):.3f} mg&quot;)
+plt.axhline(u / ke, color=&quot;k&quot;, ls=&quot;--&quot;, lw=1)
+plt.plot(t, b, color=(0.64, 0.08, 0.18), lw=2.5, label=&quot;Blut b(t)&quot;)
+plt.xlabel(&quot;t (Stunden)&quot;); plt.ylabel(&quot;Wirkstoff (mg)&quot;); plt.ylim(0, 6); plt.legend(loc=&quot;lower right&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 4.12: Dauerinfusion (Buch, Abschnitt 4.2, Gl. 4.11)</span>
+<span class="k"># dm/dt = -ka m,  db/dt = ka m - ke b + u  mit u = 1 mg pro Stunde, m(0) = b(0) = 0:  b(t) = (u/ke)(1 - e^(-ke t)), b* = u/ke = 5</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+ke &lt;- 0.2; u &lt;- 1
+t &lt;- seq(0, 30, length.out = 600)
+b &lt;- u / ke * (1 - exp(-ke * t))
+for (tt in c(5, 10, 20, 30)) cat(sprintf(&quot;t = %2d h: b = %.3f mg\n&quot;, tt, u / ke * (1 - exp(-ke * tt))))
+plot(t, b, type = &quot;l&quot;, col = rgb(0.64, 0.08, 0.18), lwd = 2.5, ylim = c(0, 6), xlab = &quot;t (Stunden)&quot;, ylab = &quot;Wirkstoff (mg)&quot;)
+abline(h = u / ke, lty = 2)
+legend(&quot;bottomright&quot;, legend = c(&quot;b* = u/k_e&quot;, &quot;Blut b(t)&quot;), col = c(&quot;black&quot;, rgb(0.64, 0.08, 0.18)), lty = c(2, 1), lwd = c(1, 2.5))</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>t =  5 h: b = 3.161 mg
+t = 10 h: b = 4.323 mg
+t = 20 h: b = 4.908 mg
+t = 30 h: b = 4.988 mg</code></pre></details>
+    </div>
+  </div>
+</section>
+  <section class="apps" id="app-linear2d">
+  <div class="fig-head"><p class="eyebrow">Im Browser ausprobieren · ohne Installation</p><h2>Lineare Systeme in der Ebene</h2><p class="lead">Wählen Sie die Einträge der Matrix A. Spur und Determinante entscheiden, ob der Ursprung ein Knoten, eine Spirale, ein Zentrum oder ein Sattel ist und ob er stabil ist.</p></div>
+  <div class="app" data-app="linear2d">
+    <canvas width="720" height="560" aria-label="Lineare Systeme in der Ebene"></canvas>
+    <div class="regler"><label><span>Beispiel</span><select aria-label="Beispiel"><option value="knoten">stabiler Knoten</option><option value="spirale">stabile Spirale</option><option value="zentrum">Zentrum</option><option value="sattel">Sattel</option></select></label><label><span>a<sub>11</sub></span> <output data-o="a11"></output><input type="range" data-r="a11" min="-3" max="3" step="0.1" value="-2" aria-label="a11"></label><label><span>a<sub>12</sub></span> <output data-o="a12"></output><input type="range" data-r="a12" min="-3" max="3" step="0.1" value="1" aria-label="a12"></label><label><span>a<sub>21</sub></span> <output data-o="a21"></output><input type="range" data-r="a21" min="-3" max="3" step="0.1" value="1" aria-label="a21"></label><label><span>a<sub>22</sub></span> <output data-o="a22"></output><input type="range" data-r="a22" min="-3" max="3" step="0.1" value="-2" aria-label="a22"></label><p class="zustand"></p><pre class="werte"></pre></div>
+  </div>
+</section>
+  <section class="matlab-apps"><h3>MATLAB-Apps aus der Vorlesung</h3><p>Herunterladen, in einen Ordner legen und in MATLAB den Namen ohne Endung eingeben, z. B. <code>alcohol_app</code>. Die Apps nutzen die grafische Oberfläche von MATLAB und laufen nicht in GNU Octave.</p><ul><li><a href="apps/alcohol_app.m" download>alcohol_app.m</a><span>Pharmakokinetik von Alkohol nach Pieters et al. (1990)</span></li></ul></section>
+  <nav class="weiter" aria-label="Weiterblättern"><a href="abschnitt-4-1.html"><small>Zurück</small>4.1 Systeme von Differentialgleichungen</a><a href="abschnitt-4-3.html"><small>Weiter</small>4.3 Michaelis-Menten-Kinetik</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Begleitmaterial zum Buch „Dynamische Systeme in den Lebenswissenschaften“ von Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programme unter <a href="../LICENSE.txt">MIT-Lizenz</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

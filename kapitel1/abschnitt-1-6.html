@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>1.6 Vertiefung: Herzmodelle – Dynamische Systeme in den Lebenswissenschaften</title>
+<meta name="description" content="Programme in Julia, MATLAB, Python und R zu Abschnitt 1.6 des Buchs Dynamische Systeme in den Lebenswissenschaften">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamische Systeme in den Lebenswissenschaften</a>
+  <nav aria-label="Kapitel"><a href="../index.html">Start</a> <a href="../kapitel1/index.html" aria-current="page">Kapitel 1</a> <a href="../kapitel2/index.html">Kapitel 2</a> <a href="../kapitel3/index.html">Kapitel 3</a> <a href="../kapitel4/index.html">Kapitel 4</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Abschnitte"><h2><a href="index.html">Kapitel 1</a></h2><ol><li><a href="abschnitt-1-1.html"><span class="nr">1.1</span><span>Folgen und Differenzengleichungen</span></a></li><li><a href="abschnitt-1-2.html"><span class="nr">1.2</span><span>Lineare Differenzengleichungen</span></a></li><li><a href="abschnitt-1-3.html"><span class="nr">1.3</span><span>Logistisches Wachstumsmodell</span></a></li><li><a href="abschnitt-1-4.html"><span class="nr">1.4</span><span>Stationäre Zustände und Stabilität</span></a></li><li><a href="abschnitt-1-5.html"><span class="nr">1.5</span><span>Newton-Verfahren</span></a></li><li><a href="abschnitt-1-6.html" aria-current="page"><span class="nr">1.6</span><span>Vertiefung: Herzmodelle</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Kapitel 1 · Diskrete dynamische Systeme mit einer Variablen</p>
+      <h1><span class="num">1.6</span>Vertiefung: Herzmodelle</h1>
+      <p>Zwei einfache Differenzengleichungen beschreiben Herzrhythmen Schlag für Schlag: die Weiterleitung im AV-Knoten und die Dauer der Aktionspotentiale bei periodischer Anregung. Beide zeigen, wie aus regelmäßigen Reizen unregelmäßige Antworten entstehen können.</p>
+      <p>Zu jeder Abbildung des Abschnitts finden Sie das Programm, das sie erzeugt. Ändern Sie Parameter und Startwerte und beobachten Sie, was passiert. Abbildungs- und Gleichungsnummern beziehen sich auf das Buch.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programmiersprache</legend>
+  <div class="seg" role="radiogroup" aria-label="Programmiersprache">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Gilt für alle Seiten. MATLAB-Programme laufen auch im kostenlosen GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>Auf dieser Seite</b><ul><li><a href="#av-knoten-funktion"><span class="abb">Abb. 1.36</span>Aktualisierungsfunktion des AV-Knoten-Modells</a></li><li><a href="#av-knoten-bifurkation"><span class="abb">Abb. 1.37</span>Parameterstudie und Bifurkationsdiagramm zum AV-Knoten</a></li><li><a href="#aktionspotential"><span class="abb">Abb. 1.38</span>Aktionspotentiale bei periodischer Anregung</a></li><li><a href="#s1s2-restitution"><span class="abb">Abb. 1.39</span>S1-S2-Protokoll und Restitutionskurve</a></li><li><a href="#apd-funktion"><span class="abb">Abb. 1.40</span>Aktualisierungsfunktion des APD-Modells</a></li><li><a href="#apd-bifurkation"><span class="abb">Abb. 1.41</span>Parameterstudie und Bifurkationsdiagramm zum APD-Modell</a></li><li><a href="#app-apd"><span class="abb">App</span>im Browser ausprobieren</a></li></ul></div>
+  
+<section class="fig" id="av-knoten-funktion">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 1.36</p>
+    <h2>Aktualisierungsfunktion des AV-Knoten-Modells</h2>
+    <p class="formel">f(V) = cV, falls cV &gt; V<sub>g</sub>;&ensp; sonst cV + u</p>
+    <p class="lead">Die Funktion ist stückweise linear und springt bei V = V<sub>g</sub>/c. Mit c = 1/3 und c = 0.6 liegt die Sprungstelle verschieden.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/av_knoten_funktion.png" alt="Ergebnis des Programms av_knoten_funktion.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="av_knoten_funktion.jl" data-m="av_knoten_funktion.m" data-py="av_knoten_funktion.py" data-r="av_knoten_funktion.R">av_knoten_funktion.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/av_knoten_funktion.py" data-jl="code/av_knoten_funktion.jl" data-m="code/av_knoten_funktion.m" data-py="code/av_knoten_funktion.py" data-r="code/av_knoten_funktion.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 1.36: Aktualisierungsfunktion des AV-Knoten-Modells (Buch, Abschnitt 1.6, Gl. 1.47)</span>
+<span class="k"># f(V) = c V falls c V &gt; V_g, sonst c V + u;  V_g = 1, u = 1;  links c = 1/3, rechts zusätzlich c = 0.6</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+
+Vg = 1; u = 1
+farben = [RGB(0, 0.447, 0.741), RGB(0.45, 0.70, 0.90)]
+bilder = []
+for (p, cs) in enumerate([[1/3], [1/3, 0.6]])
+    b = plot(xlims = (0, 4), ylims = (0, 2.7), xlabel = &quot;V&quot;, ylabel = &quot;f(V)&quot;, legend = :topleft)
+    for (i, c) in enumerate(cs)
+        s = Vg / c                       <span class="k"># Sprungstelle: c V = V_g</span>
+        links = range(0, min(s, 4), length = 200); rechts = range(s, 4, length = 200)
+        plot!(b, links, c .* links .+ u, color = farben[i], lw = 2, label = @sprintf(&quot;c = %.3g&quot;, c))
+        plot!(b, rechts, c .* rechts, color = farben[i], lw = 2, label = &quot;&quot;)
+        scatter!(b, [s], [c * s + u], color = farben[i], label = &quot;&quot;)
+        p == 2 &amp;&amp; @printf(&quot;c = %.3g: Sprungstelle bei V = V_g/c = %.3f\n&quot;, c, s)
+    end
+    push!(bilder, b)
+end
+display(plot(bilder..., layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 1.36: Aktualisierungsfunktion des AV-Knoten-Modells (Buch, Abschnitt 1.6, Gl. 1.47)</span>
+<span class="k">% f(V) = c V falls c V &gt; V_g, sonst c V + u;  V_g = 1, u = 1;  links c = 1/3, rechts zusätzlich c = 0.6</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+Vg = 1; u = 1;
+farben = [0 0.447 0.741; 0.45 0.70 0.90];
+cliste = {1/3, [1/3 0.6]};
+for p = 1:2
+    subplot(1, 2, p); hold on
+    cs = cliste{p};
+    for i = 1:numel(cs)
+        c = cs(i);
+        s = Vg / c;                      <span class="k">% Sprungstelle: c V = V_g</span>
+        a = linspace(0, min(s, 4), 200); b = linspace(s, 4, 200);
+        plot(a, c * a + u, &#x27;Color&#x27;, farben(i, :), &#x27;DisplayName&#x27;, sprintf(&#x27;c = %.3g&#x27;, c));
+        plot(b, c * b, &#x27;Color&#x27;, farben(i, :), &#x27;HandleVisibility&#x27;, &#x27;off&#x27;);
+        plot(s, c * s + u, &#x27;o&#x27;, &#x27;Color&#x27;, farben(i, :), &#x27;MarkerFaceColor&#x27;, farben(i, :), &#x27;HandleVisibility&#x27;, &#x27;off&#x27;);
+        if p == 2
+            fprintf(&#x27;c = %.3g: Sprungstelle bei V = V_g/c = %.3f\n&#x27;, c, s);
+        end
+    end
+    hold off; axis([0 4 0 2.7]); xlabel(&#x27;V&#x27;); ylabel(&#x27;f(V)&#x27;); legend(&#x27;show&#x27;, &#x27;Location&#x27;, &#x27;northwest&#x27;);
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 1.36: Aktualisierungsfunktion des AV-Knoten-Modells (Buch, Abschnitt 1.6, Gl. 1.47)</span>
+<span class="k"># f(V) = c V falls c V &gt; V_g, sonst c V + u;  V_g = 1, u = 1;  links c = 1/3, rechts zusätzlich c = 0.6</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+Vg, u = 1.0, 1.0
+f = lambda V, c: np.where(c * V &gt; Vg, c * V, c * V + u)
+
+fig, axs = plt.subplots(1, 2, figsize=(10, 4.5))
+for ax, cs in zip(axs, [(1 / 3,), (1 / 3, 0.6)]):
+    for c, farbe in zip(cs, [(0, 0.447, 0.741), (0.45, 0.70, 0.90)]):
+        s = Vg / c                                   <span class="k"># Sprungstelle: c V = V_g</span>
+        a = np.linspace(0, min(s, 4), 200); b = np.linspace(s, 4, 200)
+        ax.plot(a, c * a + u, color=farbe, label=f&quot;c = {c:.3g}&quot;)
+        ax.plot(b, c * b, color=farbe)
+        ax.plot(s, c * s + u, &quot;o&quot;, color=farbe)     <span class="k"># an der Sprungstelle gilt der obere Zweig (c V &lt;= V_g)</span>
+        if len(cs) == 2:
+            print(f&quot;c = {c:.3g}: Sprungstelle bei V = V_g/c = {s:.3f}&quot;)
+    ax.set_xlim(0, 4); ax.set_ylim(0, 2.7)
+    ax.set_xlabel(&quot;V&quot;); ax.set_ylabel(&quot;f(V)&quot;); ax.legend(loc=&quot;upper left&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 1.36: Aktualisierungsfunktion des AV-Knoten-Modells (Buch, Abschnitt 1.6, Gl. 1.47)</span>
+<span class="k"># f(V) = c V falls c V &gt; V_g, sonst c V + u;  V_g = 1, u = 1;  links c = 1/3, rechts zusätzlich c = 0.6</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+Vg &lt;- 1; u &lt;- 1
+farben &lt;- c(rgb(0, 0.447, 0.741), rgb(0.45, 0.70, 0.90))
+par(mfrow = c(1, 2))
+for (p in 1:2) {
+  cs &lt;- if (p == 1) 1/3 else c(1/3, 0.6)
+  plot(NULL, xlim = c(0, 4), ylim = c(0, 2.7), xlab = &quot;V&quot;, ylab = &quot;f(V)&quot;)
+  for (i in seq_along(cs)) {
+    c &lt;- cs[i]
+    s &lt;- Vg / c                          <span class="k"># Sprungstelle: c V = V_g</span>
+    a &lt;- seq(0, min(s, 4), length.out = 200); b &lt;- seq(s, 4, length.out = 200)
+    lines(a, c * a + u, col = farben[i], lwd = 2)
+    lines(b, c * b, col = farben[i], lwd = 2)
+    points(s, c * s + u, pch = 16, col = farben[i])
+    if (p == 2) cat(sprintf(&quot;c = %.3g: Sprungstelle bei V = V_g/c = %.3f\n&quot;, c, s))
+  }
+  legend(&quot;topleft&quot;, legend = sprintf(&quot;c = %.3g&quot;, cs), col = farben[seq_along(cs)], lwd = 2)
+}</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>c = 0.333: Sprungstelle bei V = V_g/c = 3.000
+c = 0.6: Sprungstelle bei V = V_g/c = 1.667</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="av-knoten-bifurkation">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 1.37</p>
+    <h2>Parameterstudie und Bifurkationsdiagramm zum AV-Knoten</h2>
+    <p class="formel">V<sub>n+1</sub> = f(V<sub>n</sub>),&ensp; V<sub>0</sub> = 1.1</p>
+    <p class="lead">Je nach c stellt sich ein konstanter Wert, ein Wechsel zwischen zwei Werten oder ein komplizierteres Muster ein. Das Bifurkationsdiagramm zeigt alle Fälle auf einen Blick.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/av_knoten_bifurkation.png" alt="Ergebnis des Programms av_knoten_bifurkation.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="av_knoten_bifurkation.jl" data-m="av_knoten_bifurkation.m" data-py="av_knoten_bifurkation.py" data-r="av_knoten_bifurkation.R">av_knoten_bifurkation.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/av_knoten_bifurkation.py" data-jl="code/av_knoten_bifurkation.jl" data-m="code/av_knoten_bifurkation.m" data-py="code/av_knoten_bifurkation.py" data-r="code/av_knoten_bifurkation.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 1.37: Parameterstudie und Bifurkationsdiagramm zum AV-Knoten-Modell (Buch, Abschnitt 1.6, Gl. 1.47)</span>
+<span class="k"># V_{n+1} = f(V_n) mit V_0 = 1.1, u = 1, V_g = 1 und verschiedenen Werten von c</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+
+Vg = 1; u = 1; V0 = 1.1; N = 40
+f(V, c) = c * V + u * (c * V &lt;= Vg)      <span class="k"># c V, und u dazu, falls c V &lt;= V_g</span>
+n = 0:N
+farben = [RGB(0.43, 0.04, 0.12), RGB(0.89, 0.44, 0.49)]; zeichen = [:circle, :rect]
+bilder = []
+for paar in ([1/3, 2/3], [0.5001, 0.6], [0.71, 0.9])
+    b = plot(ylims = (0.6, 2.1), xlabel = &quot;n&quot;, ylabel = &quot;V_n&quot;, legend = :bottomright)
+    for (i, c) in enumerate(paar)
+        V = zeros(N + 1); V[1] = V0
+        for k in 1:N
+            V[k + 1] = f(V[k], c)
+        end
+        plot!(b, n, V, ls = :dash, marker = zeichen[i], ms = 3, color = farben[i], label = @sprintf(&quot;c = %.4g&quot;, c))
+        println(@sprintf(&quot;c = %.4g:  V_35 ... V_40 = &quot;, c), join([@sprintf(&quot;%.3f&quot;, v) for v in V[36:41]], &quot;  &quot;))
+    end
+    push!(bilder, b)
+end
+
+c = range(0.33, 0.999, length = 3000)    <span class="k"># Bifurkationsdiagramm</span>
+V = fill(V0, length(c))
+for k in 1:10000
+    global V = f.(V, c)
+end
+C = Float64[]; W = Float64[]
+for k in 1:150
+    global V = f.(V, c)
+    append!(C, c); append!(W, V)
+end
+push!(bilder, scatter(C, W, ms = 0.5, msw = 0, color = RGB(0, 0.39, 0), legend = false, xlims = (0.3, 1),
+                      xlabel = &quot;c&quot;, ylabel = &quot;V_n für n &gt; 10000&quot;))
+display(plot(bilder..., layout = (2, 2), size = (900, 650)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 1.37: Parameterstudie und Bifurkationsdiagramm zum AV-Knoten-Modell (Buch, Abschnitt 1.6, Gl. 1.47)</span>
+<span class="k">% V_{n+1} = f(V_n) mit V_0 = 1.1, u = 1, V_g = 1 und verschiedenen Werten von c</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+Vg = 1; u = 1; V0 = 1.1; N = 40;
+f = @(V, c) c .* V + u * (c .* V &lt;= Vg);     <span class="k">% c V, und u dazu, falls c V &lt;= V_g</span>
+n = 0:N;
+farben = [0.43 0.04 0.12; 0.89 0.44 0.49]; marker = &#x27;os&#x27;;
+paare = [1/3 2/3; 0.5001 0.6; 0.71 0.9];
+for p = 1:3
+    subplot(2, 2, p); hold on
+    for i = 1:2
+        c = paare(p, i);
+        V = zeros(1, N + 1); V(1) = V0;
+        for k = 1:N
+            V(k + 1) = f(V(k), c);
+        end
+        plot(n, V, [&#x27;--&#x27; marker(i)], &#x27;Color&#x27;, farben(i, :), &#x27;MarkerSize&#x27;, 4, &#x27;DisplayName&#x27;, sprintf(&#x27;c = %.4g&#x27;, c));
+        fprintf(&#x27;c = %.4g:  V_35 ... V_40 = &#x27;, c); fprintf(&#x27;%.3f  &#x27;, V(36:41)); fprintf(&#x27;\n&#x27;);
+    end
+    hold off; ylim([0.6 2.1]); xlabel(&#x27;n&#x27;); ylabel(&#x27;V_n&#x27;); legend(&#x27;show&#x27;, &#x27;Location&#x27;, &#x27;southeast&#x27;);
+end
+
+c = linspace(0.33, 0.999, 3000);          <span class="k">% Bifurkationsdiagramm</span>
+V = V0 * ones(size(c));
+for k = 1:10000
+    V = f(V, c);
+end
+C = []; W = [];
+for k = 1:150
+    V = f(V, c);
+    C = [C c]; W = [W V];
+end
+subplot(2, 2, 4);
+plot(C, W, &#x27;.&#x27;, &#x27;Color&#x27;, [0 0.39 0], &#x27;MarkerSize&#x27;, 1);
+xlim([0.3 1]); xlabel(&#x27;c&#x27;); ylabel(&#x27;V_n für n &gt; 10000&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 1.37: Parameterstudie und Bifurkationsdiagramm zum AV-Knoten-Modell (Buch, Abschnitt 1.6, Gl. 1.47)</span>
+<span class="k"># V_{n+1} = f(V_n) mit V_0 = 1.1, u = 1, V_g = 1 und verschiedenen Werten von c</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+Vg, u, V0, N = 1.0, 1.0, 1.1, 40
+f = lambda V, c: np.where(c * V &gt; Vg, c * V, c * V + u)
+
+def folge(c):
+    V = np.zeros(N + 1)
+    V[0] = V0
+    for n in range(N):
+        V[n + 1] = f(V[n], c)
+    return V
+
+n = np.arange(N + 1)
+fig, axs = plt.subplots(2, 2, figsize=(10, 7))
+for ax, cs in zip(axs.flat, [(1 / 3, 2 / 3), (0.5001, 0.6), (0.71, 0.9)]):
+    for c, farbe, m in zip(cs, [(0.43, 0.04, 0.12), (0.89, 0.44, 0.49)], &quot;os&quot;):
+        V = folge(c)
+        ax.plot(n, V, &quot;--&quot;, marker=m, ms=4, color=farbe, lw=0.8, label=f&quot;c = {c:.4g}&quot;)
+        print(f&quot;c = {c:.4g}:  V_35 ... V_40 =&quot;, &quot;  &quot;.join(f&quot;{v:.3f}&quot; for v in V[35:]))
+    ax.set_ylim(0.6, 2.1); ax.set_xlabel(&quot;n&quot;); ax.set_ylabel(&quot;V_n&quot;); ax.legend(loc=&quot;lower right&quot;, ncol=2)
+
+ax = axs[1, 1]                                   <span class="k"># Bifurkationsdiagramm</span>
+c = np.linspace(0.33, 0.999, 3000)
+V = np.full_like(c, V0)
+for _ in range(10000):
+    V = f(V, c)
+for _ in range(150):
+    V = f(V, c)
+    ax.plot(c, V, &quot;,&quot;, color=(0, 0.39, 0))
+ax.set_xlim(0.3, 1); ax.set_xlabel(&quot;c&quot;); ax.set_ylabel(&quot;V_n für n &gt; 10000&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 1.37: Parameterstudie und Bifurkationsdiagramm zum AV-Knoten-Modell (Buch, Abschnitt 1.6, Gl. 1.47)</span>
+<span class="k"># V_{n+1} = f(V_n) mit V_0 = 1.1, u = 1, V_g = 1 und verschiedenen Werten von c</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+Vg &lt;- 1; u &lt;- 1; V0 &lt;- 1.1; N &lt;- 40
+f &lt;- function(V, c) c * V + u * (c * V &lt;= Vg)   <span class="k"># c V, und u dazu, falls c V &lt;= V_g</span>
+n &lt;- 0:N
+farben &lt;- c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)); zeichen &lt;- c(16, 15)
+paare &lt;- rbind(c(1/3, 2/3), c(0.5001, 0.6), c(0.71, 0.9))
+par(mfrow = c(2, 2))
+for (p in 1:3) {
+  plot(NULL, xlim = c(0, N), ylim = c(0.6, 2.1), xlab = &quot;n&quot;, ylab = &quot;V_n&quot;)
+  for (i in 1:2) {
+    c &lt;- paare[p, i]
+    V &lt;- numeric(N + 1); V[1] &lt;- V0
+    for (k in 1:N) V[k + 1] &lt;- f(V[k], c)
+    lines(n, V, type = &quot;o&quot;, lty = 2, pch = zeichen[i], cex = 0.6, col = farben[i])
+    cat(sprintf(&quot;c = %.4g:  V_35 ... V_40 =&quot;, c), sprintf(&quot;%.3f&quot;, V[36:41]), &quot;\n&quot;)
+  }
+  legend(&quot;bottomright&quot;, legend = sprintf(&quot;c = %.4g&quot;, paare[p, ]), col = farben, pch = zeichen, lty = 2, cex = 0.8)
+}
+
+c &lt;- seq(0.33, 0.999, length.out = 3000)   <span class="k"># Bifurkationsdiagramm</span>
+V &lt;- rep(V0, length(c))
+for (k in 1:10000) V &lt;- f(V, c)
+C &lt;- c(); W &lt;- c()
+for (k in 1:150) { V &lt;- f(V, c); C &lt;- c(C, c); W &lt;- c(W, V) }
+plot(C, W, pch = &quot;.&quot;, col = rgb(0, 0.39, 0), xlim = c(0.3, 1), xlab = &quot;c&quot;, ylab = &quot;V_n für n &gt; 10000&quot;)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>c = 0.3333:  V_35 ... V_40 = 1.500  1.500  1.500  1.500  1.500  1.500
+c = 0.6667:  V_35 ... V_40 = 1.800  1.200  1.800  1.200  1.800  1.200
+c = 0.5001:  V_35 ... V_40 = 2.000  1.000  1.500  1.750  1.875  1.938
+c = 0.6:  V_35 ... V_40 = 1.025  1.615  1.969  1.181  1.709  1.025
+c = 0.71:  V_35 ... V_40 = 1.324  1.940  1.377  1.978  1.404  1.997
+c = 0.9:  V_35 ... V_40 = 1.021  1.919  1.727  1.554  1.399  1.259</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="aktionspotential">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 1.38</p>
+    <h2>Aktionspotentiale bei periodischer Anregung</h2>
+    <p class="formel">Mitchell-Schaeffer-Modell, PCL = 400 ms</p>
+    <p class="lead">Das Programm simuliert die Zelle mit dem Euler-Verfahren und misst die Aktionspotentialdauer APD (Zeit oberhalb des Referenzwerts) und das diastolische Intervall DI.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/aktionspotential.png" alt="Ergebnis des Programms aktionspotential.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="aktionspotential.jl" data-m="aktionspotential.m" data-py="aktionspotential.py" data-r="aktionspotential.R">aktionspotential.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/aktionspotential.py" data-jl="code/aktionspotential.jl" data-m="code/aktionspotential.m" data-py="code/aktionspotential.py" data-r="code/aktionspotential.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 1.38: Aktionspotentiale bei periodischer Anregung (Buch, Abschnitt 1.6)</span>
+<span class="k"># Mitchell-Schaeffer-Modell (zwei Ströme), Euler-Verfahren mit dt = 0.01 ms, Reiz alle PCL = 400 ms;</span>
+<span class="k"># gemessen wird die Zeit oberhalb des Referenzwerts 0.1 (Aktionspotentialdauer APD) und darunter (diastolisches Intervall DI)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+
+tin = 0.3; tout = 6; topen = 100; tclose = 115; vgate = 0.13   <span class="k"># Zeitkonstanten in ms</span>
+PCL = 400; T = 2050; dt = 0.01; vref = 0.1
+
+t = (0:round(Int, T / dt) - 1) .* dt
+v = zeros(length(t))
+vv = 0.0; h = 1.0
+for i in 2:length(t)
+    global vv, h
+    J = mod(t[i], PCL) &lt; 2 ? 0.2 : 0.0   <span class="k"># Reiz: 2 ms lang</span>
+    dv = h * vv^2 * (1 - vv) / tin - vv / tout + J
+    dh = vv &lt; vgate ? (1 - h) / topen : -h / tclose
+    vv = vv + dt * dv
+    h = h + dt * dh
+    v[i] = vv
+end
+
+s = sign.(v .- vref)                     <span class="k"># Durchgänge durch den Referenzwert</span>
+kreuz = t[findall(diff(s) .!= 0)]
+auf = kreuz[1:2:end]; ab = kreuz[2:2:end]
+for k in eachindex(ab)
+    if k &lt; length(auf)
+        @printf(&quot;AP %d:  APD = %6.1f ms,  DI = %6.1f ms\n&quot;, k, ab[k] - auf[k], auf[k + 1] - ab[k])
+    else
+        @printf(&quot;AP %d:  APD = %6.1f ms\n&quot;, k, ab[k] - auf[k])
+    end
+end
+
+p = plot(t, v, color = RGB(0.64, 0.08, 0.18), legend = false, xlabel = &quot;t (ms)&quot;, ylabel = &quot;v (dimensionslos)&quot;)
+hline!(p, [vref], ls = :dot, color = :gray)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 1.38: Aktionspotentiale bei periodischer Anregung (Buch, Abschnitt 1.6)</span>
+<span class="k">% Mitchell-Schaeffer-Modell (zwei Ströme), Euler-Verfahren mit dt = 0.01 ms, Reiz alle PCL = 400 ms;</span>
+<span class="k">% gemessen wird die Zeit oberhalb des Referenzwerts 0.1 (Aktionspotentialdauer APD) und darunter (diastolisches Intervall DI)</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+tin = 0.3; tout = 6; topen = 100; tclose = 115; vgate = 0.13;    <span class="k">% Zeitkonstanten in ms</span>
+PCL = 400; T = 2050; dt = 0.01; vref = 0.1;
+
+t = 0:dt:T - dt;
+v = zeros(size(t));
+vv = 0; h = 1;
+for i = 2:numel(t)
+    if mod(t(i), PCL) &lt; 2                <span class="k">% Reiz: 2 ms lang</span>
+        J = 0.2;
+    else
+        J = 0;
+    end
+    dv = h * vv^2 * (1 - vv) / tin - vv / tout + J;
+    if vv &lt; vgate
+        dh = (1 - h) / topen;
+    else
+        dh = -h / tclose;
+    end
+    vv = vv + dt * dv;
+    h = h + dt * dh;
+    v(i) = vv;
+end
+
+s = sign(v - vref);                      <span class="k">% Durchgänge durch den Referenzwert</span>
+kreuz = t(find(diff(s) ~= 0));
+auf = kreuz(1:2:end); ab = kreuz(2:2:end);
+for k = 1:numel(ab)
+    if k &lt; numel(auf)
+        fprintf(&#x27;AP %d:  APD = %6.1f ms,  DI = %6.1f ms\n&#x27;, k, ab(k) - auf(k), auf(k + 1) - ab(k));
+    else
+        fprintf(&#x27;AP %d:  APD = %6.1f ms\n&#x27;, k, ab(k) - auf(k));
+    end
+end
+
+plot(t, v, &#x27;Color&#x27;, [0.64 0.08 0.18]); hold on
+plot([0 T], [vref vref], &#x27;:&#x27;, &#x27;Color&#x27;, [0.35 0.35 0.35]); hold off
+xlabel(&#x27;t (ms)&#x27;); ylabel(&#x27;v (dimensionslos)&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 1.38: Aktionspotentiale bei periodischer Anregung (Buch, Abschnitt 1.6)</span>
+<span class="k"># Mitchell-Schaeffer-Modell (zwei Ströme), Euler-Verfahren mit dt = 0.01 ms, Reiz alle PCL = 400 ms;</span>
+<span class="k"># gemessen wird die Zeit oberhalb des Referenzwerts 0.1 (Aktionspotentialdauer APD) und darunter (diastolisches Intervall DI)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+tin, tout, topen, tclose, vgate = 0.3, 6.0, 100.0, 115.0, 0.13    <span class="k"># Zeitkonstanten in ms</span>
+PCL, T, dt, vref = 400.0, 2050.0, 0.01, 0.1
+
+t = np.arange(0, T, dt)
+v = np.zeros_like(t)
+vv, h = 0.0, 1.0
+for i in range(1, len(t)):
+    J = 0.2 if (t[i] % PCL) &lt; 2.0 else 0.0                       <span class="k"># Reiz: 2 ms lang</span>
+    dv = h * vv**2 * (1 - vv) / tin - vv / tout + J
+    dh = (1 - h) / topen if vv &lt; vgate else -h / tclose
+    vv += dt * dv
+    h += dt * dh
+    v[i] = vv
+
+s = np.sign(v - vref)                                            <span class="k"># Durchgänge durch den Referenzwert</span>
+kreuz = t[np.where(np.diff(s) != 0)[0]]
+auf, ab = kreuz[0::2], kreuz[1::2]
+for k in range(len(ab)):
+    di = auf[k + 1] - ab[k] if k + 1 &lt; len(auf) else float(&quot;nan&quot;)
+    print(f&quot;AP {k + 1}:  APD = {ab[k] - auf[k]:6.1f} ms,  DI = {di:6.1f} ms&quot;)
+
+plt.plot(t, v, color=(0.64, 0.08, 0.18))
+plt.axhline(vref, color=&quot;0.35&quot;, ls=&quot;:&quot;)
+plt.xlabel(&quot;t (ms)&quot;); plt.ylabel(&quot;v (dimensionslos)&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 1.38: Aktionspotentiale bei periodischer Anregung (Buch, Abschnitt 1.6)</span>
+<span class="k"># Mitchell-Schaeffer-Modell (zwei Ströme), Euler-Verfahren mit dt = 0.01 ms, Reiz alle PCL = 400 ms;</span>
+<span class="k"># gemessen wird die Zeit oberhalb des Referenzwerts 0.1 (Aktionspotentialdauer APD) und darunter (diastolisches Intervall DI)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+tin &lt;- 0.3; tout &lt;- 6; topen &lt;- 100; tclose &lt;- 115; vgate &lt;- 0.13   <span class="k"># Zeitkonstanten in ms</span>
+PCL &lt;- 400; T &lt;- 2050; dt &lt;- 0.01; vref &lt;- 0.1
+
+t &lt;- (0:(round(T / dt) - 1)) * dt
+v &lt;- numeric(length(t))
+vv &lt;- 0; h &lt;- 1
+for (i in 2:length(t)) {
+  J &lt;- if (t[i] %% PCL &lt; 2) 0.2 else 0  <span class="k"># Reiz: 2 ms lang</span>
+  dv &lt;- h * vv^2 * (1 - vv) / tin - vv / tout + J
+  dh &lt;- if (vv &lt; vgate) (1 - h) / topen else -h / tclose
+  vv &lt;- vv + dt * dv
+  h &lt;- h + dt * dh
+  v[i] &lt;- vv
+}
+
+s &lt;- sign(v - vref)                      <span class="k"># Durchgänge durch den Referenzwert</span>
+kreuz &lt;- t[which(diff(s) != 0)]
+auf &lt;- kreuz[seq(1, length(kreuz), 2)]; ab &lt;- kreuz[seq(2, length(kreuz), 2)]
+for (k in seq_along(ab)) {
+  if (k &lt; length(auf)) cat(sprintf(&quot;AP %d:  APD = %6.1f ms,  DI = %6.1f ms\n&quot;, k, ab[k] - auf[k], auf[k + 1] - ab[k]))
+  else cat(sprintf(&quot;AP %d:  APD = %6.1f ms\n&quot;, k, ab[k] - auf[k]))
+}
+
+plot(t, v, type = &quot;l&quot;, col = rgb(0.64, 0.08, 0.18), xlab = &quot;t (ms)&quot;, ylab = &quot;v (dimensionslos)&quot;)
+abline(h = vref, lty = 3, col = &quot;grey35&quot;)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>AP 1:  APD =  227.0 ms,  DI =  173.0 ms
+AP 2:  APD =  208.5 ms,  DI =  191.5 ms
+AP 3:  APD =  211.8 ms,  DI =  188.2 ms
+AP 4:  APD =  211.3 ms,  DI =  188.7 ms
+AP 5:  APD =  211.4 ms,  DI =  188.6 ms</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="s1s2-restitution">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 1.39</p>
+    <h2>S1-S2-Protokoll und Restitutionskurve</h2>
+    <p class="formel">APD = r(DI) = 220 − 180 e<sup>−DI/60</sup></p>
+    <p class="lead">Ein früher Reiz S2 trifft auf eine Zelle, die sich noch nicht erholt hat: Das Aktionspotential wird kürzer. Aus vielen solchen Paaren (DI, APD) ergibt sich die Restitutionskurve.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/s1s2_restitution.png" alt="Ergebnis des Programms s1s2_restitution.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="s1s2_restitution.jl" data-m="s1s2_restitution.m" data-py="s1s2_restitution.py" data-r="s1s2_restitution.R">s1s2_restitution.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/s1s2_restitution.py" data-jl="code/s1s2_restitution.jl" data-m="code/s1s2_restitution.m" data-py="code/s1s2_restitution.py" data-r="code/s1s2_restitution.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 1.39: S1-S2-Protokoll und Restitutionskurve (Buch, Abschnitt 1.6, Gl. 1.48)</span>
+<span class="k"># links: nach periodischer Anregung (S1, PCL = 400 ms) folgt ein Reiz S2 nach kürzerem bzw. längerem Abstand</span>
+<span class="k"># rechts: gemessene Paare (DI, APD) und Restitutionskurve r(DI) = 220 - 180 exp(-DI/60)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+
+tin = 0.3; tout = 6; topen = 100; tclose = 115; vgate = 0.13; vref = 0.1; dt = 0.01
+farben = [RGB(0.43, 0.04, 0.12), RGB(0.89, 0.44, 0.49)]
+p1 = plot(xlabel = &quot;t (ms)&quot;, ylabel = &quot;v&quot;, xlims = (-40, 800))
+for (p, tS2) in enumerate([300, 430])
+    reize = [0, 400, 800, 800 + tS2]
+    t = (0:159999) .* dt; v = zeros(length(t)); vv = 0.0; h = 1.0
+    for i in 2:length(t)
+        J = any(r -&gt; r &lt;= t[i] &lt; r + 2, reize) ? 0.2 : 0.0
+        dv = h * vv^2 * (1 - vv) / tin - vv / tout + J
+        dh = vv &lt; vgate ? (1 - h) / topen : -h / tclose
+        vv += dt * dv; h += dt * dh; v[i] = vv
+    end
+    m = t .&gt;= 760
+    plot!(p1, t[m] .- 800, v[m], color = farben[p], label = &quot;S2 bei $tS2 ms&quot;)
+    kreuz = t[findall(diff(sign.(v .- vref)) .!= 0)] .- 800
+    ende_s1 = kreuz[findfirst(k -&gt; 50 &lt; k &lt; tS2, kreuz)]           <span class="k"># Ende des letzten S1-Aktionspotentials</span>
+    ende_s2 = kreuz[findfirst(k -&gt; k &gt; tS2 + 20, kreuz)]           <span class="k"># Ende des S2-Aktionspotentials</span>
+    @printf(&quot;S2 bei %d ms:  DI = %.1f ms,  APD = %.1f ms\n&quot;, tS2, tS2 - ende_s1, ende_s2 - tS2)
+end
+hline!(p1, [vref], ls = :dot, color = :gray, label = &quot;&quot;)
+
+r(DI) = 220 - 180 * exp(-DI / 60)
+daten = [60 150; 80 178; 100 182; 120 190; 140 198; 160 204; 180 208;
+         200 214; 220 214; 240 219; 260 212; 280 223]              <span class="k"># (DI, APD) in ms</span>
+DI = range(50, 300, length = 300)
+p2 = plot(DI, r.(DI), color = RGB(0, 0.447, 0.741), lw = 2, label = &quot;r(DI) = 220 - 180 exp(-DI/60)&quot;,
+          xlabel = &quot;DI (ms)&quot;, ylabel = &quot;APD (ms)&quot;, legend = :bottomright)
+scatter!(p2, daten[:, 1], daten[:, 2], color = :black, label = &quot;S1-S2-Daten&quot;)
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 1.39: S1-S2-Protokoll und Restitutionskurve (Buch, Abschnitt 1.6, Gl. 1.48)</span>
+<span class="k">% links: nach periodischer Anregung (S1, PCL = 400 ms) folgt ein Reiz S2 nach kürzerem bzw. längerem Abstand</span>
+<span class="k">% rechts: gemessene Paare (DI, APD) und Restitutionskurve r(DI) = 220 - 180 exp(-DI/60)</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+tin = 0.3; tout = 6; topen = 100; tclose = 115; vgate = 0.13; vref = 0.1; dt = 0.01;
+farben = [0.43 0.04 0.12; 0.89 0.44 0.49];
+tS2liste = [300 430];
+
+subplot(1, 2, 1); hold on
+for p = 1:2
+    tS2 = tS2liste(p);
+    reize = [0 400 800 800 + tS2];
+    t = 0:dt:1600 - dt; v = zeros(size(t)); vv = 0; h = 1;
+    for i = 2:numel(t)
+        J = 0.2 * any(reize &lt;= t(i) &amp; t(i) &lt; reize + 2);
+        dv = h * vv^2 * (1 - vv) / tin - vv / tout + J;
+        if vv &lt; vgate, dh = (1 - h) / topen; else, dh = -h / tclose; end
+        vv = vv + dt * dv; h = h + dt * dh; v(i) = vv;
+    end
+    m = t &gt;= 760;
+    plot(t(m) - 800, v(m), &#x27;Color&#x27;, farben(p, :), &#x27;DisplayName&#x27;, sprintf(&#x27;S2 bei %d ms&#x27;, tS2));
+    s = sign(v - vref); kreuz = t(find(diff(s) ~= 0)) - 800;
+    ende_s1 = kreuz(find(kreuz &gt; 50 &amp; kreuz &lt; tS2, 1));            <span class="k">% Ende des letzten S1-Aktionspotentials</span>
+    ende_s2 = kreuz(find(kreuz &gt; tS2 + 20, 1));                    <span class="k">% Ende des S2-Aktionspotentials</span>
+    fprintf(&#x27;S2 bei %d ms:  DI = %.1f ms,  APD = %.1f ms\n&#x27;, tS2, tS2 - ende_s1, ende_s2 - tS2);
+end
+plot([-40 800], [vref vref], &#x27;:&#x27;, &#x27;Color&#x27;, [0.35 0.35 0.35], &#x27;HandleVisibility&#x27;, &#x27;off&#x27;);
+hold off; xlabel(&#x27;t (ms)&#x27;); ylabel(&#x27;v&#x27;); legend(&#x27;show&#x27;);
+
+r = @(DI) 220 - 180 * exp(-DI / 60);
+daten = [60 150; 80 178; 100 182; 120 190; 140 198; 160 204; 180 208; ...
+         200 214; 220 214; 240 219; 260 212; 280 223];          <span class="k">% (DI, APD) in ms</span>
+DI = linspace(50, 300, 300);
+subplot(1, 2, 2);
+plot(DI, r(DI), &#x27;Color&#x27;, [0 0.447 0.741]); hold on
+plot(daten(:, 1), daten(:, 2), &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+xlabel(&#x27;DI (ms)&#x27;); ylabel(&#x27;APD (ms)&#x27;); legend(&#x27;r(DI) = 220 - 180 exp(-DI/60)&#x27;, &#x27;S1-S2-Daten&#x27;, &#x27;Location&#x27;, &#x27;southeast&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 1.39: S1-S2-Protokoll und Restitutionskurve (Buch, Abschnitt 1.6, Gl. 1.48)</span>
+<span class="k"># links: nach periodischer Anregung (S1, PCL = 400 ms) folgt ein Reiz S2 nach kürzerem bzw. längerem Abstand</span>
+<span class="k"># rechts: gemessene Paare (DI, APD) und Restitutionskurve r(DI) = 220 - 180 exp(-DI/60)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+tin, tout, topen, tclose, vgate, vref = 0.3, 6.0, 100.0, 115.0, 0.13, 0.1
+dt = 0.01
+
+def simuliere(reize, T):
+    t = np.arange(0, T, dt); v = np.zeros_like(t); vv, h = 0.0, 1.0
+    for i in range(1, len(t)):
+        J = 0.2 if any(s &lt;= t[i] &lt; s + 2.0 for s in reize) else 0.0
+        dv = h * vv**2 * (1 - vv) / tin - vv / tout + J
+        dh = (1 - h) / topen if vv &lt; vgate else -h / tclose
+        vv += dt * dv; h += dt * dh; v[i] = vv
+    return t, v
+
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+for tS2, farbe in [(300.0, (0.43, 0.04, 0.12)), (430.0, (0.89, 0.44, 0.49))]:
+    t, v = simuliere([0, 400, 800, 800 + tS2], 1600)
+    m = t &gt;= 760
+    axs[0].plot(t[m] - 800, v[m], color=farbe, label=f&quot;S2 bei {tS2:.0f} ms&quot;)
+    s = np.sign(v - vref); kreuz = t[np.where(np.diff(s) != 0)[0]] - 800
+    ende_s1 = kreuz[(kreuz &gt; 50) &amp; (kreuz &lt; tS2)][0]                  <span class="k"># Ende des letzten S1-Aktionspotentials</span>
+    ende_s2 = kreuz[kreuz &gt; tS2 + 20][0]                               <span class="k"># Ende des S2-Aktionspotentials</span>
+    print(f&quot;S2 bei {tS2:.0f} ms:  DI = {tS2 - ende_s1:.1f} ms,  APD = {ende_s2 - tS2:.1f} ms&quot;)
+axs[0].axhline(vref, color=&quot;0.35&quot;, ls=&quot;:&quot;)
+axs[0].set_xlabel(&quot;t (ms)&quot;); axs[0].set_ylabel(&quot;v&quot;); axs[0].legend()
+
+r = lambda DI: 220 - 180 * np.exp(-DI / 60)
+daten = np.array([[60, 150], [80, 178], [100, 182], [120, 190], [140, 198], [160, 204], [180, 208],
+                  [200, 214], [220, 214], [240, 219], [260, 212], [280, 223]])          <span class="k"># (DI, APD) in ms</span>
+DI = np.linspace(50, 300, 300)
+axs[1].plot(DI, r(DI), color=(0, 0.447, 0.741), label=&quot;r(DI) = 220 - 180 exp(-DI/60)&quot;)
+axs[1].plot(daten[:, 0], daten[:, 1], &quot;ko&quot;, label=&quot;S1-S2-Daten&quot;)
+axs[1].set_xlabel(&quot;DI (ms)&quot;); axs[1].set_ylabel(&quot;APD (ms)&quot;); axs[1].legend(loc=&quot;lower right&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 1.39: S1-S2-Protokoll und Restitutionskurve (Buch, Abschnitt 1.6, Gl. 1.48)</span>
+<span class="k"># links: nach periodischer Anregung (S1, PCL = 400 ms) folgt ein Reiz S2 nach kürzerem bzw. längerem Abstand</span>
+<span class="k"># rechts: gemessene Paare (DI, APD) und Restitutionskurve r(DI) = 220 - 180 exp(-DI/60)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+tin &lt;- 0.3; tout &lt;- 6; topen &lt;- 100; tclose &lt;- 115; vgate &lt;- 0.13; vref &lt;- 0.1; dt &lt;- 0.01
+farben &lt;- c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49))
+par(mfrow = c(1, 2))
+plot(NULL, xlim = c(-40, 800), ylim = c(0, 1), xlab = &quot;t (ms)&quot;, ylab = &quot;v&quot;)
+for (p in 1:2) {
+  tS2 &lt;- c(300, 430)[p]
+  reize &lt;- c(0, 400, 800, 800 + tS2)
+  t &lt;- (0:159999) * dt; v &lt;- numeric(length(t)); vv &lt;- 0; h &lt;- 1
+  for (i in 2:length(t)) {
+    J &lt;- 0.2 * any(reize &lt;= t[i] &amp; t[i] &lt; reize + 2)
+    dv &lt;- h * vv^2 * (1 - vv) / tin - vv / tout + J
+    dh &lt;- if (vv &lt; vgate) (1 - h) / topen else -h / tclose
+    vv &lt;- vv + dt * dv; h &lt;- h + dt * dh; v[i] &lt;- vv
+  }
+  m &lt;- t &gt;= 760
+  lines(t[m] - 800, v[m], col = farben[p])
+  kreuz &lt;- t[which(diff(sign(v - vref)) != 0)] - 800
+  ende_s1 &lt;- kreuz[kreuz &gt; 50 &amp; kreuz &lt; tS2][1]         <span class="k"># Ende des letzten S1-Aktionspotentials</span>
+  ende_s2 &lt;- kreuz[kreuz &gt; tS2 + 20][1]                 <span class="k"># Ende des S2-Aktionspotentials</span>
+  cat(sprintf(&quot;S2 bei %d ms:  DI = %.1f ms,  APD = %.1f ms\n&quot;, tS2, tS2 - ende_s1, ende_s2 - tS2))
+}
+abline(h = vref, lty = 3, col = &quot;grey35&quot;)
+legend(&quot;topright&quot;, legend = c(&quot;S2 bei 300 ms&quot;, &quot;S2 bei 430 ms&quot;), col = farben, lwd = 1)
+
+r &lt;- function(DI) 220 - 180 * exp(-DI / 60)
+daten &lt;- rbind(c(60, 150), c(80, 178), c(100, 182), c(120, 190), c(140, 198), c(160, 204), c(180, 208),
+               c(200, 214), c(220, 214), c(240, 219), c(260, 212), c(280, 223))   <span class="k"># (DI, APD) in ms</span>
+DI &lt;- seq(50, 300, length.out = 300)
+plot(DI, r(DI), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2, xlab = &quot;DI (ms)&quot;, ylab = &quot;APD (ms)&quot;, ylim = c(140, 230))
+points(daten[, 1], daten[, 2], pch = 16)
+legend(&quot;bottomright&quot;, legend = c(&quot;r(DI) = 220 - 180 exp(-DI/60)&quot;, &quot;S1-S2-Daten&quot;), col = c(rgb(0, 0.447, 0.741), &quot;black&quot;),
+       lwd = c(2, NA), pch = c(NA, 16))</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>S2 bei 300 ms:  DI = 87.7 ms,  APD = 178.5 ms
+S2 bei 430 ms:  DI = 217.7 ms,  APD = 216.0 ms</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="apd-funktion">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 1.40</p>
+    <h2>Aktualisierungsfunktion des APD-Modells</h2>
+    <p class="formel">f(APD) = r(m · PCL − APD)</p>
+    <p class="lead">Der Faktor m zählt, nach wie vielen Perioden der nächste Reiz wirkt. Deshalb besteht f aus Ästen mit Sprüngen bei k · PCL − DI<sub>min</sub>.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/apd_funktion.png" alt="Ergebnis des Programms apd_funktion.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="apd_funktion.jl" data-m="apd_funktion.m" data-py="apd_funktion.py" data-r="apd_funktion.R">apd_funktion.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/apd_funktion.py" data-jl="code/apd_funktion.jl" data-m="code/apd_funktion.m" data-py="code/apd_funktion.py" data-r="code/apd_funktion.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 1.40: Aktualisierungsfunktion des APD-Modells (Buch, Abschnitt 1.6, Gl. 1.49 und 1.50)</span>
+<span class="k"># f(APD) = r(m PCL - APD) mit m = ceil((APD + DI_min)/PCL), r(DI) = 220 - 180 exp(-DI/60), DI_min = 5 ms</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Plots
+
+DImin = 5
+r(DI) = 220 - 180 * exp(-DI / 60)
+f(APD, PCL) = r(ceil((APD + DImin) / PCL) * PCL - APD)   <span class="k"># ceil: nach wie vielen Perioden der nächste Reiz wirkt</span>
+
+APD = range(0, 800, length = 4001)
+farben = [RGB(0, 0.447, 0.741), RGB(0.45, 0.70, 0.90)]
+bilder = []
+for PCLs in ([400], [400, 220])
+    b = plot(xlabel = &quot;APD (ms)&quot;, ylabel = &quot;f(APD)&quot;, legend = :bottomleft)
+    for (i, PCL) in enumerate(PCLs)
+        y = f.(APD, PCL)
+        y[[false; abs.(diff(y)) .&gt; 20]] .= NaN    <span class="k"># Sprungstellen nicht verbinden</span>
+        plot!(b, APD, y, color = farben[i], lw = 2, label = &quot;PCL = $PCL ms&quot;)
+    end
+    push!(bilder, b)
+end
+println(&quot;Sprungstellen bei APD = k PCL - DI_min, z. B. 395 und 795 ms für PCL = 400 ms&quot;)
+display(plot(bilder..., layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 1.40: Aktualisierungsfunktion des APD-Modells (Buch, Abschnitt 1.6, Gl. 1.49 und 1.50)</span>
+<span class="k">% f(APD) = r(m PCL - APD) mit m = ceil((APD + DI_min)/PCL), r(DI) = 220 - 180 exp(-DI/60), DI_min = 5 ms</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+DImin = 5;
+r = @(DI) 220 - 180 * exp(-DI / 60);
+f = @(APD, PCL) r(ceil((APD + DImin) / PCL) * PCL - APD);   <span class="k">% ceil: nach wie vielen Perioden der nächste Reiz wirkt</span>
+
+APD = linspace(0, 800, 4001);
+farben = [0 0.447 0.741; 0.45 0.70 0.90];
+PCLliste = {400, [400 220]};
+for p = 1:2
+    subplot(1, 2, p); hold on
+    PCLs = PCLliste{p};
+    for i = 1:numel(PCLs)
+        y = f(APD, PCLs(i));
+        y([false abs(diff(y)) &gt; 20]) = NaN;          <span class="k">% Sprungstellen nicht verbinden</span>
+        plot(APD, y, &#x27;Color&#x27;, farben(i, :), &#x27;DisplayName&#x27;, sprintf(&#x27;PCL = %d ms&#x27;, PCLs(i)));
+    end
+    hold off; xlabel(&#x27;APD (ms)&#x27;); ylabel(&#x27;f(APD)&#x27;); legend(&#x27;show&#x27;, &#x27;Location&#x27;, &#x27;southwest&#x27;);
+end
+disp(&#x27;Sprungstellen bei APD = k PCL - DI_min, z. B. 395 und 795 ms für PCL = 400 ms&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 1.40: Aktualisierungsfunktion des APD-Modells (Buch, Abschnitt 1.6, Gl. 1.49 und 1.50)</span>
+<span class="k"># f(APD) = r(m PCL - APD) mit m = ceil((APD + DI_min)/PCL), r(DI) = 220 - 180 exp(-DI/60), DI_min = 5 ms</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+DImin = 5.0
+r = lambda DI: 220 - 180 * np.exp(-DI / 60)
+def f(APD, PCL):
+    m = np.ceil((APD + DImin) / PCL)          <span class="k"># nach wie vielen Perioden der nächste Reiz wirkt</span>
+    return r(m * PCL - APD)
+
+APD = np.linspace(0, 800, 4001)
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+for ax, PCLs in zip(axs, [(400,), (400, 220)]):
+    for PCL, farbe in zip(PCLs, [(0, 0.447, 0.741), (0.45, 0.70, 0.90)]):
+        y = f(APD, PCL)
+        y[np.abs(np.diff(y, prepend=y[0])) &gt; 20] = np.nan       <span class="k"># Sprungstellen nicht verbinden</span>
+        ax.plot(APD, y, color=farbe, label=f&quot;PCL = {PCL} ms&quot;)
+    ax.set_xlabel(&quot;APD (ms)&quot;); ax.set_ylabel(&quot;f(APD)&quot;); ax.legend(loc=&quot;lower left&quot;)
+print(&quot;Sprungstellen bei APD = k PCL - DI_min, z. B. 395 und 795 ms für PCL = 400 ms&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 1.40: Aktualisierungsfunktion des APD-Modells (Buch, Abschnitt 1.6, Gl. 1.49 und 1.50)</span>
+<span class="k"># f(APD) = r(m PCL - APD) mit m = ceil((APD + DI_min)/PCL), r(DI) = 220 - 180 exp(-DI/60), DI_min = 5 ms</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+DImin &lt;- 5
+r &lt;- function(DI) 220 - 180 * exp(-DI / 60)
+f &lt;- function(APD, PCL) r(ceiling((APD + DImin) / PCL) * PCL - APD)   <span class="k"># ceiling: nach wie vielen Perioden der nächste Reiz wirkt</span>
+
+APD &lt;- seq(0, 800, length.out = 4001)
+farben &lt;- c(rgb(0, 0.447, 0.741), rgb(0.45, 0.70, 0.90))
+par(mfrow = c(1, 2))
+for (p in 1:2) {
+  PCLs &lt;- if (p == 1) 400 else c(400, 220)
+  plot(NULL, xlim = c(0, 800), ylim = c(40, 225), xlab = &quot;APD (ms)&quot;, ylab = &quot;f(APD)&quot;)
+  for (i in seq_along(PCLs)) {
+    y &lt;- f(APD, PCLs[i])
+    y[c(FALSE, abs(diff(y)) &gt; 20)] &lt;- NA   <span class="k"># Sprungstellen nicht verbinden</span>
+    lines(APD, y, col = farben[i], lwd = 2)
+  }
+  legend(&quot;bottomleft&quot;, legend = sprintf(&quot;PCL = %d ms&quot;, PCLs), col = farben[seq_along(PCLs)], lwd = 2)
+}
+cat(&quot;Sprungstellen bei APD = k PCL - DI_min, z. B. 395 und 795 ms für PCL = 400 ms\n&quot;)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>Sprungstellen bei APD = k PCL - DI_min, z. B. 395 und 795 ms für PCL = 400 ms</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="apd-bifurkation">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 1.41</p>
+    <h2>Parameterstudie und Bifurkationsdiagramm zum APD-Modell</h2>
+    <p class="formel">APD<sub>n+1</sub> = f(APD<sub>n</sub>),&ensp; APD<sub>0</sub> = 150 ms</p>
+    <p class="lead">Bei PCL = 400 ms stellt sich eine konstante Dauer ein, bei 220 ms ein Wechsel lang–kurz (Alternans), bei 100 ms eine aperiodische Abfolge, obwohl der Reiz streng periodisch ist.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/apd_bifurkation.png" alt="Ergebnis des Programms apd_bifurkation.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="apd_bifurkation.jl" data-m="apd_bifurkation.m" data-py="apd_bifurkation.py" data-r="apd_bifurkation.R">apd_bifurkation.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/apd_bifurkation.py" data-jl="code/apd_bifurkation.jl" data-m="code/apd_bifurkation.m" data-py="code/apd_bifurkation.py" data-r="code/apd_bifurkation.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 1.41: Parameterstudie und Bifurkationsdiagramm zum APD-Modell (Buch, Abschnitt 1.6, Gl. 1.49)</span>
+<span class="k"># APD_{n+1} = f(APD_n) mit APD_0 = 150 ms, DI_min = 5 ms und verschiedenen Reizperioden PCL</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+
+DImin = 5; APD0 = 150.0; N = 120
+r(DI) = 220 - 180 * exp(-DI / 60)
+f(APD, PCL) = r(ceil((APD + DImin) / PCL) * PCL - APD)
+
+n = 0:N
+farben = [RGB(0.43, 0.04, 0.12), RGB(0.64, 0.08, 0.18), RGB(0.89, 0.44, 0.49)]; zeichen = [:circle, :rect, :diamond]
+bilder = []
+for PCLs in ([400, 220, 180], [110], [100])
+    b = plot(xlabel = &quot;n&quot;, ylabel = &quot;APD_n (ms)&quot;, legend = :bottomright)
+    for (i, PCL) in enumerate(PCLs)
+        A = zeros(N + 1); A[1] = APD0
+        for k in 1:N
+            A[k + 1] = f(A[k], PCL)
+        end
+        plot!(b, n, A, ls = :dash, marker = zeichen[i], ms = 2, color = farben[i], label = &quot;PCL = $PCL&quot;)
+        println(@sprintf(&quot;PCL = %d ms:  APD_117 ... APD_120 = &quot;, PCL), join([@sprintf(&quot;%.1f&quot;, a) for a in A[118:121]], &quot;  &quot;))
+    end
+    push!(bilder, b)
+end
+
+PCL = range(50, 250, length = 4000)      <span class="k"># Bifurkationsdiagramm bzgl. PCL</span>
+A = fill(APD0, length(PCL))
+for k in 1:10000
+    global A = f.(A, PCL)
+end
+P = Float64[]; W = Float64[]
+for k in 1:150
+    global A = f.(A, PCL)
+    append!(P, PCL); append!(W, A)
+end
+push!(bilder, scatter(P, W, ms = 0.5, msw = 0, color = RGB(0, 0.39, 0), legend = false,
+                      xlabel = &quot;PCL (ms)&quot;, ylabel = &quot;APD_n (ms) für n &gt; 10000&quot;))
+display(plot(bilder..., layout = (2, 2), size = (900, 650)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 1.41: Parameterstudie und Bifurkationsdiagramm zum APD-Modell (Buch, Abschnitt 1.6, Gl. 1.49)</span>
+<span class="k">% APD_{n+1} = f(APD_n) mit APD_0 = 150 ms, DI_min = 5 ms und verschiedenen Reizperioden PCL</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+DImin = 5; APD0 = 150; N = 120;
+r = @(DI) 220 - 180 * exp(-DI / 60);
+f = @(APD, PCL) r(ceil((APD + DImin) ./ PCL) .* PCL - APD);
+
+n = 0:N;
+farben = [0.43 0.04 0.12; 0.64 0.08 0.18; 0.89 0.44 0.49]; marker = &#x27;osd&#x27;;
+PCLliste = {[400 220 180], 110, 100};
+for p = 1:3
+    subplot(2, 2, p); hold on
+    PCLs = PCLliste{p};
+    for i = 1:numel(PCLs)
+        A = zeros(1, N + 1); A(1) = APD0;
+        for k = 1:N
+            A(k + 1) = f(A(k), PCLs(i));
+        end
+        plot(n, A, [&#x27;--&#x27; marker(i)], &#x27;Color&#x27;, farben(i, :), &#x27;MarkerSize&#x27;, 3, &#x27;DisplayName&#x27;, sprintf(&#x27;PCL = %d&#x27;, PCLs(i)));
+        fprintf(&#x27;PCL = %d ms:  APD_117 ... APD_120 = &#x27;, PCLs(i)); fprintf(&#x27;%.1f  &#x27;, A(118:121)); fprintf(&#x27;\n&#x27;);
+    end
+    hold off; xlabel(&#x27;n&#x27;); ylabel(&#x27;APD_n (ms)&#x27;); legend(&#x27;show&#x27;, &#x27;Location&#x27;, &#x27;southeast&#x27;);
+end
+
+PCL = linspace(50, 250, 4000);           <span class="k">% Bifurkationsdiagramm bzgl. PCL</span>
+A = APD0 * ones(size(PCL));
+for k = 1:10000
+    A = f(A, PCL);
+end
+P = []; W = [];
+for k = 1:150
+    A = f(A, PCL);
+    P = [P PCL]; W = [W A];
+end
+subplot(2, 2, 4);
+plot(P, W, &#x27;.&#x27;, &#x27;Color&#x27;, [0 0.39 0], &#x27;MarkerSize&#x27;, 1);
+xlabel(&#x27;PCL (ms)&#x27;); ylabel(&#x27;APD_n (ms) für n &gt; 10000&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 1.41: Parameterstudie und Bifurkationsdiagramm zum APD-Modell (Buch, Abschnitt 1.6, Gl. 1.49)</span>
+<span class="k"># APD_{n+1} = f(APD_n) mit APD_0 = 150 ms, DI_min = 5 ms und verschiedenen Reizperioden PCL</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+DImin, APD0, N = 5.0, 150.0, 120
+r = lambda DI: 220 - 180 * np.exp(-DI / 60)
+f = lambda APD, PCL: r(np.ceil((APD + DImin) / PCL) * PCL - APD)
+
+def folge(PCL):
+    A = np.zeros(N + 1)
+    A[0] = APD0
+    for n in range(N):
+        A[n + 1] = f(A[n], PCL)
+    return A
+
+n = np.arange(N + 1)
+rot = [(0.43, 0.04, 0.12), (0.64, 0.08, 0.18), (0.89, 0.44, 0.49)]
+fig, axs = plt.subplots(2, 2, figsize=(11, 7))
+for ax, PCLs in zip(axs.flat, [(400, 220, 180), (110,), (100,)]):
+    for PCL, farbe, m in zip(PCLs, rot, &quot;osD&quot;):
+        A = folge(PCL)
+        ax.plot(n, A, &quot;--&quot;, marker=m, ms=3, lw=0.6, color=farbe, label=f&quot;PCL = {PCL}&quot;)
+        print(f&quot;PCL = {PCL} ms:  APD_117 ... APD_120 =&quot;, &quot;  &quot;.join(f&quot;{v:.1f}&quot; for v in A[117:]))
+    ax.set_xlabel(&quot;n&quot;); ax.set_ylabel(&quot;APD_n (ms)&quot;); ax.legend(loc=&quot;lower right&quot;, ncol=len(PCLs))
+
+ax = axs[1, 1]                                   <span class="k"># Bifurkationsdiagramm bzgl. PCL</span>
+PCL = np.linspace(50, 250, 4000)
+A = np.full_like(PCL, APD0)
+for _ in range(10000):
+    A = f(A, PCL)
+for _ in range(150):
+    A = f(A, PCL)
+    ax.plot(PCL, A, &quot;,&quot;, color=(0, 0.39, 0))
+ax.set_xlabel(&quot;PCL (ms)&quot;); ax.set_ylabel(&quot;APD_n (ms) für n &gt; 10000&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 1.41: Parameterstudie und Bifurkationsdiagramm zum APD-Modell (Buch, Abschnitt 1.6, Gl. 1.49)</span>
+<span class="k"># APD_{n+1} = f(APD_n) mit APD_0 = 150 ms, DI_min = 5 ms und verschiedenen Reizperioden PCL</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+DImin &lt;- 5; APD0 &lt;- 150; N &lt;- 120
+r &lt;- function(DI) 220 - 180 * exp(-DI / 60)
+f &lt;- function(APD, PCL) r(ceiling((APD + DImin) / PCL) * PCL - APD)
+
+n &lt;- 0:N
+farben &lt;- c(rgb(0.43, 0.04, 0.12), rgb(0.64, 0.08, 0.18), rgb(0.89, 0.44, 0.49)); zeichen &lt;- c(16, 15, 18)
+PCLliste &lt;- list(c(400, 220, 180), 110, 100)
+par(mfrow = c(2, 2))
+for (p in 1:3) {
+  PCLs &lt;- PCLliste[[p]]
+  plot(NULL, xlim = c(0, N), ylim = c(40, 230), xlab = &quot;n&quot;, ylab = &quot;APD_n (ms)&quot;)
+  for (i in seq_along(PCLs)) {
+    A &lt;- numeric(N + 1); A[1] &lt;- APD0
+    for (k in 1:N) A[k + 1] &lt;- f(A[k], PCLs[i])
+    lines(n, A, type = &quot;o&quot;, lty = 2, pch = zeichen[i], cex = 0.5, col = farben[i])
+    cat(sprintf(&quot;PCL = %d ms:  APD_117 ... APD_120 =&quot;, PCLs[i]), sprintf(&quot;%.1f&quot;, A[118:121]), &quot;\n&quot;)
+  }
+  legend(&quot;bottomright&quot;, legend = sprintf(&quot;PCL = %d&quot;, PCLs), col = farben[seq_along(PCLs)], pch = zeichen, lty = 2, cex = 0.8)
+}
+
+PCL &lt;- seq(50, 250, length.out = 4000)   <span class="k"># Bifurkationsdiagramm bzgl. PCL</span>
+A &lt;- rep(APD0, length(PCL))
+for (k in 1:10000) A &lt;- f(A, PCL)
+P &lt;- c(); W &lt;- c()
+for (k in 1:150) { A &lt;- f(A, PCL); P &lt;- c(P, PCL); W &lt;- c(W, A) }
+plot(P, W, pch = &quot;.&quot;, col = rgb(0, 0.39, 0), xlab = &quot;PCL (ms)&quot;, ylab = &quot;APD_n (ms) für n &gt; 10000&quot;)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>PCL = 400 ms:  APD_117 ... APD_120 = 212.1  212.1  212.1  212.1
+PCL = 220 ms:  APD_117 ... APD_120 = 195.5  100.4  195.5  100.4
+PCL = 180 ms:  APD_117 ... APD_120 = 206.1  206.1  206.1  206.1
+PCL = 110 ms:  APD_117 ... APD_120 = 167.1  145.5  168.0  144.3
+PCL = 100 ms:  APD_117 ... APD_120 = 182.3  86.0  77.5  96.3</code></pre></details>
+    </div>
+  </div>
+</section>
+  <section class="apps" id="app-apd">
+  <div class="fig-head"><p class="eyebrow">Im Browser ausprobieren · ohne Installation</p><h2>APD-Modell: Rhythmus bei verschiedenen Reizperioden</h2><p class="lead">Verkürzen Sie die Reizperiode PCL und beobachten Sie, wie aus einer konstanten Aktionspotentialdauer ein Alternans und schließlich eine unregelmäßige Abfolge wird.</p></div>
+  <div class="app" data-app="apd">
+    <canvas width="720" height="560" aria-label="APD-Modell: Rhythmus bei verschiedenen Reizperioden"></canvas>
+    <div class="regler"><label><span>Reizperiode PCL</span> <output data-o="pcl"></output><input type="range" data-r="pcl" min="60" max="450" step="5" value="220" aria-label="Reizperiode PCL"></label><label><span>APD<sub>0</sub></span> <output data-o="a0"></output><input type="range" data-r="a0" min="60" max="220" step="5" value="150" aria-label="APD0"></label><p class="zustand"></p><pre class="werte"></pre></div>
+  </div>
+</section>
+  
+  <nav class="weiter" aria-label="Weiterblättern"><a href="abschnitt-1-5.html"><small>Zurück</small>1.5 Newton-Verfahren</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Begleitmaterial zum Buch „Dynamische Systeme in den Lebenswissenschaften“ von Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programme unter <a href="../LICENSE.txt">MIT-Lizenz</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>
