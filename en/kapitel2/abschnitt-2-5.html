@@ -1,0 +1,1042 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>2.5 In Depth: Propagation of the Action Potential – Dynamical Systems in the Life Sciences</title>
+<meta name="description" content="Programs in Julia, MATLAB, Python, and R for Section 2.5 of the book Dynamical Systems in the Life Sciences">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamical Systems in the Life Sciences</a>
+  <nav aria-label="Chapters"><a href="../index.html">Home</a> <a href="../kapitel1/index.html">Chapter 1</a> <a href="../kapitel2/index.html" aria-current="page">Chapter 2</a> <a href="../kapitel3/index.html">Chapter 3</a> <a href="../kapitel4/index.html">Chapter 4</a> <a href="../../kapitel2/abschnitt-2-5.html" lang="de" hreflang="de">Deutsch</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Sections"><h2><a href="index.html">Chapter 2</a></h2><ol><li><a href="abschnitt-2-1.html"><span class="nr">2.1</span><span>Examples: Fibonacci and Predator–Prey</span></a></li><li><a href="abschnitt-2-2.html"><span class="nr">2.2</span><span>Matrix Models</span></a></li><li><a href="abschnitt-2-3.html"><span class="nr">2.3</span><span>Eigenvalues and Long-Term Behavior</span></a></li><li><a href="abschnitt-2-4.html"><span class="nr">2.4</span><span>Nonlinear Systems: SIR Model</span></a></li><li><a href="abschnitt-2-5.html" aria-current="page"><span class="nr">2.5</span><span>In Depth: Propagation of the Action Potential</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Chapter 2 · Discrete Dynamical Systems with Several Variables</p>
+      <h1><span class="num">2.5</span>In Depth: Propagation of the Action Potential</h1>
+      <p>With two variables per cell, the Chialvo model describes an action potential. If many such cells are coupled on a ring or in a plane, the excitation spreads as a wave. A badly timed second stimulation or a brief block can trigger a circulating excitation, a model for reentry arrhythmias.</p>
+      <p>For each figure of the section you will find the program that produces it. Change parameters and initial values and observe what happens. Figure and equation numbers refer to the book.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programming language</legend>
+  <div class="seg" role="radiogroup" aria-label="Programming language">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Applies to all pages. MATLAB programs also run in the free GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>On this page</b><ul><li><a href="#chialvo"><span class="abb">Fig. 2.19</span>Action potentials in the Chialvo model</a></li><li><a href="#ring-referenz"><span class="abb">Fig. 2.20</span>Propagation on a ring</a></li><li><a href="#ring-szenarien"><span class="abb">Fig. 2.21</span>Second stimulation of cell 36</a></li><li><a href="#ring-draufsicht"><span class="abb">Fig. 2.22</span>The three scenarios seen from above</a></li><li><a href="#ebene-normal"><span class="abb">Fig. 2.23</span>Propagation in the plane</a></li><li><a href="#ebene-reentry"><span class="abb">Fig. 2.24</span>Spiral wave after a brief block</a></li></ul></div>
+  
+<section class="fig" id="chialvo">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 2.19</p>
+    <h2>Action potentials in the Chialvo model</h2>
+    <p class="formel">y<sub>1,n+1</sub> = y<sub>1,n</sub><sup>2</sup> e<sup>y<sub>2,n</sub> − y<sub>1,n</sub></sup> + k,&ensp; y<sub>2,n+1</sub> = a y<sub>2,n</sub> − b y<sub>1,n</sub> + c</p>
+    <p class="lead">For b = 0.26 regular action potentials arise, for b = 0.18 irregular ones with early afterdepolarizations. The program counts the excursions above 1.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/chialvo.png" alt="Output of the program chialvo.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="chialvo.jl" data-m="chialvo.m" data-py="chialvo.py" data-r="chialvo.R">chialvo.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/chialvo.py" data-jl="code/chialvo.jl" data-m="code/chialvo.m" data-py="code/chialvo.py" data-r="code/chialvo.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 2.19: Action potentials in the Chialvo model (book, Section 2.5, Eq. 2.33)</span>
+<span class="k"># y1_{n+1} = y1_n^2 exp(y2_n - y1_n) + k,  y2_{n+1} = a y2_n - b y1_n + c  with a = 0.89, c = 0.28, k = 0.03</span>
+<span class="k"># left b = 0.26 (regular), right b = 0.18 (chaotic, early afterdepolarizations); top y1, bottom y2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots, LinearAlgebra
+
+a = 0.89; c = 0.28; k = 0.03; N = 150
+bilder = []
+for b in (0.26, 0.18)
+    y1 = zeros(N + 1); y2 = zeros(N + 1)
+    y1[1] = 0.2; y2[1] = c / (1 - a)
+    for j in 1:N
+        y1[j + 1] = y1[j]^2 * exp(y2[j] - y1[j]) + k
+        y2[j + 1] = a * y2[j] - b * y1[j] + c
+    end
+    ap = sum((y1[2:end] .&gt; 1) .&amp; (y1[1:end-1] .&lt;= 1))     <span class="k"># number of excursions above 1</span>
+    @printf(&quot;b = %g: %d action potentials in %d steps, max y1 = %.2f\n&quot;, b, ap, N, maximum(y1))
+    push!(bilder, plot(0:N, y1, ls = :dash, marker = :circle, ms = 2, color = RGB(0.64, 0.08, 0.18), legend = false, title = &quot;b = $b&quot;, ylabel = &quot;y_1,n&quot;))
+    push!(bilder, plot(0:N, y2, ls = :dash, marker = :circle, ms = 2, color = RGB(0.89, 0.44, 0.49), legend = false, xlabel = &quot;n&quot;, ylabel = &quot;y_2,n&quot;))
+end
+display(plot(bilder[[1, 3, 2, 4]]..., layout = (2, 2), size = (900, 600)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 2.19: Action potentials in the Chialvo model (book, Section 2.5, Eq. 2.33)</span>
+<span class="k">% y1_{n+1} = y1_n^2 exp(y2_n - y1_n) + k,  y2_{n+1} = a y2_n - b y1_n + c  with a = 0.89, c = 0.28, k = 0.03</span>
+<span class="k">% left b = 0.26 (regular), right b = 0.18 (chaotic, early afterdepolarizations); top y1, bottom y2</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+a = 0.89; c = 0.28; k = 0.03; N = 150;
+bs = [0.26 0.18];
+for sp = 1:2
+    b = bs(sp);
+    y1 = zeros(1, N + 1); y2 = zeros(1, N + 1);
+    y1(1) = 0.2; y2(1) = c / (1 - a);
+    for j = 1:N
+        y1(j + 1) = y1(j)^2 * exp(y2(j) - y1(j)) + k;
+        y2(j + 1) = a * y2(j) - b * y1(j) + c;
+    end
+    ap = sum(y1(2:end) &gt; 1 &amp; y1(1:end-1) &lt;= 1);        <span class="k">% number of excursions above 1</span>
+    fprintf(&#x27;b = %g: %d action potentials in %d steps, max y1 = %.2f\n&#x27;, b, ap, N, max(y1));
+    subplot(2, 2, sp);
+    plot(0:N, y1, &#x27;o--&#x27;, &#x27;MarkerSize&#x27;, 2, &#x27;Color&#x27;, [0.64 0.08 0.18]); title(sprintf(&#x27;b = %g&#x27;, b));
+    if sp == 1, ylabel(&#x27;y_{1,n}&#x27;); end
+    subplot(2, 2, sp + 2);
+    plot(0:N, y2, &#x27;o--&#x27;, &#x27;MarkerSize&#x27;, 2, &#x27;Color&#x27;, [0.89 0.44 0.49]); xlabel(&#x27;n&#x27;);
+    if sp == 1, ylabel(&#x27;y_{2,n}&#x27;); end
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 2.19: Action potentials in the Chialvo model (book, Section 2.5, Eq. 2.33)</span>
+<span class="k"># y1_{n+1} = y1_n^2 exp(y2_n - y1_n) + k,  y2_{n+1} = a y2_n - b y1_n + c  with a = 0.89, c = 0.28, k = 0.03</span>
+<span class="k"># left b = 0.26 (regular), right b = 0.18 (chaotic, early afterdepolarizations); top y1, bottom y2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+a, c, k, N = 0.89, 0.28, 0.03, 150
+fig, axs = plt.subplots(2, 2, figsize=(11, 6), sharex=True)
+for spalte, b in enumerate([0.26, 0.18]):
+    y1, y2 = np.zeros(N + 1), np.zeros(N + 1)
+    y1[0], y2[0] = 0.2, c / (1 - a)
+    for n in range(N):
+        y1[n + 1] = y1[n]**2 * np.exp(y2[n] - y1[n]) + k
+        y2[n + 1] = a * y2[n] - b * y1[n] + c
+    ap = np.sum((y1[1:] &gt; 1) &amp; (y1[:-1] &lt;= 1))          <span class="k"># number of excursions above 1</span>
+    print(f&quot;b = {b}: {ap} action potentials in {N} steps, max y1 = {y1.max():.2f}&quot;)
+    axs[0, spalte].plot(y1, &quot;o--&quot;, ms=2, lw=0.6, color=(0.64, 0.08, 0.18))
+    axs[1, spalte].plot(y2, &quot;o--&quot;, ms=2, lw=0.6, color=(0.89, 0.44, 0.49))
+    axs[0, spalte].set_title(f&quot;b = {b}&quot;); axs[1, spalte].set_xlabel(&quot;n&quot;)
+axs[0, 0].set_ylabel(&quot;y_1,n&quot;); axs[1, 0].set_ylabel(&quot;y_2,n&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 2.19: Action potentials in the Chialvo model (book, Section 2.5, Eq. 2.33)</span>
+<span class="k"># y1_{n+1} = y1_n^2 exp(y2_n - y1_n) + k,  y2_{n+1} = a y2_n - b y1_n + c  with a = 0.89, c = 0.28, k = 0.03</span>
+<span class="k"># left b = 0.26 (regular), right b = 0.18 (chaotic, early afterdepolarizations); top y1, bottom y2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+a &lt;- 0.89; c &lt;- 0.28; k &lt;- 0.03; N &lt;- 150
+par(mfcol = c(2, 2), mar = c(4, 4, 2, 1))
+for (b in c(0.26, 0.18)) {
+  y1 &lt;- numeric(N + 1); y2 &lt;- numeric(N + 1)
+  y1[1] &lt;- 0.2; y2[1] &lt;- c / (1 - a)
+  for (j in 1:N) {
+    y1[j + 1] &lt;- y1[j]^2 * exp(y2[j] - y1[j]) + k
+    y2[j + 1] &lt;- a * y2[j] - b * y1[j] + c
+  }
+  ap &lt;- sum(y1[-1] &gt; 1 &amp; y1[-(N + 1)] &lt;= 1)   <span class="k"># number of excursions above 1</span>
+  cat(sprintf(&quot;b = %g: %d action potentials in %d steps, max y1 = %.2f\n&quot;, b, ap, N, max(y1)))
+  plot(0:N, y1, type = &quot;o&quot;, lty = 2, pch = 16, cex = 0.4, col = rgb(0.64, 0.08, 0.18), xlab = &quot;&quot;, ylab = &quot;y_1,n&quot;, main = sprintf(&quot;b = %g&quot;, b))
+  plot(0:N, y2, type = &quot;o&quot;, lty = 2, pch = 16, cex = 0.4, col = rgb(0.89, 0.44, 0.49), xlab = &quot;n&quot;, ylab = &quot;y_2,n&quot;)
+}</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>b = 0.26: 4 action potentials in 150 steps, max y1 = 5.60
+b = 0.18: 7 action potentials in 150 steps, max y1 = 5.92</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="ring-referenz">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 2.20</p>
+    <h2>Propagation on a ring</h2>
+    <p class="formel">y<sub>1,i,n+1</sub> = (1 − d) f(y<sub>i,n</sub>) + d/2 (f(y<sub>i+1,n</sub>) + f(y<sub>i−1,n</sub>))</p>
+    <p class="lead">From cell 1 two waves travel around the ring in opposite directions and annihilate each other when they meet. The output lists the excited cells (y<sub>1</sub> &gt; 1).</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/ring_referenz.png" alt="Output of the program ring_referenz.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="ring_referenz.jl" data-m="ring_referenz.m" data-py="ring_referenz.py" data-r="ring_referenz.R">ring_referenz.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/ring_referenz.py" data-jl="code/ring_referenz.jl" data-m="code/ring_referenz.m" data-py="code/ring_referenz.py" data-r="code/ring_referenz.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 2.20: Propagation of the action potential on a ring (book, Section 2.5, Eq. 2.34)</span>
+<span class="k"># N = 50 cells, a = 0.89, b = 0.6, c = 0.28, k = 0.02, d = 0.4; at the start cell 1 is stimulated</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots, LinearAlgebra
+a = 0.89; b = 0.6; c = 0.28; k = 0.02; d = 0.4
+f1(y1, y2) = y1^2 * exp(y2 - y1) + k
+
+<span class="k"># resting state: compute a single cell for 180 steps starting from (0.2, c/(1 - a))</span>
+y1r = 0.2; y2r = c / (1 - a)
+for j in 1:180
+    global y1r, y2r = f1(y1r, y2r), a * y2r - b * y1r + c
+end
+
+function ring(n_stoer = -1; Z = 50, schritte = 201)
+    <span class="k"># ring of Z cells; cell 1 starts excited (0.3), optionally a second stimulation of cell 36 after n_stoer steps</span>
+    Y1 = fill(y1r, schritte + 1, Z); Y2 = fill(y2r, schritte + 1, Z)   <span class="k"># row n+1 = time step n</span>
+    Y1[1, 1] = 0.3
+    rechts = [2:Z; 1]; links = [Z; 1:Z-1]                            <span class="k"># neighbors on the ring</span>
+    for n in 0:schritte-1
+        F = f1.(Y1[n + 1, :], Y2[n + 1, :])
+        Y1[n + 2, :] = (1 - d) .* F .+ d / 2 .* (F[rechts] .+ F[links])
+        Y2[n + 2, :] = a .* Y2[n + 1, :] .- b .* Y1[n + 1, :] .+ c
+        n + 1 == n_stoer &amp;&amp; (Y1[n + 2, 36] = 0.3)                     <span class="k"># second stimulation of cell 36</span>
+    end
+    return Y1
+end
+function stamm(werte, titel)               <span class="k"># bars above the cells of the ring (3D view)</span>
+    w = range(0, 2pi, length = 51)[1:50]; cx = cos.(w); cy = sin.(w)
+    p = plot3d(cos.(range(0, 2pi, length = 100)), sin.(range(0, 2pi, length = 100)), zeros(100), color = :gray, legend = false,
+               zlims = (0, 4.5), title = titel, ticks = false, grid = false)
+    for i in 1:50
+        plot3d!(p, [cx[i], cx[i]], [cy[i], cy[i]], [0, werte[i]], color = RGB(0.64, 0.08, 0.18))
+    end
+    scatter3d!(p, cx, cy, werte, color = RGB(0.64, 0.08, 0.18), ms = 2)
+    return p
+end
+
+Y1 = ring()
+println(&quot;excited cells (y1 &gt; 1):&quot;)
+bilder = []
+for n in (0, 4, 10, 20, 31, 35)
+    push!(bilder, stamm(Y1[n + 1, :], &quot;n = $n&quot;))
+    @printf(&quot;  n = %2d: [%s]\n&quot;, n, join(findall(Y1[n + 1, :] .&gt; 1), &quot;, &quot;))
+end
+display(plot(bilder..., layout = (2, 3), size = (1000, 650)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 2.20: Propagation of the action potential on a ring (book, Section 2.5, Eq. 2.34)</span>
+<span class="k">% N = 50 cells, a = 0.89, b = 0.6, c = 0.28, k = 0.02, d = 0.4; at the start cell 1 is stimulated</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+a = 0.89; b = 0.6; c = 0.28; k = 0.02; d = 0.4;
+f1 = @(y1, y2) y1.^2 .* exp(y2 - y1) + k;
+
+<span class="k">% resting state: compute a single cell for 180 steps starting from (0.2, c/(1 - a))</span>
+y1r = 0.2; y2r = c / (1 - a);
+for j = 1:180
+    y1neu = f1(y1r, y2r); y2r = a * y2r - b * y1r + c; y1r = y1neu;
+end
+Z = 50; schritte = 201;
+rechts = [2:Z 1]; links = [Z 1:Z-1];                 <span class="k">% neighbors on the ring</span>
+
+n_stoer = -1;                                        <span class="k">% no second stimulation</span>
+Y1 = y1r * ones(schritte + 1, Z); Y2 = y2r * ones(schritte + 1, Z);   <span class="k">% row n+1 = time step n</span>
+Y1(1, 1) = 0.3;                                  <span class="k">% cell 1 starts excited</span>
+for n = 0:schritte-1
+    F = f1(Y1(n+1, :), Y2(n+1, :));
+    Y1(n+2, :) = (1 - d) * F + d / 2 * (F(rechts) + F(links));
+    Y2(n+2, :) = a * Y2(n+1, :) - b * Y1(n+1, :) + c;
+    if n + 1 == n_stoer
+        Y1(n+2, 36) = 0.3;                       <span class="k">% second stimulation of cell 36</span>
+    end
+end
+
+winkel = linspace(0, 2 * pi, 51); winkel = winkel(1:50);
+cx = cos(winkel); cy = sin(winkel);                  <span class="k">% cells counterclockwise</span>
+fprintf(&#x27;excited cells (y1 &gt; 1):\n&#x27;);
+zeiten = [0 4 10 20 31 35];
+for p = 1:6
+    n = zeiten(p);
+    subplot(2, 3, p);
+    stem3(cx, cy, Y1(n+1, :), &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;MarkerFaceColor&#x27;, [0.64 0.08 0.18], &#x27;MarkerEdgeColor&#x27;, [0.64 0.08 0.18], &#x27;MarkerSize&#x27;, 3);
+    zlim([0 4.5]); set(gca, &#x27;XTick&#x27;, [], &#x27;YTick&#x27;, []); title(sprintf(&#x27;n = %d&#x27;, n));
+    s = sprintf(&#x27;%d, &#x27;, find(Y1(n+1, :) &gt; 1));
+    fprintf(&#x27;  n = %2d: [%s]\n&#x27;, n, s(1:end-2));
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 2.20: Propagation of the action potential on a ring (book, Section 2.5, Eq. 2.34)</span>
+<span class="k"># N = 50 cells, a = 0.89, b = 0.6, c = 0.28, k = 0.02, d = 0.4; at the start cell 1 is stimulated</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+a, b, c, k, d = 0.89, 0.6, 0.28, 0.02, 0.4
+f1 = lambda y1, y2: y1**2 * np.exp(y2 - y1) + k
+
+<span class="k"># resting state: compute a single cell for 180 steps starting from (0.2, c/(1 - a))</span>
+y1r, y2r = 0.2, c / (1 - a)
+for _ in range(180):
+    y1r, y2r = f1(y1r, y2r), a * y2r - b * y1r + c
+
+def ring(n_stoer=None, Z=50, schritte=201):
+    &quot;&quot;&quot;Ring of Z cells; cell 1 starts excited (0.3), optionally a second stimulation of cell 36 after n_stoer steps.&quot;&quot;&quot;
+    Y1 = np.full((schritte + 1, Z), y1r); Y2 = np.full((schritte + 1, Z), y2r)
+    Y1[0, 0] = 0.3
+    rechts, links = np.roll(np.arange(Z), -1), np.roll(np.arange(Z), 1)    <span class="k"># neighbors on the ring</span>
+    for n in range(schritte):
+        F = f1(Y1[n], Y2[n])
+        Y1[n + 1] = (1 - d) * F + d / 2 * (F[rechts] + F[links])
+        Y2[n + 1] = a * Y2[n] - b * Y1[n] + c
+        if n_stoer is not None and n + 1 == n_stoer:
+            Y1[n + 1, 35] = 0.3                                            <span class="k"># Cell 36</span>
+    return Y1
+
+Y1 = ring()
+winkel = np.linspace(0, 2 * np.pi, 51)[:50]; cx, cy = np.cos(winkel), np.sin(winkel)   <span class="k"># cells counterclockwise</span>
+print(&quot;excited cells (y1 &gt; 1):&quot;)
+fig = plt.figure(figsize=(11, 6.5))
+for p, n in enumerate([0, 4, 10, 20, 31, 35]):
+    ax = fig.add_subplot(2, 3, p + 1, projection=&quot;3d&quot;)
+    ax.stem(cx, cy, Y1[n], linefmt=&quot;C3-&quot;, markerfmt=&quot;C3o&quot;, basefmt=&quot; &quot;)
+    ax.set_zlim(0, 4.5); ax.set_xticks([]); ax.set_yticks([]); ax.set_title(f&quot;n = {n}&quot;)
+    print(f&quot;  n = {n:2d}:&quot;, (np.where(Y1[n] &gt; 1)[0] + 1).tolist())
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 2.20: Propagation of the action potential on a ring (book, Section 2.5, Eq. 2.34)</span>
+<span class="k"># N = 50 cells, a = 0.89, b = 0.6, c = 0.28, k = 0.02, d = 0.4; at the start cell 1 is stimulated</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+a &lt;- 0.89; b &lt;- 0.6; c &lt;- 0.28; k &lt;- 0.02; d &lt;- 0.4
+f1 &lt;- function(y1, y2) y1^2 * exp(y2 - y1) + k
+
+<span class="k"># resting state: compute a single cell for 180 steps starting from (0.2, c/(1 - a))</span>
+y1r &lt;- 0.2; y2r &lt;- c / (1 - a)
+for (j in 1:180) { y1neu &lt;- f1(y1r, y2r); y2r &lt;- a * y2r - b * y1r + c; y1r &lt;- y1neu }
+
+ring &lt;- function(n_stoer = -1, Z = 50, schritte = 201) {
+  <span class="k"># ring of Z cells; cell 1 starts excited (0.3), optionally a second stimulation of cell 36 after n_stoer steps</span>
+  Y1 &lt;- matrix(y1r, schritte + 1, Z); Y2 &lt;- matrix(y2r, schritte + 1, Z)   <span class="k"># row n+1 = time step n</span>
+  Y1[1, 1] &lt;- 0.3
+  rechts &lt;- c(2:Z, 1); links &lt;- c(Z, 1:(Z - 1))                          <span class="k"># neighbors on the ring</span>
+  for (n in 0:(schritte - 1)) {
+    F &lt;- f1(Y1[n + 1, ], Y2[n + 1, ])
+    Y1[n + 2, ] &lt;- (1 - d) * F + d / 2 * (F[rechts] + F[links])
+    Y2[n + 2, ] &lt;- a * Y2[n + 1, ] - b * Y1[n + 1, ] + c
+    if (n + 1 == n_stoer) Y1[n + 2, 36] &lt;- 0.3                         <span class="k"># second stimulation of cell 36</span>
+  }
+  Y1
+}
+stamm &lt;- function(werte, titel) {        <span class="k"># bars above the cells of the ring (3D view)</span>
+  w &lt;- seq(0, 2 * pi, length.out = 51)[1:50]; cx &lt;- cos(w); cy &lt;- sin(w)
+  pm &lt;- persp(c(-1.1, 1.1), c(-1.1, 1.1), matrix(0, 2, 2), zlim = c(0, 4.5), theta = 20, phi = 25,
+              border = NA, box = FALSE, main = titel)
+  unten &lt;- trans3d(cx, cy, 0, pm); oben &lt;- trans3d(cx, cy, werte, pm)
+  lines(trans3d(c(cx, cx[1]), c(cy, cy[1]), 0, pm), col = &quot;grey70&quot;)
+  segments(unten$x, unten$y, oben$x, oben$y, col = rgb(0.64, 0.08, 0.18))
+  points(oben, pch = 16, cex = 0.6, col = rgb(0.64, 0.08, 0.18))
+}
+
+Y1 &lt;- ring()
+cat(&quot;excited cells (y1 &gt; 1):\n&quot;)
+par(mfrow = c(2, 3), mar = c(0, 0, 2, 0))
+for (n in c(0, 4, 10, 20, 31, 35)) {
+  stamm(Y1[n + 1, ], sprintf(&quot;n = %d&quot;, n))
+  cat(sprintf(&quot;  n = %2d: [%s]\n&quot;, n, paste(which(Y1[n + 1, ] &gt; 1), collapse = &quot;, &quot;)))
+}</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>excited cells (y1 &gt; 1):
+  n =  0: []
+  n =  4: [1, 2, 3, 49, 50]
+  n = 10: [6, 7, 8, 44, 45, 46]
+  n = 20: [15, 16, 36, 37]
+  n = 31: [24, 25, 26, 27, 28]
+  n = 35: []</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="ring-szenarien">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 2.21</p>
+    <h2>Second stimulation of cell 36</h2>
+    <p class="formel">n* = 37, 45, 41</p>
+    <p class="lead">If the second stimulation hits still refractory tissue, it dies out (a). If it comes late enough, it travels in both directions (b). In between lies a time window in which it travels in one direction only and circulates permanently (c).</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/ring_szenarien.png" alt="Output of the program ring_szenarien.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="ring_szenarien.jl" data-m="ring_szenarien.m" data-py="ring_szenarien.py" data-r="ring_szenarien.R">ring_szenarien.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/ring_szenarien.py" data-jl="code/ring_szenarien.jl" data-m="code/ring_szenarien.m" data-py="code/ring_szenarien.py" data-r="code/ring_szenarien.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 2.21: Second stimulation of cell 36 in the ring model (book, Section 2.5, Eq. 2.34)</span>
+<span class="k"># scenario a) n* = 37: signal dies out;  b) n* = 45: spreads in both directions;  c) n* = 41: circulates permanently</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots, LinearAlgebra
+a = 0.89; b = 0.6; c = 0.28; k = 0.02; d = 0.4
+f1(y1, y2) = y1^2 * exp(y2 - y1) + k
+
+<span class="k"># resting state: compute a single cell for 180 steps starting from (0.2, c/(1 - a))</span>
+y1r = 0.2; y2r = c / (1 - a)
+for j in 1:180
+    global y1r, y2r = f1(y1r, y2r), a * y2r - b * y1r + c
+end
+
+function ring(n_stoer = -1; Z = 50, schritte = 201)
+    <span class="k"># ring of Z cells; cell 1 starts excited (0.3), optionally a second stimulation of cell 36 after n_stoer steps</span>
+    Y1 = fill(y1r, schritte + 1, Z); Y2 = fill(y2r, schritte + 1, Z)   <span class="k"># row n+1 = time step n</span>
+    Y1[1, 1] = 0.3
+    rechts = [2:Z; 1]; links = [Z; 1:Z-1]                            <span class="k"># neighbors on the ring</span>
+    for n in 0:schritte-1
+        F = f1.(Y1[n + 1, :], Y2[n + 1, :])
+        Y1[n + 2, :] = (1 - d) .* F .+ d / 2 .* (F[rechts] .+ F[links])
+        Y2[n + 2, :] = a .* Y2[n + 1, :] .- b .* Y1[n + 1, :] .+ c
+        n + 1 == n_stoer &amp;&amp; (Y1[n + 2, 36] = 0.3)                     <span class="k"># second stimulation of cell 36</span>
+    end
+    return Y1
+end
+function stamm(werte, titel)               <span class="k"># bars above the cells of the ring (3D view)</span>
+    w = range(0, 2pi, length = 51)[1:50]; cx = cos.(w); cy = sin.(w)
+    p = plot3d(cos.(range(0, 2pi, length = 100)), sin.(range(0, 2pi, length = 100)), zeros(100), color = :gray, legend = false,
+               zlims = (0, 4.5), title = titel, ticks = false, grid = false)
+    for i in 1:50
+        plot3d!(p, [cx[i], cx[i]], [cy[i], cy[i]], [0, werte[i]], color = RGB(0.64, 0.08, 0.18))
+    end
+    scatter3d!(p, cx, cy, werte, color = RGB(0.64, 0.08, 0.18), ms = 2)
+    return p
+end
+
+szenarien = [(&quot;a&quot;, 37, [37, 39, 41, 43]), (&quot;b&quot;, 45, [45, 52, 72, 81]), (&quot;c&quot;, 41, [41, 52, 75, 100])]
+bilder = Matrix{Any}(undef, 4, 3)
+for (sp, (name, n_stoer, zeiten)) in enumerate(szenarien)
+    Y1 = ring(n_stoer)
+    @printf(&quot;Scenario %s) n* = %d: excited cells after 200 steps: [%s]\n&quot;, name, n_stoer, join(findall(Y1[201, :] .&gt; 1), &quot;, &quot;))
+    for (z, n) in enumerate(zeiten)
+        bilder[z, sp] = stamm(Y1[n + 1, :], &quot;$name) n = $n&quot;)
+    end
+end
+display(plot(permutedims(bilder)..., layout = (4, 3), size = (900, 1100)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 2.21: Second stimulation of cell 36 in the ring model (book, Section 2.5, Eq. 2.34)</span>
+<span class="k">% scenario a) n* = 37: signal dies out;  b) n* = 45: spreads in both directions;  c) n* = 41: circulates permanently</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+a = 0.89; b = 0.6; c = 0.28; k = 0.02; d = 0.4;
+f1 = @(y1, y2) y1.^2 .* exp(y2 - y1) + k;
+
+<span class="k">% resting state: compute a single cell for 180 steps starting from (0.2, c/(1 - a))</span>
+y1r = 0.2; y2r = c / (1 - a);
+for j = 1:180
+    y1neu = f1(y1r, y2r); y2r = a * y2r - b * y1r + c; y1r = y1neu;
+end
+Z = 50; schritte = 201;
+rechts = [2:Z 1]; links = [Z 1:Z-1];                 <span class="k">% neighbors on the ring</span>
+
+winkel = linspace(0, 2 * pi, 51); winkel = winkel(1:50);
+cx = cos(winkel); cy = sin(winkel);
+namen = &#x27;abc&#x27;; nstern = [37 45 41];
+zeiten = [37 39 41 43; 45 52 72 81; 41 52 75 100];
+for sp = 1:3
+    n_stoer = nstern(sp);
+    Y1 = y1r * ones(schritte + 1, Z); Y2 = y2r * ones(schritte + 1, Z);   <span class="k">% row n+1 = time step n</span>
+    Y1(1, 1) = 0.3;                                  <span class="k">% cell 1 starts excited</span>
+    for n = 0:schritte-1
+        F = f1(Y1(n+1, :), Y2(n+1, :));
+        Y1(n+2, :) = (1 - d) * F + d / 2 * (F(rechts) + F(links));
+        Y2(n+2, :) = a * Y2(n+1, :) - b * Y1(n+1, :) + c;
+        if n + 1 == n_stoer
+            Y1(n+2, 36) = 0.3;                       <span class="k">% second stimulation of cell 36</span>
+        end
+    end
+    s = sprintf(&#x27;%d, &#x27;, find(Y1(201, :) &gt; 1));
+    fprintf(&#x27;Scenario %s) n* = %d: excited cells after 200 steps: [%s]\n&#x27;, namen(sp), n_stoer, s(1:end-2));
+    for z = 1:4
+        n = zeiten(sp, z);
+        subplot(4, 3, 3 * (z - 1) + sp);
+        stem3(cx, cy, Y1(n+1, :), &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;MarkerFaceColor&#x27;, [0.64 0.08 0.18], &#x27;MarkerEdgeColor&#x27;, [0.64 0.08 0.18], &#x27;MarkerSize&#x27;, 3);
+        zlim([0 4.5]); set(gca, &#x27;XTick&#x27;, [], &#x27;YTick&#x27;, []); title(sprintf(&#x27;%s) n = %d&#x27;, namen(sp), n));
+    end
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 2.21: Second stimulation of cell 36 in the ring model (book, Section 2.5, Eq. 2.34)</span>
+<span class="k"># scenario a) n* = 37: signal dies out;  b) n* = 45: spreads in both directions;  c) n* = 41: circulates permanently</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+a, b, c, k, d = 0.89, 0.6, 0.28, 0.02, 0.4
+f1 = lambda y1, y2: y1**2 * np.exp(y2 - y1) + k
+
+<span class="k"># resting state: compute a single cell for 180 steps starting from (0.2, c/(1 - a))</span>
+y1r, y2r = 0.2, c / (1 - a)
+for _ in range(180):
+    y1r, y2r = f1(y1r, y2r), a * y2r - b * y1r + c
+
+def ring(n_stoer=None, Z=50, schritte=201):
+    &quot;&quot;&quot;Ring of Z cells; cell 1 starts excited (0.3), optionally a second stimulation of cell 36 after n_stoer steps.&quot;&quot;&quot;
+    Y1 = np.full((schritte + 1, Z), y1r); Y2 = np.full((schritte + 1, Z), y2r)
+    Y1[0, 0] = 0.3
+    rechts, links = np.roll(np.arange(Z), -1), np.roll(np.arange(Z), 1)    <span class="k"># neighbors on the ring</span>
+    for n in range(schritte):
+        F = f1(Y1[n], Y2[n])
+        Y1[n + 1] = (1 - d) * F + d / 2 * (F[rechts] + F[links])
+        Y2[n + 1] = a * Y2[n] - b * Y1[n] + c
+        if n_stoer is not None and n + 1 == n_stoer:
+            Y1[n + 1, 35] = 0.3                                            <span class="k"># Cell 36</span>
+    return Y1
+
+winkel = np.linspace(0, 2 * np.pi, 51)[:50]; cx, cy = np.cos(winkel), np.sin(winkel)
+szenarien = [(&quot;a&quot;, 37, [37, 39, 41, 43]), (&quot;b&quot;, 45, [45, 52, 72, 81]), (&quot;c&quot;, 41, [41, 52, 75, 100])]
+fig = plt.figure(figsize=(10, 12))
+for spalte, (name, n_stoer, zeiten) in enumerate(szenarien):
+    Y1 = ring(n_stoer)
+    print(f&quot;Scenario {name}) n* = {n_stoer}: excited cells after 200 steps:&quot;, (np.where(Y1[200] &gt; 1)[0] + 1).tolist())
+    for zeile, n in enumerate(zeiten):
+        ax = fig.add_subplot(4, 3, 3 * zeile + spalte + 1, projection=&quot;3d&quot;)
+        ax.stem(cx, cy, Y1[n], linefmt=&quot;C3-&quot;, markerfmt=&quot;C3o&quot;, basefmt=&quot; &quot;)
+        ax.set_zlim(0, 4.5); ax.set_xticks([]); ax.set_yticks([]); ax.set_title(f&quot;{name}) n = {n}&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 2.21: Second stimulation of cell 36 in the ring model (book, Section 2.5, Eq. 2.34)</span>
+<span class="k"># scenario a) n* = 37: signal dies out;  b) n* = 45: spreads in both directions;  c) n* = 41: circulates permanently</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+a &lt;- 0.89; b &lt;- 0.6; c &lt;- 0.28; k &lt;- 0.02; d &lt;- 0.4
+f1 &lt;- function(y1, y2) y1^2 * exp(y2 - y1) + k
+
+<span class="k"># resting state: compute a single cell for 180 steps starting from (0.2, c/(1 - a))</span>
+y1r &lt;- 0.2; y2r &lt;- c / (1 - a)
+for (j in 1:180) { y1neu &lt;- f1(y1r, y2r); y2r &lt;- a * y2r - b * y1r + c; y1r &lt;- y1neu }
+
+ring &lt;- function(n_stoer = -1, Z = 50, schritte = 201) {
+  <span class="k"># ring of Z cells; cell 1 starts excited (0.3), optionally a second stimulation of cell 36 after n_stoer steps</span>
+  Y1 &lt;- matrix(y1r, schritte + 1, Z); Y2 &lt;- matrix(y2r, schritte + 1, Z)   <span class="k"># row n+1 = time step n</span>
+  Y1[1, 1] &lt;- 0.3
+  rechts &lt;- c(2:Z, 1); links &lt;- c(Z, 1:(Z - 1))                          <span class="k"># neighbors on the ring</span>
+  for (n in 0:(schritte - 1)) {
+    F &lt;- f1(Y1[n + 1, ], Y2[n + 1, ])
+    Y1[n + 2, ] &lt;- (1 - d) * F + d / 2 * (F[rechts] + F[links])
+    Y2[n + 2, ] &lt;- a * Y2[n + 1, ] - b * Y1[n + 1, ] + c
+    if (n + 1 == n_stoer) Y1[n + 2, 36] &lt;- 0.3                         <span class="k"># second stimulation of cell 36</span>
+  }
+  Y1
+}
+stamm &lt;- function(werte, titel) {        <span class="k"># bars above the cells of the ring (3D view)</span>
+  w &lt;- seq(0, 2 * pi, length.out = 51)[1:50]; cx &lt;- cos(w); cy &lt;- sin(w)
+  pm &lt;- persp(c(-1.1, 1.1), c(-1.1, 1.1), matrix(0, 2, 2), zlim = c(0, 4.5), theta = 20, phi = 25,
+              border = NA, box = FALSE, main = titel)
+  unten &lt;- trans3d(cx, cy, 0, pm); oben &lt;- trans3d(cx, cy, werte, pm)
+  lines(trans3d(c(cx, cx[1]), c(cy, cy[1]), 0, pm), col = &quot;grey70&quot;)
+  segments(unten$x, unten$y, oben$x, oben$y, col = rgb(0.64, 0.08, 0.18))
+  points(oben, pch = 16, cex = 0.6, col = rgb(0.64, 0.08, 0.18))
+}
+
+szenarien &lt;- list(list(&quot;a&quot;, 37, c(37, 39, 41, 43)), list(&quot;b&quot;, 45, c(45, 52, 72, 81)), list(&quot;c&quot;, 41, c(41, 52, 75, 100)))
+par(mfcol = c(4, 3), mar = c(0, 0, 2, 0))
+for (sz in szenarien) {
+  Y1 &lt;- ring(sz[[2]])
+  cat(sprintf(&quot;Scenario %s) n* = %d: excited cells after 200 steps: [%s]\n&quot;, sz[[1]], sz[[2]], paste(which(Y1[201, ] &gt; 1), collapse = &quot;, &quot;)))
+  for (n in sz[[3]]) stamm(Y1[n + 1, ], sprintf(&quot;%s) n = %d&quot;, sz[[1]], n))
+}</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>Scenario a) n* = 37: excited cells after 200 steps: []
+Scenario b) n* = 45: excited cells after 200 steps: []
+Scenario c) n* = 41: excited cells after 200 steps: [12, 13, 14]</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="ring-draufsicht">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 2.22</p>
+    <h2>The three scenarios seen from above</h2>
+    <p class="formel">horizontal: cell i,&ensp; vertical: time step n,&ensp; color: y<sub>1</sub></p>
+    <p class="lead">Each oblique track is a traveling wave. In scenario c) the track continues at the edge of the ring: the excitation circulates and hits cell 1 again and again.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/ring_draufsicht.png" alt="Output of the program ring_draufsicht.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="ring_draufsicht.jl" data-m="ring_draufsicht.m" data-py="ring_draufsicht.py" data-r="ring_draufsicht.R">ring_draufsicht.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/ring_draufsicht.py" data-jl="code/ring_draufsicht.jl" data-m="code/ring_draufsicht.m" data-py="code/ring_draufsicht.py" data-r="code/ring_draufsicht.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 2.22: The three scenarios of the ring model seen from above (book, Section 2.5, Eq. 2.34)</span>
+<span class="k"># horizontally the cells, vertically the time steps n, color = y1; each oblique track is a traveling wave</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots, LinearAlgebra
+a = 0.89; b = 0.6; c = 0.28; k = 0.02; d = 0.4
+f1(y1, y2) = y1^2 * exp(y2 - y1) + k
+
+<span class="k"># resting state: compute a single cell for 180 steps starting from (0.2, c/(1 - a))</span>
+y1r = 0.2; y2r = c / (1 - a)
+for j in 1:180
+    global y1r, y2r = f1(y1r, y2r), a * y2r - b * y1r + c
+end
+
+function ring(n_stoer = -1; Z = 50, schritte = 201)
+    <span class="k"># ring of Z cells; cell 1 starts excited (0.3), optionally a second stimulation of cell 36 after n_stoer steps</span>
+    Y1 = fill(y1r, schritte + 1, Z); Y2 = fill(y2r, schritte + 1, Z)   <span class="k"># row n+1 = time step n</span>
+    Y1[1, 1] = 0.3
+    rechts = [2:Z; 1]; links = [Z; 1:Z-1]                            <span class="k"># neighbors on the ring</span>
+    for n in 0:schritte-1
+        F = f1.(Y1[n + 1, :], Y2[n + 1, :])
+        Y1[n + 2, :] = (1 - d) .* F .+ d / 2 .* (F[rechts] .+ F[links])
+        Y2[n + 2, :] = a .* Y2[n + 1, :] .- b .* Y1[n + 1, :] .+ c
+        n + 1 == n_stoer &amp;&amp; (Y1[n + 2, 36] = 0.3)                     <span class="k"># second stimulation of cell 36</span>
+    end
+    return Y1
+end
+
+weissrot = cgrad([RGB(1, 1, 1), RGB(0.89, 0.44, 0.49), RGB(0.64, 0.08, 0.18), RGB(0.43, 0.04, 0.12)])
+bilder = []
+for (name, n_stoer) in [(&quot;a&quot;, 37), (&quot;b&quot;, 45), (&quot;c&quot;, 41)]
+    Y1 = ring(n_stoer)
+    push!(bilder, heatmap(1:50, 0:201, Y1, color = weissrot, clims = (0, 4.2), xlabel = &quot;Cell&quot;, ylabel = &quot;n&quot;, title = &quot;Scenario $name)&quot;))
+    zeiten = [n for n in 100:201 if Y1[n + 1, 1] &gt; 1]
+    @printf(&quot;Scenario %s): time steps with excited cell 1 from n = 100: [%s]\n&quot;, name, join(first(zeiten, 6), &quot;, &quot;))
+end
+display(plot(bilder..., layout = (1, 3), size = (1100, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 2.22: The three scenarios of the ring model seen from above (book, Section 2.5, Eq. 2.34)</span>
+<span class="k">% horizontally the cells, vertically the time steps n, color = y1; each oblique track is a traveling wave</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+a = 0.89; b = 0.6; c = 0.28; k = 0.02; d = 0.4;
+f1 = @(y1, y2) y1.^2 .* exp(y2 - y1) + k;
+
+<span class="k">% resting state: compute a single cell for 180 steps starting from (0.2, c/(1 - a))</span>
+y1r = 0.2; y2r = c / (1 - a);
+for j = 1:180
+    y1neu = f1(y1r, y2r); y2r = a * y2r - b * y1r + c; y1r = y1neu;
+end
+Z = 50; schritte = 201;
+rechts = [2:Z 1]; links = [Z 1:Z-1];                 <span class="k">% neighbors on the ring</span>
+
+namen = &#x27;abc&#x27;; nstern = [37 45 41];
+weissrot = [linspace(1, 0.43, 64)&#x27; linspace(1, 0.04, 64)&#x27; linspace(1, 0.12, 64)&#x27;];
+for sp = 1:3
+    n_stoer = nstern(sp);
+    Y1 = y1r * ones(schritte + 1, Z); Y2 = y2r * ones(schritte + 1, Z);   <span class="k">% row n+1 = time step n</span>
+    Y1(1, 1) = 0.3;                                  <span class="k">% cell 1 starts excited</span>
+    for n = 0:schritte-1
+        F = f1(Y1(n+1, :), Y2(n+1, :));
+        Y1(n+2, :) = (1 - d) * F + d / 2 * (F(rechts) + F(links));
+        Y2(n+2, :) = a * Y2(n+1, :) - b * Y1(n+1, :) + c;
+        if n + 1 == n_stoer
+            Y1(n+2, 36) = 0.3;                       <span class="k">% second stimulation of cell 36</span>
+        end
+    end
+    subplot(1, 3, sp);
+    imagesc([1 50], [0 201], Y1, [0 4.2]); axis xy; colormap(weissrot);
+    title(sprintf(&#x27;Scenario %s)&#x27;, namen(sp))); xlabel(&#x27;Cell&#x27;);
+    if sp == 1, ylabel(&#x27;n&#x27;); end
+    t = find(Y1(101:202, 1) &gt; 1)&#x27; + 99;              <span class="k">% time steps n &gt;= 100 with excited cell 1</span>
+    s = sprintf(&#x27;%d, &#x27;, t(1:min(6, end)));
+    fprintf(&#x27;Scenario %s): time steps with excited cell 1 from n = 100: [%s]\n&#x27;, namen(sp), s(1:end-2));
+end
+colorbar;</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 2.22: The three scenarios of the ring model seen from above (book, Section 2.5, Eq. 2.34)</span>
+<span class="k"># horizontally the cells, vertically the time steps n, color = y1; each oblique track is a traveling wave</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+a, b, c, k, d = 0.89, 0.6, 0.28, 0.02, 0.4
+f1 = lambda y1, y2: y1**2 * np.exp(y2 - y1) + k
+
+<span class="k"># resting state: compute a single cell for 180 steps starting from (0.2, c/(1 - a))</span>
+y1r, y2r = 0.2, c / (1 - a)
+for _ in range(180):
+    y1r, y2r = f1(y1r, y2r), a * y2r - b * y1r + c
+
+def ring(n_stoer=None, Z=50, schritte=201):
+    &quot;&quot;&quot;Ring of Z cells; cell 1 starts excited (0.3), optionally a second stimulation of cell 36 after n_stoer steps.&quot;&quot;&quot;
+    Y1 = np.full((schritte + 1, Z), y1r); Y2 = np.full((schritte + 1, Z), y2r)
+    Y1[0, 0] = 0.3
+    rechts, links = np.roll(np.arange(Z), -1), np.roll(np.arange(Z), 1)    <span class="k"># neighbors on the ring</span>
+    for n in range(schritte):
+        F = f1(Y1[n], Y2[n])
+        Y1[n + 1] = (1 - d) * F + d / 2 * (F[rechts] + F[links])
+        Y2[n + 1] = a * Y2[n] - b * Y1[n] + c
+        if n_stoer is not None and n + 1 == n_stoer:
+            Y1[n + 1, 35] = 0.3                                            <span class="k"># Cell 36</span>
+    return Y1
+
+fig, axs = plt.subplots(1, 3, figsize=(12, 4.5), sharey=True)
+for ax, (name, n_stoer) in zip(axs, [(&quot;a&quot;, 37), (&quot;b&quot;, 45), (&quot;c&quot;, 41)]):
+    Y1 = ring(n_stoer)
+    bild = ax.imshow(Y1, origin=&quot;lower&quot;, aspect=&quot;auto&quot;, cmap=&quot;Reds&quot;, extent=(0.5, 50.5, -0.5, 201.5), vmin=0, vmax=4.2)
+    ax.set_title(f&quot;Scenario {name})&quot;); ax.set_xlabel(&quot;Cell&quot;)
+    print(f&quot;Scenario {name}): time steps with excited cell 1 from n = 100:&quot;, [n for n in range(100, 202) if Y1[n, 0] &gt; 1][:6])
+axs[0].set_ylabel(&quot;n&quot;)
+fig.colorbar(bild, ax=axs, label=&quot;y_1&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 2.22: The three scenarios of the ring model seen from above (book, Section 2.5, Eq. 2.34)</span>
+<span class="k"># horizontally the cells, vertically the time steps n, color = y1; each oblique track is a traveling wave</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+a &lt;- 0.89; b &lt;- 0.6; c &lt;- 0.28; k &lt;- 0.02; d &lt;- 0.4
+f1 &lt;- function(y1, y2) y1^2 * exp(y2 - y1) + k
+
+<span class="k"># resting state: compute a single cell for 180 steps starting from (0.2, c/(1 - a))</span>
+y1r &lt;- 0.2; y2r &lt;- c / (1 - a)
+for (j in 1:180) { y1neu &lt;- f1(y1r, y2r); y2r &lt;- a * y2r - b * y1r + c; y1r &lt;- y1neu }
+
+ring &lt;- function(n_stoer = -1, Z = 50, schritte = 201) {
+  <span class="k"># ring of Z cells; cell 1 starts excited (0.3), optionally a second stimulation of cell 36 after n_stoer steps</span>
+  Y1 &lt;- matrix(y1r, schritte + 1, Z); Y2 &lt;- matrix(y2r, schritte + 1, Z)   <span class="k"># row n+1 = time step n</span>
+  Y1[1, 1] &lt;- 0.3
+  rechts &lt;- c(2:Z, 1); links &lt;- c(Z, 1:(Z - 1))                          <span class="k"># neighbors on the ring</span>
+  for (n in 0:(schritte - 1)) {
+    F &lt;- f1(Y1[n + 1, ], Y2[n + 1, ])
+    Y1[n + 2, ] &lt;- (1 - d) * F + d / 2 * (F[rechts] + F[links])
+    Y2[n + 2, ] &lt;- a * Y2[n + 1, ] - b * Y1[n + 1, ] + c
+    if (n + 1 == n_stoer) Y1[n + 2, 36] &lt;- 0.3                         <span class="k"># second stimulation of cell 36</span>
+  }
+  Y1
+}
+stamm &lt;- function(werte, titel) {        <span class="k"># bars above the cells of the ring (3D view)</span>
+  w &lt;- seq(0, 2 * pi, length.out = 51)[1:50]; cx &lt;- cos(w); cy &lt;- sin(w)
+  pm &lt;- persp(c(-1.1, 1.1), c(-1.1, 1.1), matrix(0, 2, 2), zlim = c(0, 4.5), theta = 20, phi = 25,
+              border = NA, box = FALSE, main = titel)
+  unten &lt;- trans3d(cx, cy, 0, pm); oben &lt;- trans3d(cx, cy, werte, pm)
+  lines(trans3d(c(cx, cx[1]), c(cy, cy[1]), 0, pm), col = &quot;grey70&quot;)
+  segments(unten$x, unten$y, oben$x, oben$y, col = rgb(0.64, 0.08, 0.18))
+  points(oben, pch = 16, cex = 0.6, col = rgb(0.64, 0.08, 0.18))
+}
+
+weissrot &lt;- colorRampPalette(c(&quot;white&quot;, rgb(0.89, 0.44, 0.49), rgb(0.64, 0.08, 0.18), rgb(0.43, 0.04, 0.12)))(64)
+par(mfrow = c(1, 3))
+for (sz in list(list(&quot;a&quot;, 37), list(&quot;b&quot;, 45), list(&quot;c&quot;, 41))) {
+  Y1 &lt;- ring(sz[[2]])
+  image(1:50, 0:201, t(Y1), col = weissrot, zlim = c(0, 4.2), xlab = &quot;Cell&quot;, ylab = &quot;n&quot;, main = sprintf(&quot;Scenario %s)&quot;, sz[[1]]))
+  zeiten &lt;- (100:201)[Y1[101:202, 1] &gt; 1]
+  cat(sprintf(&quot;Scenario %s): time steps with excited cell 1 from n = 100: [%s]\n&quot;, sz[[1]], paste(head(zeiten, 6), collapse = &quot;, &quot;)))
+}</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>Scenario a): time steps with excited cell 1 from n = 100: []
+Scenario b): time steps with excited cell 1 from n = 100: []
+Scenario c): time steps with excited cell 1 from n = 100: [126, 127, 128, 185, 186, 187]</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="ebene-normal">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 2.23</p>
+    <h2>Propagation in the plane</h2>
+    <p class="formel">100 × 100 cells, four neighbors each</p>
+    <p class="lead">The excitation of the left edge travels as a straight front to the right, about one cell in 1.7 time steps, and leaves the domain. At the boundary there is no outward flux.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/ebene_normal.png" alt="Output of the program ebene_normal.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="ebene_normal.jl" data-m="ebene_normal.m" data-py="ebene_normal.py" data-r="ebene_normal.R">ebene_normal.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/ebene_normal.py" data-jl="code/ebene_normal.jl" data-m="code/ebene_normal.m" data-py="code/ebene_normal.py" data-r="code/ebene_normal.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 2.23: Propagation in the plane, regular wave (book, Section 2.5, Eq. 2.35)</span>
+<span class="k"># 100 x 100 cells, parameters as for the ring; the left edge is stimulated, the wave travels to the right and leaves the domain</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots, LinearAlgebra
+a = 0.89; b = 0.6; c = 0.28; k = 0.02; d = 0.4
+f1(y1, y2) = y1^2 * exp(y2 - y1) + k
+y1r = 0.2; y2r = c / (1 - a)
+for j in 1:180                                       <span class="k"># resting state of a single cell</span>
+    global y1r, y2r = f1(y1r, y2r), a * y2r - b * y1r + c
+end
+
+function ebene(blockade, schritte; Z = 100)
+    <span class="k"># Z x Z cells, no-flux boundary; left edge (i = 1) starts excited. List of the states y1 for n = 0, 1, 2, ...</span>
+    Y1 = fill(y1r, Z, Z); Y2 = fill(y2r, Z, Z); Y1[1, :] .= 0.3
+    vor = [2:Z; Z]; zur = [1; 1:Z-1]                 <span class="k"># neighbor indices, at the boundary the cell itself</span>
+    zustaende = [copy(Y1)]
+    for n in 1:schritte
+        D = fill(d, Z, Z)
+        blockade &amp;&amp; 50 &lt;= n &lt;= 52 &amp;&amp; (D[28:30, 1:50] .= 0)   <span class="k"># block in the region [28, 30] x [1, 50]</span>
+        F = f1.(Y1, Y2)
+        Y1neu = (1 .- D) .* F .+ D ./ 4 .* (F[vor, :] .+ F[zur, :] .+ F[:, vor] .+ F[:, zur])
+        Y2 = a .* Y2 .- b .* Y1 .+ c
+        Y1 = Y1neu
+        push!(zustaende, copy(Y1))
+    end
+    return zustaende
+end
+weissrot = cgrad([RGB(1, 1, 1), RGB(0.89, 0.44, 0.49), RGB(0.64, 0.08, 0.18), RGB(0.43, 0.04, 0.12)])
+
+Y = ebene(false, 201)
+bilder = []
+for n in (3, 36, 69, 102, 135, 168)
+    push!(bilder, heatmap(1:100, 1:100, Y[n + 1]&#x27;, color = weissrot, clims = (0, 4), title = &quot;n = $n&quot;, colorbar = false, aspect_ratio = 1))
+    @printf(&quot;n = %3d: wave front at i = %d\n&quot;, n, argmax(vec(maximum(Y[n + 1], dims = 2))))
+end
+display(plot(bilder..., layout = (2, 3), size = (1000, 650)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 2.23: Propagation in the plane, regular wave (book, Section 2.5, Eq. 2.35)</span>
+<span class="k">% 100 x 100 cells, parameters as for the ring; the left edge is stimulated, the wave travels to the right and leaves the domain</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+blockade = false; schritte = 201;
+a = 0.89; b = 0.6; c = 0.28; k = 0.02; d = 0.4;
+f1 = @(y1, y2) y1.^2 .* exp(y2 - y1) + k;
+y1r = 0.2; y2r = c / (1 - a);
+for j = 1:180                                        <span class="k">% resting state of a single cell</span>
+    y1neu = f1(y1r, y2r); y2r = a * y2r - b * y1r + c; y1r = y1neu;
+end
+
+Z = 100;
+Y1 = y1r * ones(Z); Y2 = y2r * ones(Z);
+Y1(1, :) = 0.3;                                      <span class="k">% left edge (i = 1) starts excited</span>
+vor = [2:Z Z]; zur = [1 1:Z-1];                      <span class="k">% neighbor indices, at the boundary the cell itself (no flux)</span>
+Y = zeros(Z, Z, schritte + 1); Y(:, :, 1) = Y1;      <span class="k">% Y(:, :, n+1) = state y1 after n steps</span>
+for n = 1:schritte
+    D = d * ones(Z);
+    if blockade &amp;&amp; n &gt;= 50 &amp;&amp; n &lt;= 52
+        D(28:30, 1:50) = 0;                          <span class="k">% block in the region [28, 30] x [1, 50]</span>
+    end
+    F = f1(Y1, Y2);
+    Y1neu = (1 - D) .* F + D / 4 .* (F(vor, :) + F(zur, :) + F(:, vor) + F(:, zur));
+    Y2 = a * Y2 - b * Y1 + c;
+    Y1 = Y1neu;
+    Y(:, :, n + 1) = Y1;
+end
+weissrot = [linspace(1, 0.43, 64)&#x27; linspace(1, 0.04, 64)&#x27; linspace(1, 0.12, 64)&#x27;];
+
+zeiten = [3 36 69 102 135 168];
+for p = 1:6
+    n = zeiten(p);
+    subplot(2, 3, p);
+    imagesc([1 100], [1 100], Y(:, :, n + 1)&#x27;, [0 4]); axis xy; colormap(weissrot); title(sprintf(&#x27;n = %d&#x27;, n));
+    [~, i] = max(max(Y(:, :, n + 1), [], 2));
+    fprintf(&#x27;n = %3d: wave front at i = %d\n&#x27;, n, i);
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 2.23: Propagation in the plane, regular wave (book, Section 2.5, Eq. 2.35)</span>
+<span class="k"># 100 x 100 cells, parameters as for the ring; the left edge is stimulated, the wave travels to the right and leaves the domain</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+a, b, c, k, d = 0.89, 0.6, 0.28, 0.02, 0.4
+f1 = lambda y1, y2: y1**2 * np.exp(y2 - y1) + k
+y1r, y2r = 0.2, c / (1 - a)
+for _ in range(180):                                   <span class="k"># resting state of a single cell</span>
+    y1r, y2r = f1(y1r, y2r), a * y2r - b * y1r + c
+
+def ebene(blockade, schritte, Z=100):
+    &quot;&quot;&quot;Z x Z cells, no-flux boundary; left edge (i = 1) starts excited. List of the states y1 for n = 0, 1, 2, ...&quot;&quot;&quot;
+    Y1 = np.full((Z, Z), y1r); Y2 = np.full((Z, Z), y2r); Y1[0, :] = 0.3
+    vor, zur = np.r_[1:Z, Z - 1], np.r_[0, 0:Z - 1]     <span class="k"># neighbor indices, at the boundary the cell itself</span>
+    zustaende = [Y1.copy()]
+    for n in range(1, schritte + 1):
+        D = np.full((Z, Z), d)
+        if blockade and 50 &lt;= n &lt;= 52:
+            D[27:30, 0:50] = 0                            <span class="k"># block in the region [28, 30] x [1, 50]</span>
+        F = f1(Y1, Y2)
+        Y1neu = (1 - D) * F + D / 4 * (F[vor, :] + F[zur, :] + F[:, vor] + F[:, zur])
+        Y2 = a * Y2 - b * Y1 + c
+        Y1 = Y1neu
+        zustaende.append(Y1.copy())
+    return zustaende
+
+Y = ebene(False, 201)
+fig, axs = plt.subplots(2, 3, figsize=(11, 7), sharex=True, sharey=True)
+for ax, n in zip(axs.flat, [3, 36, 69, 102, 135, 168]):
+    ax.imshow(Y[n].T, origin=&quot;lower&quot;, cmap=&quot;Reds&quot;, extent=(0.5, 100.5, 0.5, 100.5), vmin=0, vmax=4)
+    ax.set_title(f&quot;n = {n}&quot;)
+    spalte = np.argmax(Y[n].max(axis=1))
+    print(f&quot;n = {n:3d}: wave front at i = {spalte + 1}&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 2.23: Propagation in the plane, regular wave (book, Section 2.5, Eq. 2.35)</span>
+<span class="k"># 100 x 100 cells, parameters as for the ring; the left edge is stimulated, the wave travels to the right and leaves the domain</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+a &lt;- 0.89; b &lt;- 0.6; c &lt;- 0.28; k &lt;- 0.02; d &lt;- 0.4
+f1 &lt;- function(y1, y2) y1^2 * exp(y2 - y1) + k
+y1r &lt;- 0.2; y2r &lt;- c / (1 - a)
+for (j in 1:180) { y1neu &lt;- f1(y1r, y2r); y2r &lt;- a * y2r - b * y1r + c; y1r &lt;- y1neu }   <span class="k"># resting state of a single cell</span>
+
+ebene &lt;- function(blockade, schritte, Z = 100) {
+  <span class="k"># Z x Z cells, no-flux boundary; left edge (i = 1) starts excited. List of the states y1 for n = 0, 1, 2, ...</span>
+  Y1 &lt;- matrix(y1r, Z, Z); Y2 &lt;- matrix(y2r, Z, Z); Y1[1, ] &lt;- 0.3
+  vor &lt;- c(2:Z, Z); zur &lt;- c(1, 1:(Z - 1))   <span class="k"># neighbor indices, at the boundary the cell itself</span>
+  zustaende &lt;- list(Y1)
+  for (n in 1:schritte) {
+    D &lt;- matrix(d, Z, Z)
+    if (blockade &amp;&amp; n &gt;= 50 &amp;&amp; n &lt;= 52) D[28:30, 1:50] &lt;- 0   <span class="k"># block in the region [28, 30] x [1, 50]</span>
+    F &lt;- f1(Y1, Y2)
+    Y1neu &lt;- (1 - D) * F + D / 4 * (F[vor, ] + F[zur, ] + F[, vor] + F[, zur])
+    Y2 &lt;- a * Y2 - b * Y1 + c
+    Y1 &lt;- Y1neu
+    zustaende[[n + 1]] &lt;- Y1
+  }
+  zustaende
+}
+weissrot &lt;- colorRampPalette(c(&quot;white&quot;, rgb(0.89, 0.44, 0.49), rgb(0.64, 0.08, 0.18), rgb(0.43, 0.04, 0.12)))(64)
+
+Y &lt;- ebene(FALSE, 201)
+par(mfrow = c(2, 3), mar = c(2, 2, 2, 1))
+for (n in c(3, 36, 69, 102, 135, 168)) {
+  image(1:100, 1:100, Y[[n + 1]], col = weissrot, zlim = c(0, 4), main = sprintf(&quot;n = %d&quot;, n), asp = 1)
+  cat(sprintf(&quot;n = %3d: wave front at i = %d\n&quot;, n, which.max(apply(Y[[n + 1]], 1, max))))
+}</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>n =   3: wave front at i = 1
+n =  36: wave front at i = 20
+n =  69: wave front at i = 39
+n = 102: wave front at i = 58
+n = 135: wave front at i = 77
+n = 168: wave front at i = 96</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="ebene-reentry">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 2.24</p>
+    <h2>Spiral wave after a brief block</h2>
+    <p class="formel">d = 0 in the region [28, 30] × [1, 50] for n = 50, 51, 52</p>
+    <p class="lead">The block breaks the front. The free end curls up into a self-sustaining spiral: the number of excited cells does not decrease. The computation takes a few seconds.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/ebene_reentry.png" alt="Output of the program ebene_reentry.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="ebene_reentry.jl" data-m="ebene_reentry.m" data-py="ebene_reentry.py" data-r="ebene_reentry.R">ebene_reentry.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/ebene_reentry.py" data-jl="code/ebene_reentry.jl" data-m="code/ebene_reentry.m" data-py="code/ebene_reentry.py" data-r="code/ebene_reentry.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 2.24: Spiral wave after a brief block (book, Section 2.5, Eq. 2.35)</span>
+<span class="k"># as Fig. 2.23, but in steps 50 to 52 the coupling d is zero in the region [28, 30] x [1, 50]: the wave breaks and rotates</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots, LinearAlgebra
+a = 0.89; b = 0.6; c = 0.28; k = 0.02; d = 0.4
+f1(y1, y2) = y1^2 * exp(y2 - y1) + k
+y1r = 0.2; y2r = c / (1 - a)
+for j in 1:180                                       <span class="k"># resting state of a single cell</span>
+    global y1r, y2r = f1(y1r, y2r), a * y2r - b * y1r + c
+end
+
+function ebene(blockade, schritte; Z = 100)
+    <span class="k"># Z x Z cells, no-flux boundary; left edge (i = 1) starts excited. List of the states y1 for n = 0, 1, 2, ...</span>
+    Y1 = fill(y1r, Z, Z); Y2 = fill(y2r, Z, Z); Y1[1, :] .= 0.3
+    vor = [2:Z; Z]; zur = [1; 1:Z-1]                 <span class="k"># neighbor indices, at the boundary the cell itself</span>
+    zustaende = [copy(Y1)]
+    for n in 1:schritte
+        D = fill(d, Z, Z)
+        blockade &amp;&amp; 50 &lt;= n &lt;= 52 &amp;&amp; (D[28:30, 1:50] .= 0)   <span class="k"># block in the region [28, 30] x [1, 50]</span>
+        F = f1.(Y1, Y2)
+        Y1neu = (1 .- D) .* F .+ D ./ 4 .* (F[vor, :] .+ F[zur, :] .+ F[:, vor] .+ F[:, zur])
+        Y2 = a .* Y2 .- b .* Y1 .+ c
+        Y1 = Y1neu
+        push!(zustaende, copy(Y1))
+    end
+    return zustaende
+end
+weissrot = cgrad([RGB(1, 1, 1), RGB(0.89, 0.44, 0.49), RGB(0.64, 0.08, 0.18), RGB(0.43, 0.04, 0.12)])
+
+Y = ebene(true, 301)
+bilder = [heatmap(1:100, 1:100, Y[n + 1]&#x27;, color = weissrot, clims = (0, 4), title = &quot;n = $n&quot;, colorbar = false, aspect_ratio = 1)
+          for n in 54:20:214]
+erregt = [count(Y[n + 1] .&gt; 1) for n in (100, 200, 300)]
+@printf(&quot;number of excited cells at n = 100, 200, 300: [%s]  -&gt; the excitation does not stop\n&quot;, join(erregt, &quot;, &quot;))
+display(plot(bilder..., layout = (3, 3), size = (900, 900)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 2.24: Spiral wave after a brief block (book, Section 2.5, Eq. 2.35)</span>
+<span class="k">% as Fig. 2.23, but in steps 50 to 52 the coupling d is zero in the region [28, 30] x [1, 50]: the wave breaks and rotates</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+blockade = true; schritte = 301;
+a = 0.89; b = 0.6; c = 0.28; k = 0.02; d = 0.4;
+f1 = @(y1, y2) y1.^2 .* exp(y2 - y1) + k;
+y1r = 0.2; y2r = c / (1 - a);
+for j = 1:180                                        <span class="k">% resting state of a single cell</span>
+    y1neu = f1(y1r, y2r); y2r = a * y2r - b * y1r + c; y1r = y1neu;
+end
+
+Z = 100;
+Y1 = y1r * ones(Z); Y2 = y2r * ones(Z);
+Y1(1, :) = 0.3;                                      <span class="k">% left edge (i = 1) starts excited</span>
+vor = [2:Z Z]; zur = [1 1:Z-1];                      <span class="k">% neighbor indices, at the boundary the cell itself (no flux)</span>
+Y = zeros(Z, Z, schritte + 1); Y(:, :, 1) = Y1;      <span class="k">% Y(:, :, n+1) = state y1 after n steps</span>
+for n = 1:schritte
+    D = d * ones(Z);
+    if blockade &amp;&amp; n &gt;= 50 &amp;&amp; n &lt;= 52
+        D(28:30, 1:50) = 0;                          <span class="k">% block in the region [28, 30] x [1, 50]</span>
+    end
+    F = f1(Y1, Y2);
+    Y1neu = (1 - D) .* F + D / 4 .* (F(vor, :) + F(zur, :) + F(:, vor) + F(:, zur));
+    Y2 = a * Y2 - b * Y1 + c;
+    Y1 = Y1neu;
+    Y(:, :, n + 1) = Y1;
+end
+weissrot = [linspace(1, 0.43, 64)&#x27; linspace(1, 0.04, 64)&#x27; linspace(1, 0.12, 64)&#x27;];
+
+zeiten = 54:20:214;
+for p = 1:9
+    n = zeiten(p);
+    subplot(3, 3, p);
+    imagesc([1 100], [1 100], Y(:, :, n + 1)&#x27;, [0 4]); axis xy; colormap(weissrot); title(sprintf(&#x27;n = %d&#x27;, n));
+end
+erregt = [nnz(Y(:, :, 101) &gt; 1) nnz(Y(:, :, 201) &gt; 1) nnz(Y(:, :, 301) &gt; 1)];
+fprintf(&#x27;number of excited cells at n = 100, 200, 300: [%d, %d, %d]  -&gt; the excitation does not stop\n&#x27;, erregt);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 2.24: Spiral wave after a brief block (book, Section 2.5, Eq. 2.35)</span>
+<span class="k"># as Fig. 2.23, but in steps 50 to 52 the coupling d is zero in the region [28, 30] x [1, 50]: the wave breaks and rotates</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+a, b, c, k, d = 0.89, 0.6, 0.28, 0.02, 0.4
+f1 = lambda y1, y2: y1**2 * np.exp(y2 - y1) + k
+y1r, y2r = 0.2, c / (1 - a)
+for _ in range(180):                                   <span class="k"># resting state of a single cell</span>
+    y1r, y2r = f1(y1r, y2r), a * y2r - b * y1r + c
+
+def ebene(blockade, schritte, Z=100):
+    &quot;&quot;&quot;Z x Z cells, no-flux boundary; left edge (i = 1) starts excited. List of the states y1 for n = 0, 1, 2, ...&quot;&quot;&quot;
+    Y1 = np.full((Z, Z), y1r); Y2 = np.full((Z, Z), y2r); Y1[0, :] = 0.3
+    vor, zur = np.r_[1:Z, Z - 1], np.r_[0, 0:Z - 1]     <span class="k"># neighbor indices, at the boundary the cell itself</span>
+    zustaende = [Y1.copy()]
+    for n in range(1, schritte + 1):
+        D = np.full((Z, Z), d)
+        if blockade and 50 &lt;= n &lt;= 52:
+            D[27:30, 0:50] = 0                            <span class="k"># block in the region [28, 30] x [1, 50]</span>
+        F = f1(Y1, Y2)
+        Y1neu = (1 - D) * F + D / 4 * (F[vor, :] + F[zur, :] + F[:, vor] + F[:, zur])
+        Y2 = a * Y2 - b * Y1 + c
+        Y1 = Y1neu
+        zustaende.append(Y1.copy())
+    return zustaende
+
+Y = ebene(True, 301)
+fig, axs = plt.subplots(3, 3, figsize=(10, 10), sharex=True, sharey=True)
+for ax, n in zip(axs.flat, range(54, 215, 20)):
+    ax.imshow(Y[n].T, origin=&quot;lower&quot;, cmap=&quot;Reds&quot;, extent=(0.5, 100.5, 0.5, 100.5), vmin=0, vmax=4)
+    ax.set_title(f&quot;n = {n}&quot;)
+erregt = [int((Y[n] &gt; 1).sum()) for n in (100, 200, 300)]
+print(&quot;number of excited cells at n = 100, 200, 300:&quot;, erregt, &quot; -&gt; the excitation does not stop&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 2.24: Spiral wave after a brief block (book, Section 2.5, Eq. 2.35)</span>
+<span class="k"># as Fig. 2.23, but in steps 50 to 52 the coupling d is zero in the region [28, 30] x [1, 50]: the wave breaks and rotates</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+a &lt;- 0.89; b &lt;- 0.6; c &lt;- 0.28; k &lt;- 0.02; d &lt;- 0.4
+f1 &lt;- function(y1, y2) y1^2 * exp(y2 - y1) + k
+y1r &lt;- 0.2; y2r &lt;- c / (1 - a)
+for (j in 1:180) { y1neu &lt;- f1(y1r, y2r); y2r &lt;- a * y2r - b * y1r + c; y1r &lt;- y1neu }   <span class="k"># resting state of a single cell</span>
+
+ebene &lt;- function(blockade, schritte, Z = 100) {
+  <span class="k"># Z x Z cells, no-flux boundary; left edge (i = 1) starts excited. List of the states y1 for n = 0, 1, 2, ...</span>
+  Y1 &lt;- matrix(y1r, Z, Z); Y2 &lt;- matrix(y2r, Z, Z); Y1[1, ] &lt;- 0.3
+  vor &lt;- c(2:Z, Z); zur &lt;- c(1, 1:(Z - 1))   <span class="k"># neighbor indices, at the boundary the cell itself</span>
+  zustaende &lt;- list(Y1)
+  for (n in 1:schritte) {
+    D &lt;- matrix(d, Z, Z)
+    if (blockade &amp;&amp; n &gt;= 50 &amp;&amp; n &lt;= 52) D[28:30, 1:50] &lt;- 0   <span class="k"># block in the region [28, 30] x [1, 50]</span>
+    F &lt;- f1(Y1, Y2)
+    Y1neu &lt;- (1 - D) * F + D / 4 * (F[vor, ] + F[zur, ] + F[, vor] + F[, zur])
+    Y2 &lt;- a * Y2 - b * Y1 + c
+    Y1 &lt;- Y1neu
+    zustaende[[n + 1]] &lt;- Y1
+  }
+  zustaende
+}
+weissrot &lt;- colorRampPalette(c(&quot;white&quot;, rgb(0.89, 0.44, 0.49), rgb(0.64, 0.08, 0.18), rgb(0.43, 0.04, 0.12)))(64)
+
+Y &lt;- ebene(TRUE, 301)
+par(mfrow = c(3, 3), mar = c(2, 2, 2, 1))
+for (n in seq(54, 214, 20)) image(1:100, 1:100, Y[[n + 1]], col = weissrot, zlim = c(0, 4), main = sprintf(&quot;n = %d&quot;, n), asp = 1)
+erregt &lt;- sapply(c(100, 200, 300), function(n) sum(Y[[n + 1]] &gt; 1))
+cat(sprintf(&quot;number of excited cells at n = 100, 200, 300: [%s]  -&gt; the excitation does not stop\n&quot;, paste(erregt, collapse = &quot;, &quot;)))</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>number of excited cells at n = 100, 200, 300: [221, 793, 982]  -&gt; the excitation does not stop</code></pre></details>
+    </div>
+  </div>
+</section>
+  
+  
+  <nav class="weiter" aria-label="Page navigation"><a href="abschnitt-2-4.html"><small>Previous</small>2.4 Nonlinear Systems: SIR Model</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Companion website to the book “Dynamical Systems in the Life Sciences” by Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programs under the <a href="../LICENSE.txt">MIT License</a> · <a href="../../impressum.html" hreflang="de">Legal notice (German)</a> · <a href="../../datenschutz.html" hreflang="de">Privacy policy (German)</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

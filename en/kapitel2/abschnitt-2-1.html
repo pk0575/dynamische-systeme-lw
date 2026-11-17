@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>2.1 Examples: Fibonacci and Predator–Prey – Dynamical Systems in the Life Sciences</title>
+<meta name="description" content="Programs in Julia, MATLAB, Python, and R for Section 2.1 of the book Dynamical Systems in the Life Sciences">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamical Systems in the Life Sciences</a>
+  <nav aria-label="Chapters"><a href="../index.html">Home</a> <a href="../kapitel1/index.html">Chapter 1</a> <a href="../kapitel2/index.html" aria-current="page">Chapter 2</a> <a href="../kapitel3/index.html">Chapter 3</a> <a href="../kapitel4/index.html">Chapter 4</a> <a href="../../kapitel2/abschnitt-2-1.html" lang="de" hreflang="de">Deutsch</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Sections"><h2><a href="index.html">Chapter 2</a></h2><ol><li><a href="abschnitt-2-1.html" aria-current="page"><span class="nr">2.1</span><span>Examples: Fibonacci and Predator–Prey</span></a></li><li><a href="abschnitt-2-2.html"><span class="nr">2.2</span><span>Matrix Models</span></a></li><li><a href="abschnitt-2-3.html"><span class="nr">2.3</span><span>Eigenvalues and Long-Term Behavior</span></a></li><li><a href="abschnitt-2-4.html"><span class="nr">2.4</span><span>Nonlinear Systems: SIR Model</span></a></li><li><a href="abschnitt-2-5.html"><span class="nr">2.5</span><span>In Depth: Propagation of the Action Potential</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Chapter 2 · Discrete Dynamical Systems with Several Variables</p>
+      <h1><span class="num">2.1</span>Examples: Fibonacci and Predator–Prey</h1>
+      <p>Many processes can only be described with several quantities at once: young and adult pairs of rabbits, prey and predators. Each quantity gets its own recursion rule, and the rules depend on each other. This gives a system of difference equations.</p>
+      <p>For each figure of the section you will find the program that produces it. Change parameters and initial values and observe what happens. Figure and equation numbers refer to the book.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programming language</legend>
+  <div class="seg" role="radiogroup" aria-label="Programming language">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Applies to all pages. MATLAB programs also run in the free GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>On this page</b><ul><li><a href="#luchs-hase"><span class="abb">Fig. 2.2</span>Lynx and snowshoe hares</a></li><li><a href="#raeuber-beute-a"><span class="abb">Fig. 2.4</span>Predator–prey model: both survive</a></li><li><a href="#raeuber-beute-b"><span class="abb">Fig. 2.5</span>Predator–prey model: the predators die out</a></li><li><a href="#app-raeuber-beute"><span class="abb">App</span>try it in the browser</a></li></ul></div>
+  
+<section class="fig" id="luchs-hase">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 2.2</p>
+    <h2>Lynx and snowshoe hares</h2>
+    <p class="formel">pelts in thousands, 1900–1920</p>
+    <p class="lead">The Hudson's Bay Company data show oscillations shifted against each other: the number of lynx peaks one to two years after the number of hares. The program determines the maxima for each decade.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/luchs_hase.png" alt="Output of the program luchs_hase.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="luchs_hase.jl" data-m="luchs_hase.m" data-py="luchs_hase.py" data-r="luchs_hase.R">luchs_hase.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/luchs_hase.py" data-jl="code/luchs_hase.jl" data-m="code/luchs_hase.m" data-py="code/luchs_hase.py" data-r="code/luchs_hase.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 2.2: Lynx and snowshoe hares (book, Section 2.1)</span>
+<span class="k"># number of pelts purchased by the Hudson&#x27;s Bay Company (in thousands), 1900-1920, after Odum (1953)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots, LinearAlgebra
+
+jahr = 1900:1920
+hasen = [30, 47.2, 70.2, 77.4, 36.3, 20.6, 18.1, 21.4, 22, 25.4, 27.1, 40.3, 57, 76.6, 52.3, 19.5, 11.2, 7.6, 14.6, 16.2, 24.7]
+luchse = [4, 6.1, 9.8, 35.2, 59.4, 41.7, 19, 13, 8.3, 9.1, 7.4, 8, 12.3, 19.5, 45.7, 51.1, 29.7, 15.8, 9.7, 10.1, 8.6]
+
+for (von, bis) in [(1900, 1909), (1910, 1920)]          <span class="k"># maxima per decade: the lynx follow the hares</span>
+    m = (jahr .&gt;= von) .&amp; (jahr .&lt;= bis)
+    @printf(&quot;%d-%d: most hares %d, most lynx %d\n&quot;, von, bis, jahr[m][argmax(hasen[m])], jahr[m][argmax(luchse[m])])
+end
+
+p = plot(jahr, hasen, ls = :dash, marker = :circle, color = RGB(0.43, 0.04, 0.12), label = &quot;Snowshoe hares&quot;,
+         xlabel = &quot;Year&quot;, ylabel = &quot;Pelts (thousands)&quot;)
+plot!(p, jahr, luchse, ls = :dash, marker = :rect, color = RGB(0.89, 0.44, 0.49), label = &quot;Lynx&quot;)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 2.2: Lynx and snowshoe hares (book, Section 2.1)</span>
+<span class="k">% number of pelts purchased by the Hudson&#x27;s Bay Company (in thousands), 1900-1920, after Odum (1953)</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+jahr = 1900:1920;
+hasen = [30 47.2 70.2 77.4 36.3 20.6 18.1 21.4 22 25.4 27.1 40.3 57 76.6 52.3 19.5 11.2 7.6 14.6 16.2 24.7];
+luchse = [4 6.1 9.8 35.2 59.4 41.7 19 13 8.3 9.1 7.4 8 12.3 19.5 45.7 51.1 29.7 15.8 9.7 10.1 8.6];
+
+grenzen = [1900 1909; 1910 1920];             <span class="k">% maxima per decade: the lynx follow the hares</span>
+for i = 1:2
+    m = jahr &gt;= grenzen(i, 1) &amp; jahr &lt;= grenzen(i, 2);
+    j = jahr(m);
+    [~, ih] = max(hasen(m)); [~, il] = max(luchse(m));
+    fprintf(&#x27;%d-%d: most hares %d, most lynx %d\n&#x27;, grenzen(i, 1), grenzen(i, 2), j(ih), j(il));
+end
+
+plot(jahr, hasen, &#x27;--o&#x27;, &#x27;Color&#x27;, [0.43 0.04 0.12]); hold on
+plot(jahr, luchse, &#x27;--s&#x27;, &#x27;Color&#x27;, [0.89 0.44 0.49]); hold off
+xlabel(&#x27;Year&#x27;); ylabel(&#x27;Pelts (thousands)&#x27;); legend(&#x27;Snowshoe hares&#x27;, &#x27;Lynx&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 2.2: Lynx and snowshoe hares (book, Section 2.1)</span>
+<span class="k"># number of pelts purchased by the Hudson&#x27;s Bay Company (in thousands), 1900-1920, after Odum (1953)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+jahr = np.arange(1900, 1921)
+hasen = [30, 47.2, 70.2, 77.4, 36.3, 20.6, 18.1, 21.4, 22, 25.4, 27.1, 40.3, 57, 76.6, 52.3, 19.5, 11.2, 7.6, 14.6, 16.2, 24.7]
+luchse = [4, 6.1, 9.8, 35.2, 59.4, 41.7, 19, 13, 8.3, 9.1, 7.4, 8, 12.3, 19.5, 45.7, 51.1, 29.7, 15.8, 9.7, 10.1, 8.6]
+
+for von, bis in [(1900, 1909), (1910, 1920)]:              <span class="k"># maxima per decade: the lynx follow the hares</span>
+    m = (jahr &gt;= von) &amp; (jahr &lt;= bis)
+    print(f&quot;{von}-{bis}: most hares {jahr[m][np.argmax(np.array(hasen)[m])]}, most lynx {jahr[m][np.argmax(np.array(luchse)[m])]}&quot;)
+
+plt.plot(jahr, hasen, &quot;o--&quot;, color=(0.43, 0.04, 0.12), label=&quot;Snowshoe hares&quot;)
+plt.plot(jahr, luchse, &quot;s--&quot;, color=(0.89, 0.44, 0.49), label=&quot;Lynx&quot;)
+plt.xlabel(&quot;Year&quot;); plt.ylabel(&quot;Pelts (thousands)&quot;); plt.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 2.2: Lynx and snowshoe hares (book, Section 2.1)</span>
+<span class="k"># number of pelts purchased by the Hudson&#x27;s Bay Company (in thousands), 1900-1920, after Odum (1953)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+jahr &lt;- 1900:1920
+hasen &lt;- c(30, 47.2, 70.2, 77.4, 36.3, 20.6, 18.1, 21.4, 22, 25.4, 27.1, 40.3, 57, 76.6, 52.3, 19.5, 11.2, 7.6, 14.6, 16.2, 24.7)
+luchse &lt;- c(4, 6.1, 9.8, 35.2, 59.4, 41.7, 19, 13, 8.3, 9.1, 7.4, 8, 12.3, 19.5, 45.7, 51.1, 29.7, 15.8, 9.7, 10.1, 8.6)
+
+for (g in list(c(1900, 1909), c(1910, 1920))) {      <span class="k"># maxima per decade: the lynx follow the hares</span>
+  m &lt;- jahr &gt;= g[1] &amp; jahr &lt;= g[2]
+  cat(sprintf(&quot;%d-%d: most hares %d, most lynx %d\n&quot;, g[1], g[2], jahr[m][which.max(hasen[m])], jahr[m][which.max(luchse[m])]))
+}
+
+plot(jahr, hasen, type = &quot;o&quot;, lty = 2, pch = 16, col = rgb(0.43, 0.04, 0.12), ylim = c(0, 80), xlab = &quot;Year&quot;, ylab = &quot;Pelts (thousands)&quot;)
+lines(jahr, luchse, type = &quot;o&quot;, lty = 2, pch = 15, col = rgb(0.89, 0.44, 0.49))
+legend(&quot;topright&quot;, legend = c(&quot;Snowshoe hares&quot;, &quot;Lynx&quot;), col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)), pch = c(16, 15), lty = 2)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>1900-1909: most hares 1903, most lynx 1904
+1910-1920: most hares 1913, most lynx 1915</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="raeuber-beute-a">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 2.4</p>
+    <h2>Predator–prey model: both survive</h2>
+    <p class="formel">u<sub>n+1</sub> = (1 + r) u<sub>n</sub> − r u<sub>n</sub><sup>2</sup> − γ u<sub>n</sub> v<sub>n</sub>,&ensp; v<sub>n+1</sub> = γ u<sub>n</sub> v<sub>n</sub></p>
+    <p class="lead">With r = 3.1 and γ = 2.1, prey and predators oscillate with a shift, as in the pelt data. In the phase plane (right) the states circle around the steady state (1/γ, r(1 − 1/γ)/γ).</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/raeuber_beute_a.png" alt="Output of the program raeuber_beute_a.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="raeuber_beute_a.jl" data-m="raeuber_beute_a.m" data-py="raeuber_beute_a.py" data-r="raeuber_beute_a.R">raeuber_beute_a.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/raeuber_beute_a.py" data-jl="code/raeuber_beute_a.jl" data-m="code/raeuber_beute_a.m" data-py="code/raeuber_beute_a.py" data-r="code/raeuber_beute_a.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 2.4: Predator-prey model, predators and prey survive (book, Section 2.1, Eq. 2.3)</span>
+<span class="k"># u_{n+1} = (1 + r) u_n - r u_n^2 - gamma u_n v_n,  v_{n+1} = gamma u_n v_n  with r = 3.1, gamma = 2.1, u_0 = 0.5, v_0 = 0.2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots, LinearAlgebra
+r = 3.1; gamma = 2.1
+N = 40
+u = zeros(N + 1); v = zeros(N + 1)
+u[1] = 0.5; v[1] = 0.2                   <span class="k"># Julia counts from 1: u[1] is u_0</span>
+for k in 1:N
+    u[k + 1] = (1 + r) * u[k] - r * u[k]^2 - gamma * u[k] * v[k]
+    v[k + 1] = gamma * u[k] * v[k]
+end
+@printf(&quot;steady state (1/gamma, r(1 - 1/gamma)/gamma) = (%.4f, %.4f)\n&quot;, 1/gamma, r * (1 - 1/gamma) / gamma)
+println(&quot;u_36 ... u_40 = &quot;, join([@sprintf(&quot;%.3f&quot;, x) for x in u[37:41]], &quot;  &quot;))
+
+n = 0:N
+p1 = plot(n, u, ls = :dash, marker = :circle, color = RGB(0.43, 0.04, 0.12), label = &quot;Prey u_n&quot;, xlabel = &quot;n&quot;)
+plot!(p1, n, v, ls = :dash, marker = :rect, color = RGB(0.89, 0.44, 0.49), label = &quot;Predators v_n&quot;)
+p2 = scatter(u, v, zcolor = n, color = cgrad([RGB(1, 0.85, 0.85), RGB(0.43, 0.04, 0.12)]), legend = false, colorbar = false,
+             xlabel = &quot;Prey u_n&quot;, ylabel = &quot;Predators v_n&quot;)       <span class="k"># light: early, dark: late</span>
+scatter!(p2, [u[1]], [v[1]], color = :black, ms = 6)
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 2.4: Predator-prey model, predators and prey survive (book, Section 2.1, Eq. 2.3)</span>
+<span class="k">% u_{n+1} = (1 + r) u_n - r u_n^2 - gamma u_n v_n,  v_{n+1} = gamma u_n v_n  with r = 3.1, gamma = 2.1, u_0 = 0.5, v_0 = 0.2</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+r = 3.1; gamma = 2.1; N = 40;
+u = zeros(1, N + 1); v = zeros(1, N + 1);
+u(1) = 0.5; v(1) = 0.2;                       <span class="k">% MATLAB counts from 1: u(1) is u_0</span>
+for k = 1:N
+    u(k + 1) = (1 + r) * u(k) - r * u(k)^2 - gamma * u(k) * v(k);
+    v(k + 1) = gamma * u(k) * v(k);
+end
+fprintf(&#x27;steady state (1/gamma, r(1 - 1/gamma)/gamma) = (%.4f, %.4f)\n&#x27;, 1/gamma, r * (1 - 1/gamma) / gamma);
+fprintf(&#x27;u_36 ... u_40 = &#x27;); fprintf(&#x27;%.3f  &#x27;, u(37:41)); fprintf(&#x27;\n&#x27;);
+
+n = 0:N;
+subplot(1, 2, 1);
+plot(n, u, &#x27;--o&#x27;, &#x27;Color&#x27;, [0.43 0.04 0.12]); hold on
+plot(n, v, &#x27;--s&#x27;, &#x27;Color&#x27;, [0.89 0.44 0.49]); hold off
+xlabel(&#x27;n&#x27;); legend(&#x27;Prey u_n&#x27;, &#x27;Predators v_n&#x27;);
+subplot(1, 2, 2);
+rot = [linspace(1, 0.43, 64)&#x27; linspace(0.85, 0.04, 64)&#x27; linspace(0.85, 0.12, 64)&#x27;];
+colormap(rot); scatter(u, v, 30, n, &#x27;filled&#x27;); hold on              <span class="k">% light: early, dark: late</span>
+plot(u(1), v(1), &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+xlabel(&#x27;Prey u_n&#x27;); ylabel(&#x27;Predators v_n&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 2.4: Predator-prey model, predators and prey survive (book, Section 2.1, Eq. 2.3)</span>
+<span class="k"># u_{n+1} = (1 + r) u_n - r u_n^2 - gamma u_n v_n,  v_{n+1} = gamma u_n v_n  with r = 3.1, gamma = 2.1, u_0 = 0.5, v_0 = 0.2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+r, gamma, N = 3.1, 2.1, 40
+u = np.zeros(N + 1); v = np.zeros(N + 1)
+u[0], v[0] = 0.5, 0.2
+for n in range(N):
+    u[n + 1] = (1 + r) * u[n] - r * u[n]**2 - gamma * u[n] * v[n]
+    v[n + 1] = gamma * u[n] * v[n]
+print(f&quot;steady state (1/gamma, r(1 - 1/gamma)/gamma) = ({1 / gamma:.4f}, {r * (1 - 1 / gamma) / gamma:.4f})&quot;)
+print(&quot;u_36 ... u_40 =&quot;, &quot;  &quot;.join(f&quot;{x:.3f}&quot; for x in u[36:]))
+
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+n = np.arange(N + 1)
+axs[0].plot(n, u, &quot;o--&quot;, color=(0.43, 0.04, 0.12), label=&quot;Prey u_n&quot;)
+axs[0].plot(n, v, &quot;s--&quot;, color=(0.89, 0.44, 0.49), label=&quot;Predators v_n&quot;)
+axs[0].set_xlabel(&quot;n&quot;); axs[0].legend()
+axs[1].scatter(u, v, c=n, cmap=&quot;Reds&quot;, vmin=-15)          <span class="k"># light: early, dark: late</span>
+axs[1].plot(u[0], v[0], &quot;ko&quot;)
+axs[1].set_xlabel(&quot;Prey u_n&quot;); axs[1].set_ylabel(&quot;Predators v_n&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 2.4: Predator-prey model, predators and prey survive (book, Section 2.1, Eq. 2.3)</span>
+<span class="k"># u_{n+1} = (1 + r) u_n - r u_n^2 - gamma u_n v_n,  v_{n+1} = gamma u_n v_n  with r = 3.1, gamma = 2.1, u_0 = 0.5, v_0 = 0.2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+r &lt;- 3.1; gamma &lt;- 2.1
+N &lt;- 40
+u &lt;- numeric(N + 1); v &lt;- numeric(N + 1)
+u[1] &lt;- 0.5; v[1] &lt;- 0.2                 <span class="k"># R counts from 1: u[1] is u_0</span>
+for (k in 1:N) {
+  u[k + 1] &lt;- (1 + r) * u[k] - r * u[k]^2 - gamma * u[k] * v[k]
+  v[k + 1] &lt;- gamma * u[k] * v[k]
+}
+cat(sprintf(&quot;steady state (1/gamma, r(1 - 1/gamma)/gamma) = (%.4f, %.4f)\n&quot;, 1/gamma, r * (1 - 1/gamma) / gamma))
+cat(&quot;u_36 ... u_40 =&quot;, sprintf(&quot;%.3f&quot;, u[37:41]), &quot;\n&quot;)
+
+n &lt;- 0:N
+par(mfrow = c(1, 2))
+plot(n, u, type = &quot;o&quot;, lty = 2, pch = 16, col = rgb(0.43, 0.04, 0.12), ylim = range(c(u, v)), xlab = &quot;n&quot;, ylab = &quot;&quot;)
+lines(n, v, type = &quot;o&quot;, lty = 2, pch = 15, col = rgb(0.89, 0.44, 0.49))
+legend(&quot;topright&quot;, legend = c(&quot;Prey u_n&quot;, &quot;Predators v_n&quot;), col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)), pch = c(16, 15), lty = 2)
+hell_dunkel &lt;- colorRampPalette(c(rgb(1, 0.85, 0.85), rgb(0.43, 0.04, 0.12)))(N + 1)   <span class="k"># light: early, dark: late</span>
+plot(u, v, pch = 16, col = hell_dunkel, xlab = &quot;Prey u_n&quot;, ylab = &quot;Predators v_n&quot;)
+points(u[1], v[1], pch = 16, cex = 1.5)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>steady state (1/gamma, r(1 - 1/gamma)/gamma) = (0.4762, 0.7732)
+u_36 ... u_40 = 0.579  0.621  0.420  0.354  0.453</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="raeuber-beute-b">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 2.5</p>
+    <h2>Predator–prey model: the predators die out</h2>
+    <p class="formel">r = 2.5,&ensp; γ = 1.1</p>
+    <p class="lead">Now v<sub>n</sub> decreases steadily. Without predators the prey follows the logistic model with a = 1 + r = 3.5 and finally jumps back and forth between the values of a cycle.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/raeuber_beute_b.png" alt="Output of the program raeuber_beute_b.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="raeuber_beute_b.jl" data-m="raeuber_beute_b.m" data-py="raeuber_beute_b.py" data-r="raeuber_beute_b.R">raeuber_beute_b.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/raeuber_beute_b.py" data-jl="code/raeuber_beute_b.jl" data-m="code/raeuber_beute_b.m" data-py="code/raeuber_beute_b.py" data-r="code/raeuber_beute_b.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 2.5: Predator-prey model, the predators die out (book, Section 2.1, Eq. 2.3)</span>
+<span class="k"># u_{n+1} = (1 + r) u_n - r u_n^2 - gamma u_n v_n,  v_{n+1} = gamma u_n v_n  with r = 2.5, gamma = 1.1, u_0 = 0.5, v_0 = 0.2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots, LinearAlgebra
+r = 2.5; gamma = 1.1
+N = 40
+u = zeros(N + 1); v = zeros(N + 1)
+u[1] = 0.5; v[1] = 0.2                   <span class="k"># Julia counts from 1: u[1] is u_0</span>
+for k in 1:N
+    u[k + 1] = (1 + r) * u[k] - r * u[k]^2 - gamma * u[k] * v[k]
+    v[k + 1] = gamma * u[k] * v[k]
+end
+println(&quot;v_0, v_10, v_20, v_40 = &quot;, join([@sprintf(&quot;%.4f&quot;, v[i]) for i in (1, 11, 21, 41)], &quot;  &quot;), &quot;  -&gt; the predators die out&quot;)
+println(&quot;u_36 ... u_40 = &quot;, join([@sprintf(&quot;%.3f&quot;, x) for x in u[37:41]], &quot;  &quot;))
+
+n = 0:N
+p1 = plot(n, u, ls = :dash, marker = :circle, color = RGB(0.43, 0.04, 0.12), label = &quot;Prey u_n&quot;, xlabel = &quot;n&quot;)
+plot!(p1, n, v, ls = :dash, marker = :rect, color = RGB(0.89, 0.44, 0.49), label = &quot;Predators v_n&quot;)
+p2 = scatter(u, v, zcolor = n, color = cgrad([RGB(1, 0.85, 0.85), RGB(0.43, 0.04, 0.12)]), legend = false, colorbar = false,
+             xlabel = &quot;Prey u_n&quot;, ylabel = &quot;Predators v_n&quot;)       <span class="k"># light: early, dark: late</span>
+scatter!(p2, [u[1]], [v[1]], color = :black, ms = 6)
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 2.5: Predator-prey model, the predators die out (book, Section 2.1, Eq. 2.3)</span>
+<span class="k">% u_{n+1} = (1 + r) u_n - r u_n^2 - gamma u_n v_n,  v_{n+1} = gamma u_n v_n  with r = 2.5, gamma = 1.1, u_0 = 0.5, v_0 = 0.2</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+r = 2.5; gamma = 1.1; N = 40;
+u = zeros(1, N + 1); v = zeros(1, N + 1);
+u(1) = 0.5; v(1) = 0.2;                       <span class="k">% MATLAB counts from 1: u(1) is u_0</span>
+for k = 1:N
+    u(k + 1) = (1 + r) * u(k) - r * u(k)^2 - gamma * u(k) * v(k);
+    v(k + 1) = gamma * u(k) * v(k);
+end
+fprintf(&#x27;v_0, v_10, v_20, v_40 = %.4f  %.4f  %.4f  %.4f  -&gt; the predators die out\n&#x27;, v([1 11 21 41]));
+fprintf(&#x27;u_36 ... u_40 = &#x27;); fprintf(&#x27;%.3f  &#x27;, u(37:41)); fprintf(&#x27;\n&#x27;);
+
+n = 0:N;
+subplot(1, 2, 1);
+plot(n, u, &#x27;--o&#x27;, &#x27;Color&#x27;, [0.43 0.04 0.12]); hold on
+plot(n, v, &#x27;--s&#x27;, &#x27;Color&#x27;, [0.89 0.44 0.49]); hold off
+xlabel(&#x27;n&#x27;); legend(&#x27;Prey u_n&#x27;, &#x27;Predators v_n&#x27;);
+subplot(1, 2, 2);
+rot = [linspace(1, 0.43, 64)&#x27; linspace(0.85, 0.04, 64)&#x27; linspace(0.85, 0.12, 64)&#x27;];
+colormap(rot); scatter(u, v, 30, n, &#x27;filled&#x27;); hold on              <span class="k">% light: early, dark: late</span>
+plot(u(1), v(1), &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+xlabel(&#x27;Prey u_n&#x27;); ylabel(&#x27;Predators v_n&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 2.5: Predator-prey model, the predators die out (book, Section 2.1, Eq. 2.3)</span>
+<span class="k"># u_{n+1} = (1 + r) u_n - r u_n^2 - gamma u_n v_n,  v_{n+1} = gamma u_n v_n  with r = 2.5, gamma = 1.1, u_0 = 0.5, v_0 = 0.2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+r, gamma, N = 2.5, 1.1, 40
+u = np.zeros(N + 1); v = np.zeros(N + 1)
+u[0], v[0] = 0.5, 0.2
+for n in range(N):
+    u[n + 1] = (1 + r) * u[n] - r * u[n]**2 - gamma * u[n] * v[n]
+    v[n + 1] = gamma * u[n] * v[n]
+print(&quot;v_0, v_10, v_20, v_40 =&quot;, &quot;  &quot;.join(f&quot;{v[k]:.4f}&quot; for k in (0, 10, 20, 40)), &quot; -&gt; the predators die out&quot;)
+print(&quot;u_36 ... u_40 =&quot;, &quot;  &quot;.join(f&quot;{x:.3f}&quot; for x in u[36:]))
+
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+n = np.arange(N + 1)
+axs[0].plot(n, u, &quot;o--&quot;, color=(0.43, 0.04, 0.12), label=&quot;Prey u_n&quot;)
+axs[0].plot(n, v, &quot;s--&quot;, color=(0.89, 0.44, 0.49), label=&quot;Predators v_n&quot;)
+axs[0].set_xlabel(&quot;n&quot;); axs[0].legend()
+axs[1].scatter(u, v, c=n, cmap=&quot;Reds&quot;, vmin=-15)          <span class="k"># light: early, dark: late</span>
+axs[1].plot(u[0], v[0], &quot;ko&quot;)
+axs[1].set_xlabel(&quot;Prey u_n&quot;); axs[1].set_ylabel(&quot;Predators v_n&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 2.5: Predator-prey model, the predators die out (book, Section 2.1, Eq. 2.3)</span>
+<span class="k"># u_{n+1} = (1 + r) u_n - r u_n^2 - gamma u_n v_n,  v_{n+1} = gamma u_n v_n  with r = 2.5, gamma = 1.1, u_0 = 0.5, v_0 = 0.2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+r &lt;- 2.5; gamma &lt;- 1.1
+N &lt;- 40
+u &lt;- numeric(N + 1); v &lt;- numeric(N + 1)
+u[1] &lt;- 0.5; v[1] &lt;- 0.2                 <span class="k"># R counts from 1: u[1] is u_0</span>
+for (k in 1:N) {
+  u[k + 1] &lt;- (1 + r) * u[k] - r * u[k]^2 - gamma * u[k] * v[k]
+  v[k + 1] &lt;- gamma * u[k] * v[k]
+}
+cat(&quot;v_0, v_10, v_20, v_40 =&quot;, sprintf(&quot;%.4f&quot;, v[c(1, 11, 21, 41)]), &quot; -&gt; the predators die out\n&quot;)
+cat(&quot;u_36 ... u_40 =&quot;, sprintf(&quot;%.3f&quot;, u[37:41]), &quot;\n&quot;)
+
+n &lt;- 0:N
+par(mfrow = c(1, 2))
+plot(n, u, type = &quot;o&quot;, lty = 2, pch = 16, col = rgb(0.43, 0.04, 0.12), ylim = range(c(u, v)), xlab = &quot;n&quot;, ylab = &quot;&quot;)
+lines(n, v, type = &quot;o&quot;, lty = 2, pch = 15, col = rgb(0.89, 0.44, 0.49))
+legend(&quot;topright&quot;, legend = c(&quot;Prey u_n&quot;, &quot;Predators v_n&quot;), col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)), pch = c(16, 15), lty = 2)
+hell_dunkel &lt;- colorRampPalette(c(rgb(1, 0.85, 0.85), rgb(0.43, 0.04, 0.12)))(N + 1)   <span class="k"># light: early, dark: late</span>
+plot(u, v, pch = 16, col = hell_dunkel, xlab = &quot;Prey u_n&quot;, ylab = &quot;Predators v_n&quot;)
+points(u[1], v[1], pch = 16, cex = 1.5)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>v_0, v_10, v_20, v_40 = 0.2000  0.1175  0.0663  0.0183  -&gt; the predators die out
+u_36 ... u_40 = 0.609  1.188  0.608  1.190  0.607</code></pre></details>
+    </div>
+  </div>
+</section>
+  <section class="apps" id="app-raeuber-beute">
+  <div class="fig-head"><p class="eyebrow">Try it in the browser · no installation</p><h2>Predator–prey model</h2><p class="lead">Change the growth rate r of the prey and the parameter γ. For γ ≤ 1 the predators die out; for larger γ, predators and prey settle around a steady state or oscillate permanently.</p></div>
+  <div class="app" data-app="raeuber-beute">
+    <canvas width="720" height="560" aria-label="Predator–prey model"></canvas>
+    <div class="regler"><label><span>View</span><select aria-label="View"><option value="zeit">Time course</option><option value="phase">Phase plane (u<sub>n</sub>, v<sub>n</sub>)</option></select></label><label><span>Growth rate r</span> <output data-o="r"></output><input type="range" data-r="r" min="0.5" max="3.5" step="0.05" value="3.1" aria-label="Growth rate r"></label><label><span>Parameter γ</span> <output data-o="g"></output><input type="range" data-r="g" min="0.5" max="3" step="0.05" value="2.1" aria-label="Parameter γ"></label><label><span>Prey u<sub>0</sub></span> <output data-o="u0"></output><input type="range" data-r="u0" min="0.05" max="1" step="0.05" value="0.5" aria-label="Prey u0"></label><label><span>Predators v<sub>0</sub></span> <output data-o="v0"></output><input type="range" data-r="v0" min="0.05" max="1" step="0.05" value="0.2" aria-label="Predators v0"></label><label><span>Steps</span> <output data-o="n"></output><input type="range" data-r="n" min="5" max="200" step="1" value="40" aria-label="Steps"></label><p class="zustand"></p><pre class="werte"></pre></div>
+  </div>
+</section>
+  <section class="matlab-apps"><h3>MATLAB apps from the course</h3><p>Download, put into a folder, and type the name without extension in MATLAB, e.g. <code>raeuber_beute_app</code>. The apps use the graphical user interface of MATLAB and do not run in GNU Octave. Their user interface is in German.</p><ul><li><a href="apps/raeuber_beute_app.m" download>raeuber_beute_app.m</a><span>Discrete predator–prey model</span></li></ul></section>
+  <nav class="weiter" aria-label="Page navigation"><a href="abschnitt-2-2.html"><small>Next</small>2.2 Matrix Models</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Companion website to the book “Dynamical Systems in the Life Sciences” by Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programs under the <a href="../LICENSE.txt">MIT License</a> · <a href="../../impressum.html" hreflang="de">Legal notice (German)</a> · <a href="../../datenschutz.html" hreflang="de">Privacy policy (German)</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

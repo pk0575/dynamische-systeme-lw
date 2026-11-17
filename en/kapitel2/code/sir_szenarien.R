@@ -1,0 +1,26 @@
+# Fig. 2.15: SIR model, scenarios A and B (book, Section 2.4, Eq. 2.21)
+# S_{n+1} = S_n - beta S_n I_n + alpha N - alpha S_n,  I_{n+1} = I_n + beta S_n I_n - (gamma + alpha) I_n,  R_{n+1} = R_n + gamma I_n - alpha R_n
+# N = 100000, alpha = gamma = 0.1;  A: beta = 1.2e-6, S_0 = 70000, I_0 = 30000;  B: beta = 7.6e-6, S_0 = 99999, I_0 = 1
+# (c) 2026 Philipp Kügler · Program for the book "Dynamical Systems in the Life Sciences" · MIT License (see LICENSE)
+N <- 100000; alpha <- 0.1; gamma <- 0.1
+
+farben <- c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49), rgb(0.64, 0.08, 0.18)); zeichen <- c(16, 15, 18)
+lab <- c("S_n", "I_n", "R_n")
+par(mfcol = c(3, 2), mar = c(4, 4, 2, 1))
+for (sz in list(list("A", 1.2e-6, 70000, 30000, 60), list("B", 7.6e-6, 99999, 1, 80))) {
+  name <- sz[[1]]; beta <- sz[[2]]; M <- sz[[5]]
+  X <- matrix(0, 3, M + 1)               # rows: S, I, R
+  X[, 1] <- c(sz[[3]], sz[[4]], N - sz[[3]] - sz[[4]])
+  for (k in 1:M) {
+    S <- X[1, k]; I <- X[2, k]; R <- X[3, k]
+    X[, k + 1] <- c(S - beta * S * I + alpha * N - alpha * S,
+                    I + beta * S * I - (gamma + alpha) * I,
+                    R + gamma * I - alpha * R)
+  }
+  R0 <- beta * N / (gamma + alpha)       # basic reproduction number
+  cat(sprintf("Scenario %s: R_0 = %.1f,  (S, I, R) after %d steps = (%.0f, %.0f, %.0f)\n", name, R0, M, X[1, M + 1], X[2, M + 1], X[3, M + 1]))
+  for (z in 1:3) {
+    plot(0:M, X[z, ], type = "o", lty = 2, pch = zeichen[z], cex = 0.5, col = farben[z], xlab = if (z == 3) "n" else "", ylab = lab[z],
+         main = if (z == 1) sprintf("Scenario %s, beta = %g", name, beta) else "")
+  }
+}

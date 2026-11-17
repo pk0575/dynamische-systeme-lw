@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>2.4 Nonlinear Systems: SIR Model – Dynamical Systems in the Life Sciences</title>
+<meta name="description" content="Programs in Julia, MATLAB, Python, and R for Section 2.4 of the book Dynamical Systems in the Life Sciences">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamical Systems in the Life Sciences</a>
+  <nav aria-label="Chapters"><a href="../index.html">Home</a> <a href="../kapitel1/index.html">Chapter 1</a> <a href="../kapitel2/index.html" aria-current="page">Chapter 2</a> <a href="../kapitel3/index.html">Chapter 3</a> <a href="../kapitel4/index.html">Chapter 4</a> <a href="../../kapitel2/abschnitt-2-4.html" lang="de" hreflang="de">Deutsch</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Sections"><h2><a href="index.html">Chapter 2</a></h2><ol><li><a href="abschnitt-2-1.html"><span class="nr">2.1</span><span>Examples: Fibonacci and Predator–Prey</span></a></li><li><a href="abschnitt-2-2.html"><span class="nr">2.2</span><span>Matrix Models</span></a></li><li><a href="abschnitt-2-3.html"><span class="nr">2.3</span><span>Eigenvalues and Long-Term Behavior</span></a></li><li><a href="abschnitt-2-4.html" aria-current="page"><span class="nr">2.4</span><span>Nonlinear Systems: SIR Model</span></a></li><li><a href="abschnitt-2-5.html"><span class="nr">2.5</span><span>In Depth: Propagation of the Action Potential</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Chapter 2 · Discrete Dynamical Systems with Several Variables</p>
+      <h1><span class="num">2.4</span>Nonlinear Systems: SIR Model</h1>
+      <p>In the SIR model a population is divided into susceptible (S), infected (I), and recovered (R) persons. New infections arise from contacts between S and I, hence the product β S<sub>n</sub> I<sub>n</sub>: the system is nonlinear. Whether a disease persists is decided by the basic reproduction number R<sub>0</sub>.</p>
+      <p>For each figure of the section you will find the program that produces it. Change parameters and initial values and observe what happens. Figure and equation numbers refer to the book.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programming language</legend>
+  <div class="seg" role="radiogroup" aria-label="Programming language">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Applies to all pages. MATLAB programs also run in the free GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>On this page</b><ul><li><a href="#sir-szenarien"><span class="abb">Fig. 2.15</span>SIR model, scenarios A and B</a></li><li><a href="#sir-phasenebene"><span class="abb">Fig. 2.16</span>Scenario B in the phase plane</a></li><li><a href="#sir-bifurkation"><span class="abb">Fig. 2.17</span>Steady-state values I* as a function of R0</a></li><li><a href="#sir-anfang-neuinfektionen"><span class="abb">Fig. 2.18</span>Initial phase and new infections</a></li><li><a href="#app-sir"><span class="abb">App</span>try it in the browser</a></li></ul></div>
+  
+<section class="fig" id="sir-szenarien">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 2.15</p>
+    <h2>SIR model, scenarios A and B</h2>
+    <p class="formel">S<sub>n+1</sub> = S<sub>n</sub> − β S<sub>n</sub> I<sub>n</sub> + α N − α S<sub>n</sub>,&ensp; I<sub>n+1</sub> = I<sub>n</sub> + β S<sub>n</sub> I<sub>n</sub> − (γ + α) I<sub>n</sub></p>
+    <p class="lead">In scenario A (R<sub>0</sub> = 0.6) the disease disappears despite 30,000 infected at the start. In scenario B (R<sub>0</sub> = 3.8) a single infected person suffices for an epidemic, after which an endemic state sets in.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/sir_szenarien.png" alt="Output of the program sir_szenarien.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="sir_szenarien.jl" data-m="sir_szenarien.m" data-py="sir_szenarien.py" data-r="sir_szenarien.R">sir_szenarien.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/sir_szenarien.py" data-jl="code/sir_szenarien.jl" data-m="code/sir_szenarien.m" data-py="code/sir_szenarien.py" data-r="code/sir_szenarien.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 2.15: SIR model, scenarios A and B (book, Section 2.4, Eq. 2.21)</span>
+<span class="k"># S_{n+1} = S_n - beta S_n I_n + alpha N - alpha S_n,  I_{n+1} = I_n + beta S_n I_n - (gamma + alpha) I_n,  R_{n+1} = R_n + gamma I_n - alpha R_n</span>
+<span class="k"># N = 100000, alpha = gamma = 0.1;  A: beta = 1.2e-6, S_0 = 70000, I_0 = 30000;  B: beta = 7.6e-6, S_0 = 99999, I_0 = 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots, LinearAlgebra
+N = 100000; alpha = 0.1; gamma = 0.1
+
+farben = [RGB(0.43, 0.04, 0.12), RGB(0.89, 0.44, 0.49), RGB(0.64, 0.08, 0.18)]; zeichen = [:circle, :rect, :diamond]
+lab = [&quot;S_n&quot;, &quot;I_n&quot;, &quot;R_n&quot;]
+bilder = []
+for (name, beta, S0, I0, M) in [(&quot;A&quot;, 1.2e-6, 70000, 30000, 60), (&quot;B&quot;, 7.6e-6, 99999, 1, 80)]
+    X = zeros(3, M + 1)                  <span class="k"># rows: S, I, R</span>
+    X[:, 1] = [S0, I0, N - S0 - I0]
+    for k in 1:M
+        S, I, R = X[:, k]
+        X[:, k + 1] = [S - beta * S * I + alpha * N - alpha * S,
+                       I + beta * S * I - (gamma + alpha) * I,
+                       R + gamma * I - alpha * R]
+    end
+    R0 = beta * N / (gamma + alpha)      <span class="k"># basic reproduction number</span>
+    @printf(&quot;Scenario %s: R_0 = %.1f,  (S, I, R) after %d steps = (%.0f, %.0f, %.0f)\n&quot;, name, R0, M, X[:, end]...)
+    for z in 1:3
+        push!(bilder, plot(0:M, X[z, :], ls = :dash, marker = zeichen[z], ms = 2, color = farben[z], label = lab[z],
+                           title = z == 1 ? &quot;Scenario $name, β = $beta&quot; : &quot;&quot;))
+    end
+end
+display(plot(bilder[[1, 4, 2, 5, 3, 6]]..., layout = (3, 2), size = (900, 650)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 2.15: SIR model, scenarios A and B (book, Section 2.4, Eq. 2.21)</span>
+<span class="k">% S_{n+1} = S_n - beta S_n I_n + alpha N - alpha S_n,  I_{n+1} = I_n + beta S_n I_n - (gamma + alpha) I_n,  R_{n+1} = R_n + gamma I_n - alpha R_n</span>
+<span class="k">% N = 100000, alpha = gamma = 0.1;  A: beta = 1.2e-6, S_0 = 70000, I_0 = 30000;  B: beta = 7.6e-6, S_0 = 99999, I_0 = 1</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+N = 100000; alpha = 0.1; gamma = 0.1;
+namen = &#x27;AB&#x27;;
+betas = [1.2e-6 7.6e-6]; S0s = [70000 99999]; I0s = [30000 1]; schritte = [60 80];
+farben = [0.43 0.04 0.12; 0.89 0.44 0.49; 0.64 0.08 0.18]; marker = &#x27;osd&#x27;; lab = {&#x27;S_n&#x27;, &#x27;I_n&#x27;, &#x27;R_n&#x27;};
+for sp = 1:2
+    beta = betas(sp); M = schritte(sp);
+    X = zeros(3, M + 1);                  <span class="k">% rows: S, I, R</span>
+    X(:, 1) = [S0s(sp); I0s(sp); N - S0s(sp) - I0s(sp)];
+    for k = 1:M
+        S = X(1, k); I = X(2, k); R = X(3, k);
+        X(:, k + 1) = [S - beta * S * I + alpha * N - alpha * S;
+                       I + beta * S * I - (gamma + alpha) * I;
+                       R + gamma * I - alpha * R];
+    end
+    R0 = beta * N / (gamma + alpha);      <span class="k">% basic reproduction number</span>
+    fprintf(&#x27;Scenario %s: R_0 = %.1f,  (S, I, R) after %d steps = (%.0f, %.0f, %.0f)\n&#x27;, namen(sp), R0, M, X(:, end));
+    for z = 1:3
+        subplot(3, 2, 2 * (z - 1) + sp);
+        plot(0:M, X(z, :), [&#x27;--&#x27; marker(z)], &#x27;Color&#x27;, farben(z, :), &#x27;MarkerSize&#x27;, 3); legend(lab{z}, &#x27;Location&#x27;, &#x27;east&#x27;);
+        if z == 1, title(sprintf(&#x27;Scenario %s, beta = %g&#x27;, namen(sp), beta)); end
+    end
+    xlabel(&#x27;n&#x27;);
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 2.15: SIR model, scenarios A and B (book, Section 2.4, Eq. 2.21)</span>
+<span class="k"># S_{n+1} = S_n - beta S_n I_n + alpha N - alpha S_n,  I_{n+1} = I_n + beta S_n I_n - (gamma + alpha) I_n,  R_{n+1} = R_n + gamma I_n - alpha R_n</span>
+<span class="k"># N = 100000, alpha = gamma = 0.1;  A: beta = 1.2e-6, S_0 = 70000, I_0 = 30000;  B: beta = 7.6e-6, S_0 = 99999, I_0 = 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+N, alpha, gamma = 100000, 0.1, 0.1
+
+def sir(beta, S0, I0, schritte):
+    S, I, R = np.zeros(schritte + 1), np.zeros(schritte + 1), np.zeros(schritte + 1)
+    S[0], I[0], R[0] = S0, I0, N - S0 - I0
+    for n in range(schritte):
+        S[n + 1] = S[n] - beta * S[n] * I[n] + alpha * N - alpha * S[n]
+        I[n + 1] = I[n] + beta * S[n] * I[n] - (gamma + alpha) * I[n]
+        R[n + 1] = R[n] + gamma * I[n] - alpha * R[n]
+    return S, I, R
+
+fig, axs = plt.subplots(3, 2, figsize=(11, 7), sharex=&quot;col&quot;)
+farben = [(0.43, 0.04, 0.12), (0.89, 0.44, 0.49), (0.64, 0.08, 0.18)]
+for spalte, (name, beta, S0, I0, schritte) in enumerate([(&quot;A&quot;, 1.2e-6, 70000, 30000, 60), (&quot;B&quot;, 7.6e-6, 99999, 1, 80)]):
+    S, I, R = sir(beta, S0, I0, schritte)
+    R0 = beta * N / (gamma + alpha)                     <span class="k"># basic reproduction number</span>
+    print(f&quot;Scenario {name}: R_0 = {R0:.1f},  (S, I, R) after {schritte} steps = ({S[-1]:.0f}, {I[-1]:.0f}, {R[-1]:.0f})&quot;)
+    for zeile, (X, lab, m) in enumerate(zip([S, I, R], [&quot;S_n&quot;, &quot;I_n&quot;, &quot;R_n&quot;], &quot;osD&quot;)):
+        axs[zeile, spalte].plot(X, &quot;--&quot;, marker=m, ms=3, lw=0.8, color=farben[zeile], label=lab)
+        axs[zeile, spalte].legend(loc=&quot;center right&quot;)
+    axs[0, spalte].set_title(f&quot;Scenario {name}, β = {beta:g}&quot;)
+    axs[2, spalte].set_xlabel(&quot;n&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 2.15: SIR model, scenarios A and B (book, Section 2.4, Eq. 2.21)</span>
+<span class="k"># S_{n+1} = S_n - beta S_n I_n + alpha N - alpha S_n,  I_{n+1} = I_n + beta S_n I_n - (gamma + alpha) I_n,  R_{n+1} = R_n + gamma I_n - alpha R_n</span>
+<span class="k"># N = 100000, alpha = gamma = 0.1;  A: beta = 1.2e-6, S_0 = 70000, I_0 = 30000;  B: beta = 7.6e-6, S_0 = 99999, I_0 = 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+N &lt;- 100000; alpha &lt;- 0.1; gamma &lt;- 0.1
+
+farben &lt;- c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49), rgb(0.64, 0.08, 0.18)); zeichen &lt;- c(16, 15, 18)
+lab &lt;- c(&quot;S_n&quot;, &quot;I_n&quot;, &quot;R_n&quot;)
+par(mfcol = c(3, 2), mar = c(4, 4, 2, 1))
+for (sz in list(list(&quot;A&quot;, 1.2e-6, 70000, 30000, 60), list(&quot;B&quot;, 7.6e-6, 99999, 1, 80))) {
+  name &lt;- sz[[1]]; beta &lt;- sz[[2]]; M &lt;- sz[[5]]
+  X &lt;- matrix(0, 3, M + 1)               <span class="k"># rows: S, I, R</span>
+  X[, 1] &lt;- c(sz[[3]], sz[[4]], N - sz[[3]] - sz[[4]])
+  for (k in 1:M) {
+    S &lt;- X[1, k]; I &lt;- X[2, k]; R &lt;- X[3, k]
+    X[, k + 1] &lt;- c(S - beta * S * I + alpha * N - alpha * S,
+                    I + beta * S * I - (gamma + alpha) * I,
+                    R + gamma * I - alpha * R)
+  }
+  R0 &lt;- beta * N / (gamma + alpha)       <span class="k"># basic reproduction number</span>
+  cat(sprintf(&quot;Scenario %s: R_0 = %.1f,  (S, I, R) after %d steps = (%.0f, %.0f, %.0f)\n&quot;, name, R0, M, X[1, M + 1], X[2, M + 1], X[3, M + 1]))
+  for (z in 1:3) {
+    plot(0:M, X[z, ], type = &quot;o&quot;, lty = 2, pch = zeichen[z], cex = 0.5, col = farben[z], xlab = if (z == 3) &quot;n&quot; else &quot;&quot;, ylab = lab[z],
+         main = if (z == 1) sprintf(&quot;Scenario %s, beta = %g&quot;, name, beta) else &quot;&quot;)
+  }
+}</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>Scenario A: R_0 = 0.6,  (S, I, R) after 60 steps = (99500, 97, 403)
+Scenario B: R_0 = 3.8,  (S, I, R) after 80 steps = (26315, 36842, 36842)</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="sir-phasenebene">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 2.16</p>
+    <h2>Scenario B in the phase plane</h2>
+    <p class="formel">S* = N/R<sub>0</sub>,&ensp; I* = α (N − S*)/(γ + α)</p>
+    <p class="lead">The states (S<sub>n</sub>, I<sub>n</sub>) move away from the disease-free state (N, 0) and spiral toward the endemic state (cross).</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/sir_phasenebene.png" alt="Output of the program sir_phasenebene.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="sir_phasenebene.jl" data-m="sir_phasenebene.m" data-py="sir_phasenebene.py" data-r="sir_phasenebene.R">sir_phasenebene.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/sir_phasenebene.py" data-jl="code/sir_phasenebene.jl" data-m="code/sir_phasenebene.m" data-py="code/sir_phasenebene.py" data-r="code/sir_phasenebene.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 2.16: Scenario B of the SIR model in the phase plane (book, Section 2.4, Eq. 2.21)</span>
+<span class="k"># states (S_n, I_n), light: early, dark: late; cross: steady state x_b* = (N/R_0, alpha (N - S*)/(gamma + alpha))</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots, LinearAlgebra
+N = 100000; alpha = 0.1; gamma = 0.1
+beta = 7.6e-6
+M = 80
+S = zeros(M + 1); I = zeros(M + 1)
+S[1] = 99999; I[1] = 1
+for k in 1:M
+    S[k + 1] = S[k] - beta * S[k] * I[k] + alpha * (N - S[k])
+    I[k + 1] = I[k] + beta * S[k] * I[k] - (gamma + alpha) * I[k]
+end
+R0 = beta * N / (gamma + alpha)
+Ss = N / R0; Is = alpha * (N - Ss) / (gamma + alpha)
+@printf(&quot;R_0 = %.1f,  steady state x_b*: S* = %.0f, I* = %.0f\n&quot;, R0, Ss, Is)
+@printf(&quot;(S_80, I_80) = (%.0f, %.0f)\n&quot;, S[end], I[end])
+
+p = plot(S, I, color = :gray, legend = false, xlabel = &quot;S_n&quot;, ylabel = &quot;I_n&quot;)
+scatter!(p, S, I, zcolor = 0:M, color = cgrad([RGB(1, 0.85, 0.85), RGB(0.43, 0.04, 0.12)]), colorbar = false)   <span class="k"># light: early, dark: late</span>
+scatter!(p, [Ss], [Is], marker = :x, ms = 8, color = :black)
+scatter!(p, [N], [0], color = :white, msc = :black)     <span class="k"># x_a* = (N, 0): disease-free</span>
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 2.16: Scenario B of the SIR model in the phase plane (book, Section 2.4, Eq. 2.21)</span>
+<span class="k">% states (S_n, I_n), light: early, dark: late; cross: steady state x_b* = (N/R_0, alpha (N - S*)/(gamma + alpha))</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+N = 100000; alpha = 0.1; gamma = 0.1; beta = 7.6e-6;
+M = 80;
+S = zeros(1, M + 1); I = zeros(1, M + 1);
+S(1) = 99999; I(1) = 1;
+for k = 1:M
+    S(k + 1) = S(k) - beta * S(k) * I(k) + alpha * (N - S(k));
+    I(k + 1) = I(k) + beta * S(k) * I(k) - (gamma + alpha) * I(k);
+end
+R0 = beta * N / (gamma + alpha);
+Ss = N / R0; Is = alpha * (N - Ss) / (gamma + alpha);
+fprintf(&#x27;R_0 = %.1f,  steady state x_b*: S* = %.0f, I* = %.0f\n&#x27;, R0, Ss, Is);
+fprintf(&#x27;(S_80, I_80) = (%.0f, %.0f)\n&#x27;, S(end), I(end));
+
+plot(S, I, &#x27;Color&#x27;, [0.75 0.75 0.75]); hold on
+rot = [linspace(1, 0.43, 64)&#x27; linspace(0.85, 0.04, 64)&#x27; linspace(0.85, 0.12, 64)&#x27;];
+colormap(rot); scatter(S, I, 30, 0:M, &#x27;filled&#x27;);      <span class="k">% light: early, dark: late</span>
+plot(Ss, Is, &#x27;kx&#x27;, &#x27;MarkerSize&#x27;, 12, &#x27;LineWidth&#x27;, 2);
+plot(N, 0, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;w&#x27;); hold off   <span class="k">% x_a* = (N, 0): disease-free</span>
+xlabel(&#x27;S_n&#x27;); ylabel(&#x27;I_n&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 2.16: Scenario B of the SIR model in the phase plane (book, Section 2.4, Eq. 2.21)</span>
+<span class="k"># states (S_n, I_n), light: early, dark: late; cross: steady state x_b* = (N/R_0, alpha (N - S*)/(gamma + alpha))</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+N, alpha, gamma, beta = 100000, 0.1, 0.1, 7.6e-6
+schritte = 80
+S, I = np.zeros(schritte + 1), np.zeros(schritte + 1)
+S[0], I[0] = 99999, 1
+for n in range(schritte):
+    S[n + 1] = S[n] - beta * S[n] * I[n] + alpha * (N - S[n])
+    I[n + 1] = I[n] + beta * S[n] * I[n] - (gamma + alpha) * I[n]
+
+R0 = beta * N / (gamma + alpha)
+Ss = N / R0; Is = alpha * (N - Ss) / (gamma + alpha)
+print(f&quot;R_0 = {R0:.1f},  steady state x_b*: S* = {Ss:.0f}, I* = {Is:.0f}&quot;)
+print(f&quot;(S_80, I_80) = ({S[-1]:.0f}, {I[-1]:.0f})&quot;)
+
+plt.plot(S, I, color=&quot;0.75&quot;, lw=0.8)
+plt.scatter(S, I, c=np.arange(schritte + 1), cmap=&quot;Reds&quot;, vmin=-25)
+plt.plot(Ss, Is, &quot;kx&quot;, ms=12, mew=2)
+plt.plot(N, 0, &quot;ko&quot;, mfc=&quot;w&quot;)                          <span class="k"># x_a* = (N, 0): disease-free</span>
+plt.xlabel(&quot;S_n&quot;); plt.ylabel(&quot;I_n&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 2.16: Scenario B of the SIR model in the phase plane (book, Section 2.4, Eq. 2.21)</span>
+<span class="k"># states (S_n, I_n), light: early, dark: late; cross: steady state x_b* = (N/R_0, alpha (N - S*)/(gamma + alpha))</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+N &lt;- 100000; alpha &lt;- 0.1; gamma &lt;- 0.1
+beta &lt;- 7.6e-6
+M &lt;- 80
+S &lt;- numeric(M + 1); I &lt;- numeric(M + 1)
+S[1] &lt;- 99999; I[1] &lt;- 1
+for (k in 1:M) {
+  S[k + 1] &lt;- S[k] - beta * S[k] * I[k] + alpha * (N - S[k])
+  I[k + 1] &lt;- I[k] + beta * S[k] * I[k] - (gamma + alpha) * I[k]
+}
+R0 &lt;- beta * N / (gamma + alpha)
+Ss &lt;- N / R0; Is &lt;- alpha * (N - Ss) / (gamma + alpha)
+cat(sprintf(&quot;R_0 = %.1f,  steady state x_b*: S* = %.0f, I* = %.0f\n&quot;, R0, Ss, Is))
+cat(sprintf(&quot;(S_80, I_80) = (%.0f, %.0f)\n&quot;, S[M + 1], I[M + 1]))
+
+hell_dunkel &lt;- colorRampPalette(c(rgb(1, 0.85, 0.85), rgb(0.43, 0.04, 0.12)))(M + 1)   <span class="k"># light: early, dark: late</span>
+plot(S, I, type = &quot;l&quot;, col = &quot;grey75&quot;, xlab = &quot;S_n&quot;, ylab = &quot;I_n&quot;)
+points(S, I, pch = 16, col = hell_dunkel)
+points(Ss, Is, pch = 4, cex = 2, lwd = 2)
+points(N, 0, pch = 21, bg = &quot;white&quot;)     <span class="k"># x_a* = (N, 0): disease-free</span></code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>R_0 = 3.8,  steady state x_b*: S* = 26316, I* = 36842
+(S_80, I_80) = (26315, 36842)</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="sir-bifurkation">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 2.17</p>
+    <h2>Steady-state values I* as a function of R<sub>0</sub></h2>
+    <p class="formel">R<sub>0</sub> = β N/(γ + α)</p>
+    <p class="lead">At R<sub>0</sub> = 1 the two steady states cross and exchange their stability. Solid: stable, dashed: unstable.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/sir_bifurkation.png" alt="Output of the program sir_bifurkation.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="sir_bifurkation.jl" data-m="sir_bifurkation.m" data-py="sir_bifurkation.py" data-r="sir_bifurkation.R">sir_bifurkation.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/sir_bifurkation.py" data-jl="code/sir_bifurkation.jl" data-m="code/sir_bifurkation.m" data-py="code/sir_bifurkation.py" data-r="code/sir_bifurkation.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 2.17: Steady-state values I* of the SIR model as a function of R_0 (book, Section 2.4, Eq. 2.30)</span>
+<span class="k"># x_a*: I* = 0, stable for R_0 &lt; 1;  x_b*: I* = alpha N (1 - 1/R_0)/(gamma + alpha), stable for R_0 &gt; 1 (alpha = gamma = 0.1)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots, LinearAlgebra
+N = 100000; alpha = 0.1; gamma = 0.1
+R0 = range(0.01, 5, length = 500)
+Ib = alpha * N .* (1 .- 1 ./ R0) ./ (gamma + alpha)
+gruen = RGB(0, 0.39, 0)
+li = R0 .&lt;= 1; re = R0 .&gt;= 1; nah = (R0 .&gt; 0.85) .&amp; (R0 .&lt;= 1)
+p = plot(R0[li], 0 .* R0[li], color = gruen, lw = 3, legend = false, ylims = (-6000, 52000), xlabel = &quot;R_0&quot;, ylabel = &quot;I*&quot;)   <span class="k"># stable</span>
+plot!(p, R0[re], 0 .* R0[re], ls = :dash, color = gruen, lw = 2)                                                         <span class="k"># unstable</span>
+plot!(p, R0[re], Ib[re], color = gruen, lw = 3)
+plot!(p, R0[nah], Ib[nah], ls = :dash, color = gruen, lw = 2)
+for (r, name) in [(0.6, &quot;A&quot;), (3.8, &quot;B&quot;)]
+    i = r &lt; 1 ? 0.0 : alpha * N * (1 - 1 / r) / (gamma + alpha)
+    scatter!(p, [r], [i], color = :black); annotate!(p, r, i + 2500, text(name, 10))
+    @printf(&quot;Scenario %s: R_0 = %g,  I* = %.0f\n&quot;, name, r, i)
+end
+vline!(p, [1], ls = :dot, color = :black)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 2.17: Steady-state values I* of the SIR model as a function of R_0 (book, Section 2.4, Eq. 2.30)</span>
+<span class="k">% x_a*: I* = 0, stable for R_0 &lt; 1;  x_b*: I* = alpha N (1 - 1/R_0)/(gamma + alpha), stable for R_0 &gt; 1 (alpha = gamma = 0.1)</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+N = 100000; alpha = 0.1; gamma = 0.1;
+R0 = linspace(0.01, 5, 500);
+Ib = alpha * N * (1 - 1 ./ R0) / (gamma + alpha);
+gruen = [0 0.39 0];
+li = R0 &lt;= 1; re = R0 &gt;= 1; nah = R0 &gt; 0.85 &amp; R0 &lt;= 1;
+plot(R0(li), 0 * R0(li), &#x27;Color&#x27;, gruen, &#x27;LineWidth&#x27;, 3); hold on       <span class="k">% stable</span>
+plot(R0(re), 0 * R0(re), &#x27;--&#x27;, &#x27;Color&#x27;, gruen, &#x27;LineWidth&#x27;, 2)          <span class="k">% unstable</span>
+plot(R0(re), Ib(re), &#x27;Color&#x27;, gruen, &#x27;LineWidth&#x27;, 3)
+plot(R0(nah), Ib(nah), &#x27;--&#x27;, &#x27;Color&#x27;, gruen, &#x27;LineWidth&#x27;, 2)
+r = [0.6 3.8]; namen = &#x27;AB&#x27;;
+for j = 1:2
+    if r(j) &lt; 1, i = 0; else, i = alpha * N * (1 - 1 / r(j)) / (gamma + alpha); end
+    plot(r(j), i, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); text(r(j), i + 2000, namen(j));
+    fprintf(&#x27;Scenario %s: R_0 = %g,  I* = %.0f\n&#x27;, namen(j), r(j), i);
+end
+plot([1 1], [-6000 52000], &#x27;k:&#x27;); hold off
+ylim([-6000 52000]); xlabel(&#x27;R_0&#x27;); ylabel(&#x27;I*&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 2.17: Steady-state values I* of the SIR model as a function of R_0 (book, Section 2.4, Eq. 2.30)</span>
+<span class="k"># x_a*: I* = 0, stable for R_0 &lt; 1;  x_b*: I* = alpha N (1 - 1/R_0)/(gamma + alpha), stable for R_0 &gt; 1 (alpha = gamma = 0.1)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+N, alpha, gamma = 100000, 0.1, 0.1
+R0 = np.linspace(0.01, 5, 500)
+Ib = alpha * N * (1 - 1 / R0) / (gamma + alpha)
+gruen = (0, 0.39, 0)
+
+plt.plot(R0[R0 &lt;= 1], 0 * R0[R0 &lt;= 1], color=gruen, lw=3)                    <span class="k"># stable</span>
+plt.plot(R0[R0 &gt;= 1], 0 * R0[R0 &gt;= 1], &quot;--&quot;, color=gruen, lw=2)              <span class="k"># unstable</span>
+plt.plot(R0[R0 &gt;= 1], Ib[R0 &gt;= 1], color=gruen, lw=3)
+plt.plot(R0[(R0 &gt; 0.85) &amp; (R0 &lt;= 1)], Ib[(R0 &gt; 0.85) &amp; (R0 &lt;= 1)], &quot;--&quot;, color=gruen, lw=2)
+for r, name in [(0.6, &quot;A&quot;), (3.8, &quot;B&quot;)]:
+    i = 0 if r &lt; 1 else alpha * N * (1 - 1 / r) / (gamma + alpha)
+    plt.plot(r, i, &quot;ko&quot;); plt.text(r, i + 2000, name, ha=&quot;center&quot;)
+    print(f&quot;Scenario {name}: R_0 = {r},  I* = {i:.0f}&quot;)
+plt.axvline(1, color=&quot;k&quot;, ls=&quot;:&quot;)
+plt.ylim(-6000, 52000); plt.xlabel(&quot;R_0&quot;); plt.ylabel(&quot;I*&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 2.17: Steady-state values I* of the SIR model as a function of R_0 (book, Section 2.4, Eq. 2.30)</span>
+<span class="k"># x_a*: I* = 0, stable for R_0 &lt; 1;  x_b*: I* = alpha N (1 - 1/R_0)/(gamma + alpha), stable for R_0 &gt; 1 (alpha = gamma = 0.1)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+N &lt;- 100000; alpha &lt;- 0.1; gamma &lt;- 0.1
+R0 &lt;- seq(0.01, 5, length.out = 500)
+Ib &lt;- alpha * N * (1 - 1 / R0) / (gamma + alpha)
+gruen &lt;- rgb(0, 0.39, 0)
+li &lt;- R0 &lt;= 1; re &lt;- R0 &gt;= 1; nah &lt;- R0 &gt; 0.85 &amp; R0 &lt;= 1
+plot(R0[li], 0 * R0[li], type = &quot;l&quot;, col = gruen, lwd = 3, xlim = c(0, 5), ylim = c(-6000, 52000), xlab = &quot;R_0&quot;, ylab = &quot;I*&quot;)   <span class="k"># stable</span>
+lines(R0[re], 0 * R0[re], lty = 2, col = gruen, lwd = 2)          <span class="k"># unstable</span>
+lines(R0[re], Ib[re], col = gruen, lwd = 3)
+lines(R0[nah], Ib[nah], lty = 2, col = gruen, lwd = 2)
+for (sz in list(list(0.6, &quot;A&quot;), list(3.8, &quot;B&quot;))) {
+  r &lt;- sz[[1]]; i &lt;- if (r &lt; 1) 0 else alpha * N * (1 - 1 / r) / (gamma + alpha)
+  points(r, i, pch = 16); text(r, i + 2500, sz[[2]])
+  cat(sprintf(&quot;Scenario %s: R_0 = %g,  I* = %.0f\n&quot;, sz[[2]], r, i))
+}
+abline(v = 1, lty = 3)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>Scenario A: R_0 = 0.6,  I* = 0
+Scenario B: R_0 = 3.8,  I* = 36842</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="sir-anfang-neuinfektionen">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 2.18</p>
+    <h2>Initial phase and new infections</h2>
+    <p class="formel">I<sub>n</sub> ≈ λ<sup>n</sup> I<sub>0</sub>,&ensp; λ = 1 + (γ + α)(R<sub>0</sub> − 1)</p>
+    <p class="lead">As long as almost everybody is susceptible, the number of infected grows geometrically (left, logarithmic axis). Right: the larger R<sub>0</sub>, the earlier and higher the peak of new infections.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/sir_anfang_neuinfektionen.png" alt="Output of the program sir_anfang_neuinfektionen.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="sir_anfang_neuinfektionen.jl" data-m="sir_anfang_neuinfektionen.m" data-py="sir_anfang_neuinfektionen.py" data-r="sir_anfang_neuinfektionen.R">sir_anfang_neuinfektionen.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/sir_anfang_neuinfektionen.py" data-jl="code/sir_anfang_neuinfektionen.jl" data-m="code/sir_anfang_neuinfektionen.m" data-py="code/sir_anfang_neuinfektionen.py" data-r="code/sir_anfang_neuinfektionen.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 2.18: Initial phase of the epidemic and new infections (book, Section 2.4, Eq. 2.21 and 2.20)</span>
+<span class="k"># left: I_n in scenario B on a logarithmic scale with the growth factor lambda = 1 + (gamma + alpha)(R_0 - 1);</span>
+<span class="k"># right: new infections beta S_n I_n per time step for R_0 = 2, 3, 4 (I_0 = 1, alpha = gamma = 0.1)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots, LinearAlgebra
+N = 100000; alpha = 0.1; gamma = 0.1
+
+function sir(beta, M)                    <span class="k"># S_n and I_n for I_0 = 1</span>
+    S = zeros(M + 1); I = zeros(M + 1); S[1] = N - 1; I[1] = 1
+    for k in 1:M
+        S[k + 1] = S[k] - beta * S[k] * I[k] + alpha * (N - S[k])
+        I[k + 1] = I[k] + beta * S[k] * I[k] - (gamma + alpha) * I[k]
+    end
+    return S, I
+end
+beta = 7.6e-6
+S, I = sir(beta, 40)
+lam = 1 + (gamma + alpha) * (beta * N / (gamma + alpha) - 1)
+@printf(&quot;initial growth factor: lambda = %.2f;  I_10 = %.1f,  lambda^10 = %.1f\n&quot;, lam, I[11], lam^10)
+n = 0:40
+p1 = plot(n, lam .^ n, yscale = :log10, color = RGB(0, 0.447, 0.741), lw = 2, label = @sprintf(&quot;λ^n, λ = %.2f&quot;, lam), xlabel = &quot;n&quot;)
+plot!(p1, n, I, ls = :dash, marker = :rect, color = RGB(0.89, 0.44, 0.49), label = &quot;I_n&quot;)
+
+rot = [RGB(0.43, 0.04, 0.12), RGB(0.64, 0.08, 0.18), RGB(0.89, 0.44, 0.49)]; zeichen = [:circle, :rect, :diamond]
+p2 = plot(xlabel = &quot;n&quot;, ylabel = &quot;New infections&quot;)
+for (i, R0) in enumerate(2:4)
+    beta = R0 * (gamma + alpha) / N
+    S, I = sir(beta, 100)
+    neu = beta .* S .* I
+    plot!(p2, 0:100, neu, ls = :dash, marker = zeichen[i], ms = 2, color = rot[i], label = &quot;R_0 = $R0&quot;)
+    @printf(&quot;R_0 = %d: at most %.0f new infections in step n = %d\n&quot;, R0, maximum(neu), argmax(neu) - 1)
+end
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 2.18: Initial phase of the epidemic and new infections (book, Section 2.4, Eq. 2.21 and 2.20)</span>
+<span class="k">% left: I_n in scenario B on a logarithmic scale with the growth factor lambda = 1 + (gamma + alpha)(R_0 - 1);</span>
+<span class="k">% right: new infections beta S_n I_n per time step for R_0 = 2, 3, 4 (I_0 = 1, alpha = gamma = 0.1)</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+N = 100000; alpha = 0.1; gamma = 0.1;
+
+<span class="k">% left: scenario B</span>
+beta = 7.6e-6; M = 40;
+S = zeros(1, M + 1); I = zeros(1, M + 1); S(1) = N - 1; I(1) = 1;
+for k = 1:M
+    S(k + 1) = S(k) - beta * S(k) * I(k) + alpha * (N - S(k));
+    I(k + 1) = I(k) + beta * S(k) * I(k) - (gamma + alpha) * I(k);
+end
+lam = 1 + (gamma + alpha) * (beta * N / (gamma + alpha) - 1);
+fprintf(&#x27;initial growth factor: lambda = %.2f;  I_10 = %.1f,  lambda^10 = %.1f\n&#x27;, lam, I(11), lam^10);
+n = 0:M;
+subplot(1, 2, 1);
+semilogy(n, lam.^n, &#x27;Color&#x27;, [0 0.447 0.741]); hold on
+semilogy(n, I, &#x27;s--&#x27;, &#x27;Color&#x27;, [0.89 0.44 0.49]); hold off
+xlabel(&#x27;n&#x27;); legend(sprintf(&#x27;lambda^n, lambda = %.2f&#x27;, lam), &#x27;I_n&#x27;);
+
+<span class="k">% right: new infections for R_0 = 2, 3, 4</span>
+subplot(1, 2, 2); hold on
+rot = [0.43 0.04 0.12; 0.64 0.08 0.18; 0.89 0.44 0.49]; marker = &#x27;osd&#x27;;
+M = 100;
+for j = 1:3
+    R0 = j + 1;
+    beta = R0 * (gamma + alpha) / N;
+    S = zeros(1, M + 1); I = zeros(1, M + 1); S(1) = N - 1; I(1) = 1;
+    for k = 1:M
+        S(k + 1) = S(k) - beta * S(k) * I(k) + alpha * (N - S(k));
+        I(k + 1) = I(k) + beta * S(k) * I(k) - (gamma + alpha) * I(k);
+    end
+    neu = beta * S .* I;
+    plot(0:M, neu, [&#x27;--&#x27; marker(j)], &#x27;Color&#x27;, rot(j, :), &#x27;MarkerSize&#x27;, 3, &#x27;DisplayName&#x27;, sprintf(&#x27;R_0 = %d&#x27;, R0));
+    [m, im] = max(neu);
+    fprintf(&#x27;R_0 = %d: at most %.0f new infections in step n = %d\n&#x27;, R0, m, im - 1);
+end
+hold off; xlabel(&#x27;n&#x27;); ylabel(&#x27;New infections&#x27;); legend(&#x27;show&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 2.18: Initial phase of the epidemic and new infections (book, Section 2.4, Eq. 2.21 and 2.20)</span>
+<span class="k"># left: I_n in scenario B on a logarithmic scale with the growth factor lambda = 1 + (gamma + alpha)(R_0 - 1);</span>
+<span class="k"># right: new infections beta S_n I_n per time step for R_0 = 2, 3, 4 (I_0 = 1, alpha = gamma = 0.1)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+N, alpha, gamma = 100000, 0.1, 0.1
+
+def sir(beta, schritte):
+    S, I = np.zeros(schritte + 1), np.zeros(schritte + 1)
+    S[0], I[0] = N - 1, 1
+    for n in range(schritte):
+        S[n + 1] = S[n] - beta * S[n] * I[n] + alpha * (N - S[n])
+        I[n + 1] = I[n] + beta * S[n] * I[n] - (gamma + alpha) * I[n]
+    return S, I
+
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+beta = 7.6e-6
+S, I = sir(beta, 40)
+lam = 1 + (gamma + alpha) * (beta * N / (gamma + alpha) - 1)
+print(f&quot;initial growth factor: lambda = {lam:.2f};  I_10 = {I[10]:.1f},  lambda^10 = {lam**10:.1f}&quot;)
+n = np.arange(41)
+axs[0].semilogy(n, lam**n, color=(0, 0.447, 0.741), label=f&quot;λ^n, λ = {lam:.2f}&quot;)
+axs[0].semilogy(n, I, &quot;s--&quot;, color=(0.89, 0.44, 0.49), label=&quot;I_n&quot;)
+axs[0].set_xlabel(&quot;n&quot;); axs[0].legend()
+
+rot = [(0.43, 0.04, 0.12), (0.64, 0.08, 0.18), (0.89, 0.44, 0.49)]
+for R0, c, m in zip([2, 3, 4], rot, &quot;osD&quot;):
+    beta = R0 * (gamma + alpha) / N
+    S, I = sir(beta, 100)
+    neu = beta * S * I
+    axs[1].plot(neu, &quot;--&quot;, marker=m, ms=3, color=c, label=f&quot;R_0 = {R0}&quot;)
+    print(f&quot;R_0 = {R0}: at most {neu.max():.0f} new infections in step n = {neu.argmax()}&quot;)
+axs[1].set_xlabel(&quot;n&quot;); axs[1].set_ylabel(&quot;New infections&quot;); axs[1].legend()
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 2.18: Initial phase of the epidemic and new infections (book, Section 2.4, Eq. 2.21 and 2.20)</span>
+<span class="k"># left: I_n in scenario B on a logarithmic scale with the growth factor lambda = 1 + (gamma + alpha)(R_0 - 1);</span>
+<span class="k"># right: new infections beta S_n I_n per time step for R_0 = 2, 3, 4 (I_0 = 1, alpha = gamma = 0.1)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+N &lt;- 100000; alpha &lt;- 0.1; gamma &lt;- 0.1
+
+sir &lt;- function(beta, M) {               <span class="k"># S_n and I_n for I_0 = 1</span>
+  S &lt;- numeric(M + 1); I &lt;- numeric(M + 1); S[1] &lt;- N - 1; I[1] &lt;- 1
+  for (k in 1:M) {
+    S[k + 1] &lt;- S[k] - beta * S[k] * I[k] + alpha * (N - S[k])
+    I[k + 1] &lt;- I[k] + beta * S[k] * I[k] - (gamma + alpha) * I[k]
+  }
+  list(S = S, I = I)
+}
+par(mfrow = c(1, 2))
+beta &lt;- 7.6e-6
+x &lt;- sir(beta, 40)
+lam &lt;- 1 + (gamma + alpha) * (beta * N / (gamma + alpha) - 1)
+cat(sprintf(&quot;initial growth factor: lambda = %.2f;  I_10 = %.1f,  lambda^10 = %.1f\n&quot;, lam, x$I[11], lam^10))
+n &lt;- 0:40
+plot(n, lam^n, type = &quot;l&quot;, log = &quot;y&quot;, col = rgb(0, 0.447, 0.741), lwd = 2, ylim = c(0.5, 1e6), xlab = &quot;n&quot;, ylab = &quot;&quot;)
+lines(n, x$I, type = &quot;o&quot;, lty = 2, pch = 15, col = rgb(0.89, 0.44, 0.49))
+legend(&quot;topleft&quot;, legend = c(sprintf(&quot;lambda^n, lambda = %.2f&quot;, lam), &quot;I_n&quot;), col = c(rgb(0, 0.447, 0.741), rgb(0.89, 0.44, 0.49)), lty = c(1, 2), pch = c(NA, 15))
+
+rot &lt;- c(rgb(0.43, 0.04, 0.12), rgb(0.64, 0.08, 0.18), rgb(0.89, 0.44, 0.49)); zeichen &lt;- c(16, 15, 18)
+plot(NULL, xlim = c(0, 100), ylim = c(0, 17000), xlab = &quot;n&quot;, ylab = &quot;New infections&quot;)
+for (i in 1:3) {
+  R0 &lt;- i + 1
+  beta &lt;- R0 * (gamma + alpha) / N
+  x &lt;- sir(beta, 100)
+  neu &lt;- beta * x$S * x$I
+  lines(0:100, neu, type = &quot;o&quot;, lty = 2, pch = zeichen[i], cex = 0.5, col = rot[i])
+  cat(sprintf(&quot;R_0 = %d: at most %.0f new infections in step n = %d\n&quot;, R0, max(neu), which.max(neu) - 1))
+}
+legend(&quot;topright&quot;, legend = sprintf(&quot;R_0 = %d&quot;, 2:4), col = rot, pch = zeichen, lty = 2)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>initial growth factor: lambda = 1.56;  I_10 = 85.3,  lambda^10 = 85.4
+R_0 = 2: at most 6298 new infections in step n = 63
+R_0 = 3: at most 11474 new infections in step n = 33
+R_0 = 4: at most 16616 new infections in step n = 24</code></pre></details>
+    </div>
+  </div>
+</section>
+  <section class="apps" id="app-sir">
+  <div class="fig-head"><p class="eyebrow">Try it in the browser · no installation</p><h2>SIR model</h2><p class="lead">Change the basic reproduction number R<sub>0</sub>. Below 1 the disease disappears, above 1 an endemic state sets in (N = 100,000, α = 0.1).</p></div>
+  <div class="app" data-app="sir">
+    <canvas width="720" height="560" aria-label="SIR model"></canvas>
+    <div class="regler"><label><span>R<sub>0</sub></span> <output data-o="R0"></output><input type="range" data-r="R0" min="0.2" max="6" step="0.1" value="3.8" aria-label="R0"></label><label><span>Recovery rate γ</span> <output data-o="g"></output><input type="range" data-r="g" min="0.02" max="0.5" step="0.01" value="0.1" aria-label="Recovery rate γ"></label><label><span>Infected I<sub>0</sub> (log<sub>10</sub>)</span> <output data-o="I0"></output><input type="range" data-r="I0" min="0" max="4.5" step="0.5" value="0" aria-label="Infected I0 (log10)"></label><label><span>Steps</span> <output data-o="n"></output><input type="range" data-r="n" min="10" max="200" step="1" value="80" aria-label="Steps"></label><p class="zustand"></p><pre class="werte"></pre></div>
+  </div>
+</section>
+  <section class="matlab-apps"><h3>MATLAB apps from the course</h3><p>Download, put into a folder, and type the name without extension in MATLAB, e.g. <code>sir_app</code>. The apps use the graphical user interface of MATLAB and do not run in GNU Octave. Their user interface is in German.</p><ul><li><a href="apps/sir_app.m" download>sir_app.m</a><span>Discrete SIR model</span></li></ul></section>
+  <nav class="weiter" aria-label="Page navigation"><a href="abschnitt-2-3.html"><small>Previous</small>2.3 Eigenvalues and Long-Term Behavior</a><a href="abschnitt-2-5.html"><small>Next</small>2.5 In Depth: Propagation of the Action Potential</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Companion website to the book “Dynamical Systems in the Life Sciences” by Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programs under the <a href="../LICENSE.txt">MIT License</a> · <a href="../../impressum.html" hreflang="de">Legal notice (German)</a> · <a href="../../datenschutz.html" hreflang="de">Privacy policy (German)</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

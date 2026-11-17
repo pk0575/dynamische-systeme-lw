@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>3.3 Steady States and Stability – Dynamical Systems in the Life Sciences</title>
+<meta name="description" content="Programs in Julia, MATLAB, Python, and R for Section 3.3 of the book Dynamical Systems in the Life Sciences">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamical Systems in the Life Sciences</a>
+  <nav aria-label="Chapters"><a href="../index.html">Home</a> <a href="../kapitel1/index.html">Chapter 1</a> <a href="../kapitel2/index.html">Chapter 2</a> <a href="../kapitel3/index.html" aria-current="page">Chapter 3</a> <a href="../kapitel4/index.html">Chapter 4</a> <a href="../../kapitel3/abschnitt-3-3.html" lang="de" hreflang="de">Deutsch</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Sections"><h2><a href="index.html">Chapter 3</a></h2><ol><li><a href="abschnitt-3-1.html"><span class="nr">3.1</span><span>Differential Equations and Initial Value Problems</span></a></li><li><a href="abschnitt-3-2.html"><span class="nr">3.2</span><span>Exponential and Logistic Growth</span></a></li><li><a href="abschnitt-3-3.html" aria-current="page"><span class="nr">3.3</span><span>Steady States and Stability</span></a></li><li><a href="abschnitt-3-4.html"><span class="nr">3.4</span><span>Euler's Method</span></a></li><li><a href="abschnitt-3-5.html"><span class="nr">3.5</span><span>In Depth: Excitability of Heart Cells</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Chapter 3 · Continuous Dynamical Systems with One Variable</p>
+      <h1><span class="num">3.3</span>Steady States and Stability</h1>
+      <p>An autonomous differential equation dx/dt = f(x) is steady where f(x*) = 0. Whether the solutions run toward x* or away from it is shown by the phase line, and computationally by the sign of f′(x*). If f depends on a parameter, the bifurcation diagram describes how the steady states change – for instance when a stock is fished or in the gene switch of the lac operon.</p>
+      <p>For each figure of the section you will find the program that produces it. Change parameters and initial values and observe what happens. Figure and equation numbers refer to the book.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programming language</legend>
+  <div class="seg" role="radiogroup" aria-label="Programming language">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Applies to all pages. MATLAB programs also run in the free GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>On this page</b><ul><li><a href="#phasenlinie"><span class="abb">Fig. 3.14</span>Phase line of the logistic model</a></li><li><a href="#logistik-start"><span class="abb">Fig. 3.15</span>Solutions and steady-state solutions</a></li><li><a href="#ernte-bif"><span class="abb">Fig. 3.16</span>Fish stock with harvesting rate</a></li><li><a href="#fangquote"><span class="abb">Fig. 3.17</span>Fish stock with a fixed catch quota</a></li><li><a href="#lac-operon"><span class="abb">Fig. 3.18</span>Gene switch of the lac operon</a></li><li><a href="#app-fischerei"><span class="abb">App</span>try it in the browser</a></li></ul></div>
+  
+<section class="fig" id="phasenlinie">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 3.14</p>
+    <h2>Phase line of the logistic model</h2>
+    <p class="formel">f(x) = r (1 − x/K) x,&ensp; f′(0) = r &gt; 0,&ensp; f′(K) = −r &lt; 0</p>
+    <p class="lead">Where f is positive, x grows; where f is negative, x decreases. Therefore x* = K is stable (filled) and x* = 0 is unstable (open).</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/phasenlinie.png" alt="Output of the program phasenlinie.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="phasenlinie.jl" data-m="phasenlinie.m" data-py="phasenlinie.py" data-r="phasenlinie.R">phasenlinie.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/phasenlinie.py" data-jl="code/phasenlinie.jl" data-m="code/phasenlinie.m" data-py="code/phasenlinie.py" data-r="code/phasenlinie.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 3.14: Phase line of the logistic model (book, Section 3.3, Eq. 3.22)</span>
+<span class="k"># f(x) = r (1 - x/K) x with r = 0.55, K = 210; where f &gt; 0, x grows (arrow to the right), where f &lt; 0, x decreases</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+r = 0.55; K = 210
+f(x) = r * (1 - x / K) * x
+df(x) = r * (1 - 2x / K)                 <span class="k"># derivative f&#x27;(x)</span>
+x = range(-30, 280, length = 400)
+p = plot(x, f.(x), color = RGB(0, 0.447, 0.741), lw = 2.5, label = &quot;f(x) = r (1 - x/K) x&quot;, xlabel = &quot;x&quot;)
+hline!(p, [0], color = :black, label = &quot;&quot;)
+for (von, bis) in [(20, 185), (275, 225), (-8, -28)]          <span class="k"># phase line: direction of motion of x</span>
+    plot!(p, [von, bis], [0, 0], arrow = true, color = RGB(0.64, 0.08, 0.18), lw = 2.5, label = &quot;&quot;)
+end
+scatter!(p, [0], [0], color = :white, msc = :black, ms = 7, label = &quot;&quot;); scatter!(p, [K], [0], color = :black, ms = 7, label = &quot;&quot;)
+for xs in (0, K)
+    @printf(&quot;x* = %3d: f&#x27;(x*) = %5.2f -&gt; %s\n&quot;, xs, df(xs), df(xs) &lt; 0 ? &quot;stable&quot; : &quot;unstable&quot;)
+end
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 3.14: Phase line of the logistic model (book, Section 3.3, Eq. 3.22)</span>
+<span class="k">% f(x) = r (1 - x/K) x with r = 0.55, K = 210; where f &gt; 0, x grows (arrow to the right), where f &lt; 0, x decreases</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+r = 0.55; K = 210;
+f = @(x) r * (1 - x / K) .* x;
+df = @(x) r * (1 - 2 * x / K);                           <span class="k">% derivative f&#x27;(x)</span>
+x = linspace(-30, 280, 400);
+plot(x, f(x), &#x27;Color&#x27;, [0 0.447 0.741], &#x27;LineWidth&#x27;, 2.5); hold on
+plot([-30 280], [0 0], &#x27;k&#x27;);
+von = [20 275 -8]; nach = [185 225 -28];                 <span class="k">% phase line: direction of motion of x</span>
+for i = 1:3
+    if nach(i) &gt; von(i), spitze = &#x27;&gt;&#x27;; else, spitze = &#x27;&lt;&#x27;; end
+    plot([von(i) nach(i)], [0 0], &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2.5);
+    plot(nach(i), 0, spitze, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;MarkerFaceColor&#x27;, [0.64 0.08 0.18], &#x27;MarkerSize&#x27;, 9);
+end
+plot(0, 0, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;w&#x27;, &#x27;MarkerSize&#x27;, 10); plot(K, 0, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;, &#x27;MarkerSize&#x27;, 10); hold off
+for xs = [0 K]
+    if df(xs) &lt; 0, art = &#x27;stable&#x27;; else, art = &#x27;unstable&#x27;; end
+    fprintf(&#x27;x* = %3d: f&#x27;&#x27;(x*) = <span class="k">%5.2f -&gt; %s\n&#x27;, xs, df(xs), art);</span>
+end
+xlabel(&#x27;x&#x27;); legend(&#x27;f(x) = r (1 - x/K) x&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 3.14: Phase line of the logistic model (book, Section 3.3, Eq. 3.22)</span>
+<span class="k"># f(x) = r (1 - x/K) x with r = 0.55, K = 210; where f &gt; 0, x grows (arrow to the right), where f &lt; 0, x decreases</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+r, K = 0.55, 210
+f = lambda x: r * (1 - x / K) * x
+df = lambda x: r * (1 - 2 * x / K)                      <span class="k"># derivative f&#x27;(x)</span>
+x = np.linspace(-30, 280, 400)
+plt.plot(x, f(x), color=(0, 0.447, 0.741), lw=2.5, label=&quot;f(x) = r (1 - x/K) x&quot;)
+plt.axhline(0, color=&quot;k&quot;, lw=1)
+for a, b in [(20, 185), (275, 225), (-8, -28)]:         <span class="k"># phase line: direction of motion of x</span>
+    plt.annotate(&quot;&quot;, xy=(b, 0), xytext=(a, 0), arrowprops=dict(arrowstyle=&quot;-|&gt;&quot;, color=(0.64, 0.08, 0.18), lw=2.5))
+plt.plot(0, 0, &quot;o&quot;, ms=11, mfc=&quot;w&quot;, mec=&quot;k&quot;, mew=2); plt.plot(K, 0, &quot;ko&quot;, ms=11)
+for xs in [0, K]:
+    print(f&quot;x* = {xs:3d}: f&#x27;(x*) = {df(xs):5.2f} -&gt;&quot;, &quot;stable&quot; if df(xs) &lt; 0 else &quot;unstable&quot;)
+plt.xlabel(&quot;x&quot;); plt.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 3.14: Phase line of the logistic model (book, Section 3.3, Eq. 3.22)</span>
+<span class="k"># f(x) = r (1 - x/K) x with r = 0.55, K = 210; where f &gt; 0, x grows (arrow to the right), where f &lt; 0, x decreases</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+r &lt;- 0.55; K &lt;- 210
+f &lt;- function(x) r * (1 - x / K) * x
+df &lt;- function(x) r * (1 - 2 * x / K)    <span class="k"># derivative f&#x27;(x)</span>
+x &lt;- seq(-30, 280, length.out = 400)
+plot(x, f(x), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2.5, xlab = &quot;x&quot;, ylab = &quot;&quot;)
+abline(h = 0)
+arrows(c(20, 275, -8), 0, c(185, 225, -28), 0, col = rgb(0.64, 0.08, 0.18), lwd = 2.5, length = 0.12)   <span class="k"># phase line</span>
+points(0, 0, pch = 21, bg = &quot;white&quot;, cex = 1.5); points(K, 0, pch = 16, cex = 1.5)
+for (xs in c(0, K)) cat(sprintf(&quot;x* = %3d: f&#x27;(x*) = %5.2f -&gt; %s\n&quot;, xs, df(xs), if (df(xs) &lt; 0) &quot;stable&quot; else &quot;unstable&quot;))
+legend(&quot;topright&quot;, legend = &quot;f(x) = r (1 - x/K) x&quot;, col = rgb(0, 0.447, 0.741), lwd = 2.5)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>x* =   0: f&#x27;(x*) =  0.55 -&gt; unstable
+x* = 210: f&#x27;(x*) = -0.55 -&gt; stable</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="logistik-start">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 3.15</p>
+    <h2>Solutions and steady-state solutions</h2>
+    <p class="formel">x(0) = 0, 30, K, 300</p>
+    <p class="lead">The steady-state solutions x = 0 and x = K are horizontal lines. No other solution reaches or crosses them.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/logistik_start.png" alt="Output of the program logistik_start.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="logistik_start.jl" data-m="logistik_start.m" data-py="logistik_start.py" data-r="logistik_start.R">logistik_start.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/logistik_start.py" data-jl="code/logistik_start.jl" data-m="code/logistik_start.m" data-py="code/logistik_start.py" data-r="code/logistik_start.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 3.15: Solutions of the logistic model for different initial values (book, Section 3.3)</span>
+<span class="k"># r = 0.55, K = 210; the steady-state solutions x = 0 and x = K are neither reached nor crossed by any other solution</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+r = 0.55; K = 210
+x(t, x0) = x0 * K / (x0 + (K - x0) * exp(-r * t))
+t = range(0, 20, length = 300)
+p = plot(t, zero.(t), color = RGB(0.43, 0.04, 0.12), lw = 3, label = &quot;x0 = 0&quot;, xlabel = &quot;t (h)&quot;, ylabel = &quot;x(t)&quot;, legend = :right)
+plot!(p, t, zero.(t) .+ K, color = RGB(0.43, 0.04, 0.12), lw = 3, label = &quot;x0 = K&quot;)
+plot!(p, t, x.(t, 30), ls = :dash, color = RGB(0.64, 0.08, 0.18), lw = 2, label = &quot;x0 = 30&quot;)
+plot!(p, t, x.(t, 300), ls = :dash, color = RGB(0.89, 0.44, 0.49), lw = 2, label = &quot;x0 = 300&quot;)
+for x0 in (30, 300)
+    @printf(&quot;x0 = %d: x(20) = %.3f,  distance to K: %.3f\n&quot;, x0, x(20, x0), abs(x(20, x0) - K))
+end
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 3.15: Solutions of the logistic model for different initial values (book, Section 3.3)</span>
+<span class="k">% r = 0.55, K = 210; the steady-state solutions x = 0 and x = K are neither reached nor crossed by any other solution</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+r = 0.55; K = 210;
+x = @(t, x0) x0 * K ./ (x0 + (K - x0) * exp(-r * t));
+t = linspace(0, 20, 300);
+plot(t, 0 * t, &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 3); hold on
+plot(t, 0 * t + K, &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 3);
+plot(t, x(t, 30), &#x27;--&#x27;, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2);
+plot(t, x(t, 300), &#x27;--&#x27;, &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;LineWidth&#x27;, 2); hold off
+for x0 = [30 300]
+    fprintf(&#x27;x0 = %d: x(20) = %.3f,  distance to K: %.3f\n&#x27;, x0, x(20, x0), abs(x(20, x0) - K));
+end
+xlabel(&#x27;t (h)&#x27;); ylabel(&#x27;x(t)&#x27;); legend(&#x27;x0 = 0&#x27;, &#x27;x0 = K&#x27;, &#x27;x0 = 30&#x27;, &#x27;x0 = 300&#x27;, &#x27;Location&#x27;, &#x27;east&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 3.15: Solutions of the logistic model for different initial values (book, Section 3.3)</span>
+<span class="k"># r = 0.55, K = 210; the steady-state solutions x = 0 and x = K are neither reached nor crossed by any other solution</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+r, K = 0.55, 210
+x = lambda t, x0: x0 * K / (x0 + (K - x0) * np.exp(-r * t))
+t = np.linspace(0, 20, 300)
+plt.plot(t, 0 * t, color=(0.43, 0.04, 0.12), lw=3, label=&quot;x0 = 0&quot;)
+plt.plot(t, 0 * t + K, color=(0.43, 0.04, 0.12), lw=3, label=&quot;x0 = K&quot;)
+plt.plot(t, x(t, 30), &quot;--&quot;, color=(0.64, 0.08, 0.18), lw=2, label=&quot;x0 = 30&quot;)
+plt.plot(t, x(t, 300), &quot;--&quot;, color=(0.89, 0.44, 0.49), lw=2, label=&quot;x0 = 300&quot;)
+for x0 in [30, 300]:
+    print(f&quot;x0 = {x0}: x(20) = {x(20, x0):.3f},  distance to K: {abs(x(20, x0) - K):.3f}&quot;)
+plt.xlabel(&quot;t (h)&quot;); plt.ylabel(&quot;x(t)&quot;); plt.legend(loc=&quot;center right&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 3.15: Solutions of the logistic model for different initial values (book, Section 3.3)</span>
+<span class="k"># r = 0.55, K = 210; the steady-state solutions x = 0 and x = K are neither reached nor crossed by any other solution</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+r &lt;- 0.55; K &lt;- 210
+x &lt;- function(t, x0) x0 * K / (x0 + (K - x0) * exp(-r * t))
+t &lt;- seq(0, 20, length.out = 300)
+plot(t, 0 * t, type = &quot;l&quot;, col = rgb(0.43, 0.04, 0.12), lwd = 3, ylim = c(-10, 320), xlab = &quot;t (h)&quot;, ylab = &quot;x(t)&quot;)
+lines(t, 0 * t + K, col = rgb(0.43, 0.04, 0.12), lwd = 3)
+lines(t, x(t, 30), lty = 2, col = rgb(0.64, 0.08, 0.18), lwd = 2)
+lines(t, x(t, 300), lty = 2, col = rgb(0.89, 0.44, 0.49), lwd = 2)
+for (x0 in c(30, 300)) cat(sprintf(&quot;x0 = %d: x(20) = %.3f,  distance to K: %.3f\n&quot;, x0, x(20, x0), abs(x(20, x0) - K)))
+legend(&quot;right&quot;, legend = c(&quot;x0 = 0 or K&quot;, &quot;x0 = 30&quot;, &quot;x0 = 300&quot;), col = c(rgb(0.43, 0.04, 0.12), rgb(0.64, 0.08, 0.18), rgb(0.89, 0.44, 0.49)),
+       lty = c(1, 2, 2), lwd = c(3, 2, 2))</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>x0 = 30: x(20) = 209.979,  distance to K: 0.021
+x0 = 300: x(20) = 210.001,  distance to K: 0.001</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="ernte-bif">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 3.16</p>
+    <h2>Fish stock with harvesting rate</h2>
+    <p class="formel">dx/dt = r (1 − x/K) x − h x</p>
+    <p class="lead">As long as the harvesting rate h is smaller than r, a stock x* = K (1 − h/r) persists. At h = r the two steady states exchange their stability.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/ernte_bif.png" alt="Output of the program ernte_bif.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="ernte_bif.jl" data-m="ernte_bif.m" data-py="ernte_bif.py" data-r="ernte_bif.R">ernte_bif.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/ernte_bif.py" data-jl="code/ernte_bif.jl" data-m="code/ernte_bif.m" data-py="code/ernte_bif.py" data-r="code/ernte_bif.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 3.16: Fish stock with harvesting, steady states as a function of the harvesting rate (book, Section 3.3)</span>
+<span class="k"># dx/dt = r (1 - x/K) x - h x with r = 0.5 per year, K = 100 (1000 t):  x_a* = 0 and x_b* = K (1 - h/r)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+r = 0.5; K = 100
+gruen = RGB(0, 0.39, 0)
+h = range(0, 1, length = 301)
+li = h .&lt;= r; re = h .&gt;= r; nah = (h .&gt;= r) .&amp; (h .&lt;= 0.62)
+p = plot(h[li], 0 .* h[li], ls = :dash, color = gruen, lw = 2, legend = false, ylims = (-30, 105),
+         xlabel = &quot;Harvesting rate h (per year)&quot;, ylabel = &quot;x* (1000 t)&quot;)    <span class="k"># x_a* unstable for h &lt; r</span>
+plot!(p, h[re], 0 .* h[re], color = gruen, lw = 3)                    <span class="k"># stable for h &gt; r</span>
+plot!(p, h[li], K .* (1 .- h[li] ./ r), color = gruen, lw = 3)        <span class="k"># x_b* stable for h &lt; r</span>
+plot!(p, h[nah], K .* (1 .- h[nah] ./ r), ls = :dash, color = gruen, lw = 2)
+vline!(p, [r], ls = :dot, color = :black)
+for hh in (0.1, 0.25, 0.4)
+    @printf(&quot;h = %g: x_b* = %.0f,  yield h x_b* = %.2f\n&quot;, hh, K * (1 - hh / r), hh * K * (1 - hh / r))
+end
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 3.16: Fish stock with harvesting, steady states as a function of the harvesting rate (book, Section 3.3)</span>
+<span class="k">% dx/dt = r (1 - x/K) x - h x with r = 0.5 per year, K = 100 (1000 t):  x_a* = 0 and x_b* = K (1 - h/r)</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+r = 0.5; K = 100;
+gruen = [0 0.39 0];
+h = linspace(0, 1, 301);
+li = h &lt;= r; re = h &gt;= r; nah = h &gt;= r &amp; h &lt;= 0.62;
+plot(h(li), 0 * h(li), &#x27;--&#x27;, &#x27;Color&#x27;, gruen, &#x27;LineWidth&#x27;, 2); hold on   <span class="k">% x_a* unstable for h &lt; r</span>
+plot(h(re), 0 * h(re), &#x27;Color&#x27;, gruen, &#x27;LineWidth&#x27;, 3);                <span class="k">% stable for h &gt; r</span>
+plot(h(li), K * (1 - h(li) / r), &#x27;Color&#x27;, gruen, &#x27;LineWidth&#x27;, 3);      <span class="k">% x_b* stable for h &lt; r</span>
+plot(h(nah), K * (1 - h(nah) / r), &#x27;--&#x27;, &#x27;Color&#x27;, gruen, &#x27;LineWidth&#x27;, 2);
+plot([r r], [-30 105], &#x27;k:&#x27;); hold off
+for hh = [0.1 0.25 0.4]
+    fprintf(&#x27;h = %g: x_b* = %.0f,  yield h x_b* = %.2f\n&#x27;, hh, K * (1 - hh / r), hh * K * (1 - hh / r));
+end
+xlabel(&#x27;Harvesting rate h (per year)&#x27;); ylabel(&#x27;x* (1000 t)&#x27;); ylim([-30 105]);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 3.16: Fish stock with harvesting, steady states as a function of the harvesting rate (book, Section 3.3)</span>
+<span class="k"># dx/dt = r (1 - x/K) x - h x with r = 0.5 per year, K = 100 (1000 t):  x_a* = 0 and x_b* = K (1 - h/r)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+r, K = 0.5, 100
+gruen = (0, 0.39, 0)
+h = np.linspace(0, 1, 301)
+li, re = h &lt;= r, h &gt;= r
+plt.plot(h[li], 0 * h[li], &quot;--&quot;, color=gruen, lw=2)                  <span class="k"># x_a* unstable for h &lt; r</span>
+plt.plot(h[re], 0 * h[re], color=gruen, lw=3)                        <span class="k"># stable for h &gt; r</span>
+plt.plot(h[li], K * (1 - h[li] / r), color=gruen, lw=3)              <span class="k"># x_b* stable for h &lt; r</span>
+nah = (h &gt;= r) &amp; (h &lt;= 0.62)
+plt.plot(h[nah], K * (1 - h[nah] / r), &quot;--&quot;, color=gruen, lw=2)
+plt.axvline(r, color=&quot;k&quot;, ls=&quot;:&quot;, lw=1)
+for hh in [0.1, 0.25, 0.4]:
+    print(f&quot;h = {hh}: x_b* = {K * (1 - hh / r):.0f},  yield h x_b* = {hh * K * (1 - hh / r):.2f}&quot;)
+plt.xlabel(&quot;Harvesting rate h (per year)&quot;); plt.ylabel(&quot;x* (1000 t)&quot;); plt.ylim(-30, 105)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 3.16: Fish stock with harvesting, steady states as a function of the harvesting rate (book, Section 3.3)</span>
+<span class="k"># dx/dt = r (1 - x/K) x - h x with r = 0.5 per year, K = 100 (1000 t):  x_a* = 0 and x_b* = K (1 - h/r)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+r &lt;- 0.5; K &lt;- 100
+gruen &lt;- rgb(0, 0.39, 0)
+h &lt;- seq(0, 1, length.out = 301)
+li &lt;- h &lt;= r; re &lt;- h &gt;= r; nah &lt;- h &gt;= r &amp; h &lt;= 0.62
+plot(h[li], 0 * h[li], type = &quot;l&quot;, lty = 2, col = gruen, lwd = 2, xlim = c(0, 1), ylim = c(-30, 105),
+     xlab = &quot;Harvesting rate h (per year)&quot;, ylab = &quot;x* (1000 t)&quot;)     <span class="k"># x_a* unstable for h &lt; r</span>
+lines(h[re], 0 * h[re], col = gruen, lwd = 3)                   <span class="k"># stable for h &gt; r</span>
+lines(h[li], K * (1 - h[li] / r), col = gruen, lwd = 3)         <span class="k"># x_b* stable for h &lt; r</span>
+lines(h[nah], K * (1 - h[nah] / r), lty = 2, col = gruen, lwd = 2)
+abline(v = r, lty = 3)
+for (hh in c(0.1, 0.25, 0.4)) cat(sprintf(&quot;h = %g: x_b* = %.0f,  yield h x_b* = %.2f\n&quot;, hh, K * (1 - hh / r), hh * K * (1 - hh / r)))</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>h = 0.1: x_b* = 80,  yield h x_b* = 8.00
+h = 0.25: x_b* = 50,  yield h x_b* = 12.50
+h = 0.4: x_b* = 20,  yield h x_b* = 8.00</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="fangquote">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 3.17</p>
+    <h2>Fish stock with a fixed catch quota</h2>
+    <p class="formel">dx/dt = r (1 − x/K) x − q</p>
+    <p class="lead">With a fixed quota, the stable and the unstable state merge at q = rK/4 and disappear. A larger quota leads to the collapse of the stock.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/fangquote.png" alt="Output of the program fangquote.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="fangquote.jl" data-m="fangquote.m" data-py="fangquote.py" data-r="fangquote.R">fangquote.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/fangquote.py" data-jl="code/fangquote.jl" data-m="code/fangquote.m" data-py="code/fangquote.py" data-r="code/fangquote.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 3.17: Harvesting with a fixed catch quota (book, Section 3.3)</span>
+<span class="k"># dx/dt = r (1 - x/K) x - q with r = 0.5, K = 100;  steady at x* = K/2 (1 ± sqrt(1 - 4q/(rK))) as long as q &lt;= rK/4 = 12.5</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+r = 0.5; K = 100
+gruen = RGB(0, 0.39, 0)
+x = range(0, 100, length = 300)
+p1 = plot(x, r .* x .* (1 .- x ./ K), color = RGB(0, 0.447, 0.741), lw = 2.5, label = &quot;Growth&quot;, xlabel = &quot;x (1000 t)&quot;,
+          title = &quot;Growth r x (1 - x/K) and catch q&quot;, titlefontsize = 10)
+for (q, stil) in zip([8, 12.5, 16], [:solid, :dash, :dot])
+    hline!(p1, [q], ls = stil, color = RGB(0.64, 0.08, 0.18), lw = 2, label = &quot;q = $q&quot;)
+end
+q = range(0, 12.5, length = 300)
+w = sqrt.(max.(0, 1 .- 4 .* q ./ (r * K)))     <span class="k"># max(0, ...) catches rounding errors at q = rK/4</span>
+p2 = plot(q, K / 2 .* (1 .+ w), color = gruen, lw = 3, label = &quot;x₊* stable&quot;, xlims = (0, 21), legend = :bottomright,
+          xlabel = &quot;Catch quota q (1000 t/year)&quot;, title = &quot;bifurcation diagram&quot;, titlefontsize = 10)
+plot!(p2, q, K / 2 .* (1 .- w), ls = :dash, color = gruen, lw = 2, label = &quot;x₋* unstable&quot;); scatter!(p2, [12.5], [50], color = :black, label = &quot;&quot;)
+for qq in (8, 12.5)
+    ww = sqrt(max(0, 1 - 4qq / (r * K)))
+    @printf(&quot;q = %g: x_- = %.2f,  x_+ = %.2f\n&quot;, qq, K / 2 * (1 - ww), K / 2 * (1 + ww))
+end
+@printf(&quot;largest catch quota (MSY): q = rK/4 = %g\n&quot;, r * K / 4)
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 3.17: Harvesting with a fixed catch quota (book, Section 3.3)</span>
+<span class="k">% dx/dt = r (1 - x/K) x - q with r = 0.5, K = 100;  steady at x* = K/2 (1 ± sqrt(1 - 4q/(rK))) as long as q &lt;= rK/4 = 12.5</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+r = 0.5; K = 100;
+gruen = [0 0.39 0];
+subplot(1, 2, 1);
+x = linspace(0, 100, 300);
+plot(x, r * x .* (1 - x / K), &#x27;Color&#x27;, [0 0.447 0.741], &#x27;LineWidth&#x27;, 2.5); hold on
+qs = [8 12.5 16]; stil = {&#x27;-&#x27;, &#x27;--&#x27;, &#x27;:&#x27;};
+for i = 1:3
+    plot([0 100], [qs(i) qs(i)], stil{i}, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2);
+end
+hold off
+xlabel(&#x27;x (1000 t)&#x27;); title(&#x27;Growth r x (1 - x/K) and catch q&#x27;); legend(&#x27;Growth&#x27;, &#x27;q = 8&#x27;, &#x27;q = 12.5&#x27;, &#x27;q = 16&#x27;);
+subplot(1, 2, 2);
+q = linspace(0, 12.5, 300);
+w = sqrt(1 - 4 * q / (r * K));
+plot(q, K / 2 * (1 + w), &#x27;Color&#x27;, gruen, &#x27;LineWidth&#x27;, 3); hold on
+plot(q, K / 2 * (1 - w), &#x27;--&#x27;, &#x27;Color&#x27;, gruen, &#x27;LineWidth&#x27;, 2); plot(12.5, 50, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+xlim([0 21]); xlabel(&#x27;Catch quota q (1000 t/year)&#x27;); title(&#x27;bifurcation diagram&#x27;);
+legend(&#x27;x_+^* stable&#x27;, &#x27;x_-^* unstable&#x27;, &#x27;Location&#x27;, &#x27;southeast&#x27;);
+for qq = [8 12.5]
+    ww = sqrt(1 - 4 * qq / (r * K));
+    fprintf(&#x27;q = %g: x_- = %.2f,  x_+ = %.2f\n&#x27;, qq, K / 2 * (1 - ww), K / 2 * (1 + ww));
+end
+fprintf(&#x27;largest catch quota (MSY): q = rK/4 = %g\n&#x27;, r * K / 4);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 3.17: Harvesting with a fixed catch quota (book, Section 3.3)</span>
+<span class="k"># dx/dt = r (1 - x/K) x - q with r = 0.5, K = 100;  steady at x* = K/2 (1 ± sqrt(1 - 4q/(rK))) as long as q &lt;= rK/4 = 12.5</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+r, K = 0.5, 100
+gruen = (0, 0.39, 0)
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+x = np.linspace(0, 100, 300)
+axs[0].plot(x, r * x * (1 - x / K), color=(0, 0.447, 0.741), lw=2.5, label=&quot;Growth&quot;)
+for q, ls in zip([8, 12.5, 16], [&quot;-&quot;, &quot;--&quot;, &quot;:&quot;]):
+    axs[0].axhline(q, color=(0.64, 0.08, 0.18), lw=2, ls=ls, label=f&quot;q = {q}&quot;)
+axs[0].set_xlabel(&quot;x (1000 t)&quot;); axs[0].set_title(&quot;Growth r x (1 - x/K) and catch q&quot;); axs[0].legend()
+q = np.linspace(0, 12.5, 300)
+w = np.sqrt(1 - 4 * q / (r * K))
+axs[1].plot(q, K / 2 * (1 + w), color=gruen, lw=3, label=&quot;x₊* stable&quot;)
+axs[1].plot(q, K / 2 * (1 - w), &quot;--&quot;, color=gruen, lw=2, label=&quot;x₋* unstable&quot;)
+axs[1].plot(12.5, 50, &quot;ko&quot;); axs[1].set_xlim(0, 21)
+axs[1].set_xlabel(&quot;Catch quota q (1000 t/year)&quot;); axs[1].set_title(&quot;bifurcation diagram&quot;); axs[1].legend(loc=&quot;lower right&quot;)
+for qq in [8, 12.5]:
+    ww = np.sqrt(1 - 4 * qq / (r * K))
+    print(f&quot;q = {qq}: x_- = {K / 2 * (1 - ww):.2f},  x_+ = {K / 2 * (1 + ww):.2f}&quot;)
+print(f&quot;largest catch quota (MSY): q = rK/4 = {r * K / 4}&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 3.17: Harvesting with a fixed catch quota (book, Section 3.3)</span>
+<span class="k"># dx/dt = r (1 - x/K) x - q with r = 0.5, K = 100;  steady at x* = K/2 (1 ± sqrt(1 - 4q/(rK))) as long as q &lt;= rK/4 = 12.5</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+r &lt;- 0.5; K &lt;- 100
+gruen &lt;- rgb(0, 0.39, 0)
+par(mfrow = c(1, 2))
+x &lt;- seq(0, 100, length.out = 300)
+plot(x, r * x * (1 - x / K), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2.5, ylim = c(0, 17), xlab = &quot;x (1000 t)&quot;, ylab = &quot;&quot;,
+     main = &quot;Growth r x (1 - x/K) and catch q&quot;)
+qs &lt;- c(8, 12.5, 16)
+for (i in 1:3) abline(h = qs[i], lty = i, col = rgb(0.64, 0.08, 0.18), lwd = 2)
+legend(&quot;bottom&quot;, legend = c(&quot;Growth&quot;, sprintf(&quot;q = %g&quot;, qs)), col = c(rgb(0, 0.447, 0.741), rep(rgb(0.64, 0.08, 0.18), 3)), lty = c(1, 1:3), lwd = 2, cex = 0.8)
+q &lt;- seq(0, 12.5, length.out = 300)
+w &lt;- sqrt(1 - 4 * q / (r * K))
+plot(q, K / 2 * (1 + w), type = &quot;l&quot;, col = gruen, lwd = 3, xlim = c(0, 21), ylim = c(0, 100),
+     xlab = &quot;Catch quota q (1000 t/year)&quot;, ylab = &quot;&quot;, main = &quot;bifurcation diagram&quot;)
+lines(q, K / 2 * (1 - w), lty = 2, col = gruen, lwd = 2); points(12.5, 50, pch = 16)
+legend(&quot;bottomright&quot;, legend = c(&quot;x_+* stable&quot;, &quot;x_-* unstable&quot;), col = gruen, lty = 1:2, lwd = c(3, 2))
+for (qq in c(8, 12.5)) {
+  ww &lt;- sqrt(1 - 4 * qq / (r * K))
+  cat(sprintf(&quot;q = %g: x_- = %.2f,  x_+ = %.2f\n&quot;, qq, K / 2 * (1 - ww), K / 2 * (1 + ww)))
+}
+cat(sprintf(&quot;largest catch quota (MSY): q = rK/4 = %g\n&quot;, r * K / 4))</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>q = 8: x_- = 20.00,  x_+ = 80.00
+q = 12.5: x_- = 50.00,  x_+ = 50.00
+largest catch quota (MSY): q = rK/4 = 12.5</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="lac-operon">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 3.18</p>
+    <h2>Gene switch of the lac operon</h2>
+    <p class="formel">dX/dt = (a + X<sup>2</sup>)/(1 + X<sup>2</sup>) − r X</p>
+    <p class="lead">For 0.28 &lt; r &lt; 0.51 there are two stable states, “off” and “on”. The program determines them as roots of a polynomial and computes the turning points of the hysteresis curve.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/lac_operon.png" alt="Output of the program lac_operon.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="lac_operon.jl" data-m="lac_operon.m" data-py="lac_operon.py" data-r="lac_operon.R">lac_operon.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/lac_operon.py" data-jl="code/lac_operon.jl" data-m="code/lac_operon.m" data-py="code/lac_operon.py" data-r="code/lac_operon.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 3.18: Gene switch of the lac operon (book, Section 3.3, Eq. 3.23)</span>
+<span class="k"># dX/dt = (a + X^2)/(1 + X^2) - r X with a = 0.02; left import and degradation for r = 0.4, right X* as a function of r (hysteresis)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+using LinearAlgebra
+
+a = 0.02
+imp(X) = (a + X^2) / (1 + X^2)
+X = range(0, 3, length = 400); r = 0.4
+p1 = plot(X, imp.(X), color = RGB(0, 0.447, 0.741), lw = 2.5, label = &quot;Import (a + X²)/(1 + X²)&quot;, legend = :topleft, xlabel = &quot;X&quot;)
+plot!(p1, X, r .* X, ls = :dash, color = RGB(0.64, 0.08, 0.18), lw = 2, label = &quot;Degradation r X, r = 0.4&quot;)
+<span class="k"># steady state: (a + X^2) = r X (1 + X^2), i.e. -r X^3 + X^2 - r X + a = 0 (coefficients in ascending order)</span>
+<span class="k"># roots as eigenvalues of the companion matrix of X^3 - X^2/r + X - a/r</span>
+B = [1/r -1 a/r; 1 0 0; 0 1 0]
+xs = sort(real.(eigvals(B)))
+scatter!(p1, xs, r .* xs, color = [:black, :white, :black], msc = :black, label = &quot;&quot;)
+println(&quot;r = 0.4: X* = &quot;, join([@sprintf(&quot;%.3f&quot;, x) for x in xs], &quot;  &quot;), &quot;  (off, threshold, on)&quot;)
+<span class="k"># bifurcation diagram: each X* belongs to r = Import(X*)/X*</span>
+Xs = range(0.005, 4, length = 4000); R = imp.(Xs) ./ Xs
+i1 = argmin(ifelse.(Xs .&lt; 0.5, R, Inf))              <span class="k"># turning points of the curve: smallest r on the lower branch,</span>
+i2 = argmax(ifelse.((Xs .&gt; 0.5) .&amp; (Xs .&lt; 2), R, 0.0))   <span class="k"># largest r on the middle branch</span>
+gruen = RGB(0, 0.39, 0)
+p2 = plot(R[1:i1], Xs[1:i1], color = gruen, lw = 3, legend = false, xlims = (0.1, 0.82), ylims = (-0.1, 3.2), xlabel = &quot;Degradation rate r&quot;, ylabel = &quot;X*&quot;)
+plot!(p2, R[i1:i2], Xs[i1:i2], ls = :dash, color = gruen, lw = 2)
+plot!(p2, R[i2:end], Xs[i2:end], color = gruen, lw = 3)
+@printf(&quot;bistable for %.2f &lt; r &lt; %.2f\n&quot;, R[i1], R[i2])
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 3.18: Gene switch of the lac operon (book, Section 3.3, Eq. 3.23)</span>
+<span class="k">% dX/dt = (a + X^2)/(1 + X^2) - r X with a = 0.02; left import and degradation for r = 0.4, right X* as a function of r (hysteresis)</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+a = 0.02;
+imp = @(X) (a + X.^2) ./ (1 + X.^2);
+subplot(1, 2, 1);
+X = linspace(0, 3, 400); r = 0.4;
+plot(X, imp(X), &#x27;Color&#x27;, [0 0.447 0.741], &#x27;LineWidth&#x27;, 2.5); hold on
+plot(X, r * X, &#x27;--&#x27;, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2);
+<span class="k">% steady state: (a + X^2) = r X (1 + X^2), i.e. -r X^3 + X^2 - r X + a = 0</span>
+xs = sort(real(roots([-r 1 -r a])));
+for i = 1:3
+    if i == 2, fc = &#x27;w&#x27;; else, fc = &#x27;k&#x27;; end
+    plot(xs(i), r * xs(i), &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, fc, &#x27;MarkerSize&#x27;, 9);
+end
+hold off
+fprintf(&#x27;r = 0.4: X* = %.3f  %.3f  %.3f  (off, threshold, on)\n&#x27;, xs);
+xlabel(&#x27;X&#x27;); legend(&#x27;Import (a + X^2)/(1 + X^2)&#x27;, &#x27;Degradation r X, r = 0.4&#x27;, &#x27;Location&#x27;, &#x27;northwest&#x27;);
+<span class="k">% bifurcation diagram: each X* belongs to r = Import(X*)/X*</span>
+subplot(1, 2, 2);
+Xs = linspace(0.005, 4, 4000); R = imp(Xs) ./ Xs;
+Rk = R; Rk(Xs &gt;= 0.5) = Inf; [~, i1] = min(Rk);          <span class="k">% turning points of the curve: smallest r on the lower branch,</span>
+Rg = R; Rg(Xs &lt;= 0.5 | Xs &gt;= 2) = 0; [~, i2] = max(Rg);  <span class="k">% largest r on the middle branch</span>
+gruen = [0 0.39 0];
+plot(R(1:i1), Xs(1:i1), &#x27;Color&#x27;, gruen, &#x27;LineWidth&#x27;, 3); hold on
+plot(R(i1:i2), Xs(i1:i2), &#x27;--&#x27;, &#x27;Color&#x27;, gruen, &#x27;LineWidth&#x27;, 2);
+plot(R(i2:end), Xs(i2:end), &#x27;Color&#x27;, gruen, &#x27;LineWidth&#x27;, 3); hold off
+fprintf(&#x27;bistable for %.2f &lt; r &lt; %.2f\n&#x27;, R(i1), R(i2));
+xlim([0.1 0.82]); ylim([-0.1 3.2]); xlabel(&#x27;Degradation rate r&#x27;); ylabel(&#x27;X*&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 3.18: Gene switch of the lac operon (book, Section 3.3, Eq. 3.23)</span>
+<span class="k"># dX/dt = (a + X^2)/(1 + X^2) - r X with a = 0.02; left import and degradation for r = 0.4, right X* as a function of r (hysteresis)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+a = 0.02
+imp = lambda X: (a + X**2) / (1 + X**2)
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+X = np.linspace(0, 3, 400)
+r = 0.4
+axs[0].plot(X, imp(X), color=(0, 0.447, 0.741), lw=2.5, label=&quot;Import (a + X²)/(1 + X²)&quot;)
+axs[0].plot(X, r * X, &quot;--&quot;, color=(0.64, 0.08, 0.18), lw=2, label=&quot;Degradation r X, r = 0.4&quot;)
+<span class="k"># steady state: (a + X^2) = r X (1 + X^2), i.e. -r X^3 + X^2 - r X + a = 0</span>
+xs = np.sort(np.roots([-r, 1, -r, a]).real)
+for i, x in enumerate(xs):
+    axs[0].plot(x, r * x, &quot;o&quot;, color=&quot;k&quot;, mfc=&quot;w&quot; if i == 1 else &quot;k&quot;, ms=9)
+print(&quot;r = 0.4: X* =&quot;, &quot;  &quot;.join(f&quot;{x:.3f}&quot; for x in xs), &quot; (off, threshold, on)&quot;)
+axs[0].set_xlabel(&quot;X&quot;); axs[0].legend(loc=&quot;upper left&quot;)
+<span class="k"># bifurcation diagram: each X* belongs to r = Import(X*)/X*</span>
+Xs = np.linspace(0.005, 4, 4000); R = imp(Xs) / Xs
+klein, gross = Xs &lt; 0.5, (Xs &gt; 0.5) &amp; (Xs &lt; 2)
+i1 = np.argmin(np.where(klein, R, np.inf))              <span class="k"># turning points of the curve: smallest r on the lower branch,</span>
+i2 = np.argmax(np.where(gross, R, 0))                   <span class="k"># largest r on the middle branch</span>
+gruen = (0, 0.39, 0)
+axs[1].plot(R[:i1], Xs[:i1], color=gruen, lw=3)
+axs[1].plot(R[i1:i2], Xs[i1:i2], &quot;--&quot;, color=gruen, lw=2)
+axs[1].plot(R[i2:], Xs[i2:], color=gruen, lw=3)
+print(f&quot;bistable for {R[i1]:.2f} &lt; r &lt; {R[i2]:.2f}&quot;)
+axs[1].set_xlim(0.1, 0.82); axs[1].set_ylim(-0.1, 3.2); axs[1].set_xlabel(&quot;Degradation rate r&quot;); axs[1].set_ylabel(&quot;X*&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 3.18: Gene switch of the lac operon (book, Section 3.3, Eq. 3.23)</span>
+<span class="k"># dX/dt = (a + X^2)/(1 + X^2) - r X with a = 0.02; left import and degradation for r = 0.4, right X* as a function of r (hysteresis)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+a &lt;- 0.02
+imp &lt;- function(X) (a + X^2) / (1 + X^2)
+par(mfrow = c(1, 2))
+X &lt;- seq(0, 3, length.out = 400); r &lt;- 0.4
+plot(X, imp(X), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2.5, ylim = c(0, 1.25), xlab = &quot;X&quot;, ylab = &quot;&quot;)
+lines(X, r * X, lty = 2, col = rgb(0.64, 0.08, 0.18), lwd = 2)
+<span class="k"># steady state: (a + X^2) = r X (1 + X^2), i.e. -r X^3 + X^2 - r X + a = 0 (polyroot: coefficients in ascending order)</span>
+xs &lt;- sort(Re(polyroot(c(a, -r, 1, -r))))
+points(xs, r * xs, pch = 21, bg = c(&quot;black&quot;, &quot;white&quot;, &quot;black&quot;), cex = 1.3)
+cat(&quot;r = 0.4: X* =&quot;, sprintf(&quot;%.3f&quot;, xs), &quot; (off, threshold, on)\n&quot;)
+legend(&quot;topleft&quot;, legend = c(&quot;Import (a + X^2)/(1 + X^2)&quot;, &quot;Degradation r X, r = 0.4&quot;), col = c(rgb(0, 0.447, 0.741), rgb(0.64, 0.08, 0.18)), lty = 1:2, lwd = 2, cex = 0.8)
+<span class="k"># bifurcation diagram: each X* belongs to r = Import(X*)/X*</span>
+Xs &lt;- seq(0.005, 4, length.out = 4000); R &lt;- imp(Xs) / Xs
+i1 &lt;- which.min(ifelse(Xs &lt; 0.5, R, Inf))              <span class="k"># turning points of the curve: smallest r on the lower branch,</span>
+i2 &lt;- which.max(ifelse(Xs &gt; 0.5 &amp; Xs &lt; 2, R, 0))       <span class="k"># largest r on the middle branch</span>
+gruen &lt;- rgb(0, 0.39, 0)
+plot(R[1:i1], Xs[1:i1], type = &quot;l&quot;, col = gruen, lwd = 3, xlim = c(0.1, 0.82), ylim = c(-0.1, 3.2), xlab = &quot;Degradation rate r&quot;, ylab = &quot;X*&quot;)
+lines(R[i1:i2], Xs[i1:i2], lty = 2, col = gruen, lwd = 2)
+lines(R[i2:length(R)], Xs[i2:length(R)], col = gruen, lwd = 3)
+cat(sprintf(&quot;bistable for %.2f &lt; r &lt; %.2f\n&quot;, R[i1], R[i2]))</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>r = 0.4: X* = 0.058  0.425  2.016  (off, threshold, on)
+bistable for 0.28 &lt; r &lt; 0.51</code></pre></details>
+    </div>
+  </div>
+</section>
+  <section class="apps" id="app-fischerei">
+  <div class="fig-head"><p class="eyebrow">Try it in the browser · no installation</p><h2>Fish stock with harvesting</h2><p class="lead">Logistic growth with r = 0.5 and K = 100 (1000 t). A stock is steady when growth (blue) and catch (red) are equal. Compare a fixed harvesting rate with a fixed catch quota.</p></div>
+  <div class="app" data-app="fischerei">
+    <canvas width="720" height="560" aria-label="Fish stock with harvesting"></canvas>
+    <div class="regler"><label><span>Harvest</span><select aria-label="Harvest"><option value="rate">fixed harvesting rate h (catch h x)</option><option value="quote">fixed catch quota q</option></select></label><label><span>Harvest intensity</span> <output data-o="q"></output><input type="range" data-r="q" min="0" max="100" step="1" value="25" aria-label="Harvest intensity"></label><p class="zustand"></p><pre class="werte"></pre></div>
+  </div>
+</section>
+  <section class="matlab-apps"><h3>MATLAB apps from the course</h3><p>Download, put into a folder, and type the name without extension in MATLAB, e.g. <code>fischerei_app</code>. The apps use the graphical user interface of MATLAB and do not run in GNU Octave. Their user interface is in German.</p><ul><li><a href="apps/fischerei_app.m" download>fischerei_app.m</a><span>Overfishing: logistic growth with harvesting</span></li><li><a href="apps/genschalter_app.m" download>genschalter_app.m</a><span>Bistable gene switch by self-activation</span></li></ul></section>
+  <nav class="weiter" aria-label="Page navigation"><a href="abschnitt-3-2.html"><small>Previous</small>3.2 Exponential and Logistic Growth</a><a href="abschnitt-3-4.html"><small>Next</small>3.4 Euler's Method</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Companion website to the book “Dynamical Systems in the Life Sciences” by Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programs under the <a href="../LICENSE.txt">MIT License</a> · <a href="../../impressum.html" hreflang="de">Legal notice (German)</a> · <a href="../../datenschutz.html" hreflang="de">Privacy policy (German)</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

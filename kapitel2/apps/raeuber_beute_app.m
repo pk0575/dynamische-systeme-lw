@@ -11,6 +11,8 @@ function raeuber_beute_app
 %   Linkes Bild (Kaestchen "Phasenebene"): Zustaende (u_n, v_n), hell = frueh, dunkel = spaet.
 %   Kaestchen "Kompartimentschema": Schema mit den aktuellen Termen (ueber die ganze Bildflaeche).
 %   Farben (Farbregel Kapitel II): Beute rot, Raeuber dunkelgrau.  Fuer MATLAB R2025b.
+%   16.11.2026: Zeitregler n (vor- und zurueck), stationaerer Zustand (u*, v*) = (1/gamma, r(1 - 1/gamma)/gamma)
+%   in der Phasenebene (fuer gamma > 1): schwarz gefuellt = stabil, offen = instabil (Eigenwerte der Jacobi-Matrix).
 
 %% Parameter
 nN    = 40;
@@ -37,8 +39,11 @@ ax1 = uiaxes(al); ax1.Layout.Column = 1; styleAx(ax1); hold(ax1,'on');
 xlabel(ax1,'Beute u_n'); ylabel(ax1,'Räuber v_n');
 hPh  = scatter(ax1, NaN, NaN, 60, NaN, 'filled');
 hPhS = plot(ax1, NaN, NaN, 'o', 'MarkerSize', 12, 'MarkerFaceColor', [0 0 0], 'MarkerEdgeColor', [0 0 0]);
+hEq  = plot(ax1, NaN, NaN, 'o', 'MarkerSize', 14, 'LineWidth', 2.5, 'MarkerFaceColor', [1 1 1], 'MarkerEdgeColor', [0 0 0]);
+hEqT = text(ax1, NaN, NaN, '(u^*, v^*)', 'FontName', fName, 'FontSize', fSize-6, 'FontWeight', 'bold', ...
+    'HorizontalAlignment', 'left', 'VerticalAlignment', 'bottom', 'Interpreter', 'tex');
 colormap(ax1, [linspace(0.97,0.45,256)' linspace(0.80,0.05,256)' linspace(0.82,0.12,256)']);   % hell = frueh, dunkel = spaet
-ax1.Visible = 'off'; set([hPh hPhS], 'Visible', 'off');
+ax1.Visible = 'off'; set([hPh hPhS hEq hEqT], 'Visible', 'off');
 
 % --- rechtes Bild: Zeitverlauf
 ax2 = uiaxes(al); ax2.Layout.Column = 2; styleAx(ax2); hold(ax2,'on');
@@ -56,7 +61,7 @@ xlim(axS,[0 100]); ylim(axS,[0 60]);
 
 % --- Seitenleiste
 pl = uigridlayout(gl,[14 1]); pl.Layout.Row = 1; pl.Layout.Column = 2;
-pl.RowHeight = {'1x', 80, 16, 220, 35, 16, 40, 40, 24, 68, 16, 40, 36, '1x'};
+pl.RowHeight = {'1x', 80, 16, 220, 35, 16, 40, 40, 70, 68, 16, 40, 36, '1x'};
 pl.RowSpacing = 4; pl.BackgroundColor = [1 1 1];
 
 hFor = uilabel(pl,'Text',['$\displaystyle \bf \begin{array}{l} u_{n+1} = (1+r)\,u_n - r\,u_n^2 - \gamma\,u_n v_n \\ ' ...
@@ -89,6 +94,15 @@ sV = uispinner(g0,'Limits',[0.05 1.2],'Step',0.05,'Value',S.v0,'FontName',fName,
 hVk = uilabel(pl,'Text','','FontName',fName,'FontSize',20,'FontWeight','bold','HorizontalAlignment','center','Interpreter','tex');
 hVk.Layout.Row = 8;
 
+% Zeitregler n (vor- und zurueckdrehen)
+gT = uigridlayout(pl,[1 2]); gT.Layout.Row = 9;
+gT.ColumnWidth = {'fit','1x'}; gT.ColumnSpacing = 12; gT.Padding = [10 0 14 0]; gT.BackgroundColor = [1 1 1];
+lT = uilabel(gT,'Text','n','FontName',fName,'FontSize',20,'FontWeight','bold'); lT.Layout.Column = 1;
+slN = uislider(gT,'Limits',[0 nN],'Value',S.k,'MajorTicks',0:10:nN,'MinorTicks',0:nN, ...
+    'FontName',fName,'FontSize',14,'FontWeight','bold'); slN.Layout.Column = 2;
+slN.ValueChangingFcn = @(~,evt) onTime(evt.Value, false);
+slN.ValueChangedFcn  = @(src,~) onTime(src.Value, true);
+
 gC = uigridlayout(pl,[2 3]); gC.Layout.Row = 10;
 gC.ColumnWidth = {'1x','fit','1x'}; gC.RowHeight = {34, 34}; gC.RowSpacing = 0; gC.Padding = [0 0 0 0]; gC.BackgroundColor = [1 1 1];
 cbP = uicheckbox(gC,'Text','Phasenebene','Value',S.phase,'FontName',fName,'FontSize',20,'FontWeight','bold', ...
@@ -118,10 +132,15 @@ redraw();
         if w == 'u', S.u0 = v; else, S.v0 = v; end
         redraw();
     end
-    function onNext(), if S.k < nN, S.k = S.k + 1; redraw(); end, end
-    function onAll(), S.k = nN; redraw(); end
+    function onNext(), if S.k < nN, S.k = S.k + 1; slN.Value = S.k; redraw(); end, end
+    function onAll(), S.k = nN; slN.Value = S.k; redraw(); end
+    function onTime(v, snap)
+        k = round(v);
+        if snap, slN.Value = k; end
+        if k ~= S.k, S.k = k; redraw(); end
+    end
     function onReset()
-        S.p = [P.def]; S.u0 = 0.5; S.v0 = 0.2; S.k = 0;
+        S.p = [P.def]; S.u0 = 0.5; S.v0 = 0.2; S.k = 0; slN.Value = 0;
         for jj = 1:2, kP(jj).Value = P(jj).def; end
         sU.Value = S.u0; sV.Value = S.v0; redraw();
     end
@@ -134,9 +153,9 @@ redraw();
         else
             al.Visible = 'on'; axS.Visible = 'off'; cla(axS);
             if S.phase
-                al.ColumnWidth = {'1x','1x'}; ax1.Visible = 'on'; set([hPh hPhS], 'Visible', 'on');
+                al.ColumnWidth = {'1x','1x'}; ax1.Visible = 'on'; set([hPh hPhS hEq hEqT], 'Visible', 'on');
             else
-                al.ColumnWidth = {0, '1x'}; ax1.Visible = 'off'; set([hPh hPhS], 'Visible', 'off');
+                al.ColumnWidth = {0, '1x'}; ax1.Visible = 'off'; set([hPh hPhS hEq hEqT], 'Visible', 'off');
             end
         end
     end
@@ -161,7 +180,18 @@ redraw();
         % Phasenebene: bis Schritt k, hell = frueh, dunkel = spaet
         set(hPh, 'XData', u(1:k+1), 'YData', v(1:k+1), 'CData', (0:k)');
         set(hPhS, 'XData', u(1), 'YData', v(1));
-        uu = u(isfinite(u)); vv = v(isfinite(v));
+        % stationaerer Zustand mit Raeubern (nur fuer gamma > 1 positiv); Stabilitaet ueber die Jacobi-Matrix
+        if g > 1
+            us = 1/g; vs = r*(1 - 1/g)/g;
+            J = [1 - r/g, -1; r*(1 - 1/g), 1];
+            if all(abs(eig(J)) < 1), fc = [0 0 0]; else, fc = [1 1 1]; end
+            set(hEq, 'XData', us, 'YData', vs, 'MarkerFaceColor', fc);
+            set(hEqT, 'Position', [us + 0.02, vs + 0.02, 0]);
+        else
+            us = NaN; vs = NaN;
+            set(hEq, 'XData', NaN, 'YData', NaN); set(hEqT, 'Position', [NaN NaN 0]);
+        end
+        uu = [u(isfinite(u)) us(isfinite(us))]; vv = [v(isfinite(v)) vs(isfinite(vs))];
         xlim(ax1, [min([0 uu]) max([1.1 uu])*1.05]); ylim(ax1, [min([0 vv]) max([1 vv])*1.05]);
         clim(ax1, [-nN/3 max(k,1)]);
         hVk.Text = sprintf('\\bf u_{%d} = %s,  v_{%d} = %s', k, fmt(u(k+1)), k, fmt(v(k+1)));

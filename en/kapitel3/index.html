@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chapter 3: Continuous Dynamical Systems with One Variable – Dynamical Systems in the Life Sciences</title>
+<meta name="description" content="Programs and apps for Chapter 3 of the book Dynamical Systems in the Life Sciences">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamical Systems in the Life Sciences</a>
+  <nav aria-label="Chapters"><a href="../index.html">Home</a> <a href="../kapitel1/index.html">Chapter 1</a> <a href="../kapitel2/index.html">Chapter 2</a> <a href="../kapitel3/index.html" aria-current="page">Chapter 3</a> <a href="../kapitel4/index.html">Chapter 4</a> <a href="../../kapitel3/index.html" lang="de" hreflang="de">Deutsch</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Sections"><h2><a href="index.html">Chapter 3</a></h2><ol><li><a href="abschnitt-3-1.html"><span class="nr">3.1</span><span>Differential Equations and Initial Value Problems</span></a></li><li><a href="abschnitt-3-2.html"><span class="nr">3.2</span><span>Exponential and Logistic Growth</span></a></li><li><a href="abschnitt-3-3.html"><span class="nr">3.3</span><span>Steady States and Stability</span></a></li><li><a href="abschnitt-3-4.html"><span class="nr">3.4</span><span>Euler's Method</span></a></li><li><a href="abschnitt-3-5.html"><span class="nr">3.5</span><span>In Depth: Excitability of Heart Cells</span></a></li></ol></aside>
+<main>
+  <div class="intro"><div><p class="eyebrow">Chapter 3</p><h1>Continuous Dynamical Systems with One Variable</h1><p>Differential equations, exponential and logistic growth, stability, Euler's method, and excitability of heart cells. For each section there are the programs for all computed figures, apps to try in the browser, and the MATLAB apps of the course.</p>
+  <p><a href="kapitel3_programme.zip" download>Download all programs for Chapter 3 (ZIP)</a></p></div><fieldset class="lang">
+  <legend>Programming language</legend>
+  <div class="seg" role="radiogroup" aria-label="Programming language">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Applies to all pages. MATLAB programs also run in the free GNU Octave.</small>
+</fieldset></div>
+  <ul class="abschnitte"><li><a href="abschnitt-3-1.html"><span class="nr">3.1</span><span class="t">Differential Equations and Initial Value Problems<small>Letting the time step of a difference equation tend to zero gives a differential equation: it describes the instantaneous rate of change dx/dt of a quantity. Together with an initial value it forms an initial value problem. Its solution is a function x(t) whose graph follows the slope of the direction field at every point.</small></span><span class="zahl">5 figs. · Apps</span></a></li><li><a href="abschnitt-3-2.html"><span class="nr">3.2</span><span class="t">Exponential and Logistic Growth<small>dx/dt = r x is the simplest growth model: the rate of change is proportional to the quantity itself, and the solution x(t) = x<sub>0</sub> e<sup>rt</sup> grows or decays exponentially. Limited resources lead to the logistic model dx/dt = r (1 − x/K) x, whose solutions approach the carrying capacity K.</small></span><span class="zahl">5 figs.</span></a></li><li><a href="abschnitt-3-3.html"><span class="nr">3.3</span><span class="t">Steady States and Stability<small>An autonomous differential equation dx/dt = f(x) is steady where f(x*) = 0. Whether the solutions run toward x* or away from it is shown by the phase line, and computationally by the sign of f′(x*). If f depends on a parameter, the bifurcation diagram describes how the steady states change – for instance when a stock is fished or in the gene switch of the lac operon.</small></span><span class="zahl">5 figs. · Apps</span></a></li><li><a href="abschnitt-3-4.html"><span class="nr">3.4</span><span class="t">Euler's Method<small>Most differential equations cannot be solved in closed form. Euler's method replaces the solution by short line segments with the slope of the direction field: x<sub>n+1</sub> = x<sub>n</sub> + h f(t<sub>n</sub>, x<sub>n</sub>). Smaller step sizes h give more accurate approximations; step sizes that are too large can make the method unstable.</small></span><span class="zahl">4 figs. · Apps</span></a></li><li><a href="abschnitt-3-5.html"><span class="nr">3.5</span><span class="t">In Depth: Excitability of Heart Cells<small>The Mitchell–Schaeffer model describes the action potential of a cardiac muscle cell with a differential equation for the membrane potential v. If the channel variable h is held fixed, it has a resting state, a threshold, and an excited state. If h is allowed to change slowly, a complete action potential arises, and its duration and the restitution curve can be computed. The programs use Euler's method with h = 0.01 ms.</small></span><span class="zahl">3 figs.</span></a></li></ul>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Companion website to the book “Dynamical Systems in the Life Sciences” by Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programs under the <a href="../LICENSE.txt">MIT License</a> · <a href="../../impressum.html" hreflang="de">Legal notice (German)</a> · <a href="../../datenschutz.html" hreflang="de">Privacy policy (German)</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>2.2 Matrix Models – Dynamical Systems in the Life Sciences</title>
+<meta name="description" content="Programs in Julia, MATLAB, Python, and R for Section 2.2 of the book Dynamical Systems in the Life Sciences">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamical Systems in the Life Sciences</a>
+  <nav aria-label="Chapters"><a href="../index.html">Home</a> <a href="../kapitel1/index.html">Chapter 1</a> <a href="../kapitel2/index.html" aria-current="page">Chapter 2</a> <a href="../kapitel3/index.html">Chapter 3</a> <a href="../kapitel4/index.html">Chapter 4</a> <a href="../../kapitel2/abschnitt-2-2.html" lang="de" hreflang="de">Deutsch</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Sections"><h2><a href="index.html">Chapter 2</a></h2><ol><li><a href="abschnitt-2-1.html"><span class="nr">2.1</span><span>Examples: Fibonacci and Predator–Prey</span></a></li><li><a href="abschnitt-2-2.html" aria-current="page"><span class="nr">2.2</span><span>Matrix Models</span></a></li><li><a href="abschnitt-2-3.html"><span class="nr">2.3</span><span>Eigenvalues and Long-Term Behavior</span></a></li><li><a href="abschnitt-2-4.html"><span class="nr">2.4</span><span>Nonlinear Systems: SIR Model</span></a></li><li><a href="abschnitt-2-5.html"><span class="nr">2.5</span><span>In Depth: Propagation of the Action Potential</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Chapter 2 · Discrete Dynamical Systems with Several Variables</p>
+      <h1><span class="num">2.2</span>Matrix Models</h1>
+      <p>If all recursion rules are linear, the system is written compactly as x<sub>n+1</sub> = A x<sub>n</sub> with a matrix A and the state vector x<sub>n</sub>. One step is then a matrix–vector multiplication. Examples are a disease progression with three groups and the Leslie model for age classes.</p>
+      <p>For each figure of the section you will find the program that produces it. Change parameters and initial values and observe what happens. Figure and equation numbers refer to the book.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programming language</legend>
+  <div class="seg" role="radiogroup" aria-label="Programming language">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Applies to all pages. MATLAB programs also run in the free GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>On this page</b><ul><li><a href="#krankheit"><span class="abb">Fig. 2.7</span>Disease progression</a></li><li><a href="#leslie"><span class="abb">Fig. 2.9</span>Leslie model with three age classes</a></li></ul></div>
+  
+<section class="fig" id="krankheit">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 2.7</p>
+    <h2>Disease progression</h2>
+    <p class="formel">x<sub>n+1</sub> = A x<sub>n</sub>,&ensp; x = (g, l, k): healthy, mildly ill, and severely ill</p>
+    <p class="lead">Each column of A states how one group is distributed over the three groups in one year. Because the column sums are 1, the total number of 100,000 persons is conserved.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/krankheit.png" alt="Output of the program krankheit.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="krankheit.jl" data-m="krankheit.m" data-py="krankheit.py" data-r="krankheit.R">krankheit.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/krankheit.py" data-jl="code/krankheit.jl" data-m="code/krankheit.m" data-py="code/krankheit.py" data-r="code/krankheit.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 2.7: Disease progression as a linear system (book, Section 2.2, Eq. 2.8)</span>
+<span class="k"># x_{n+1} = A x_n with x = (healthy, mildly ill, severely ill), x_0 = (100000, 0, 0), one step = one year</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots, LinearAlgebra
+
+A = [0.997 0.6 0;
+     0.003 0   0.35;
+     0     0.4 0.65]
+N = 20
+X = zeros(3, N + 1)
+X[:, 1] = [100000, 0, 0]
+for k in 1:N
+    X[:, k + 1] = A * X[:, k]            <span class="k"># matrix times vector</span>
+end
+@printf(&quot;x_20 = (%.0f, %.0f, %.0f)\n&quot;, X[:, end]...)
+s = vec(sum(A, dims = 1))
+@printf(&quot;column sums of A: %g %g %g -&gt; the total number is conserved: %.0f\n&quot;, s..., sum(X[:, end]))
+
+namen = [&quot;healthy g_n&quot;, &quot;mildly ill l_n&quot;, &quot;severely ill k_n&quot;]
+farben = [RGB(0.43, 0.04, 0.12), RGB(0.89, 0.44, 0.49), RGB(0.64, 0.08, 0.18)]; zeichen = [:circle, :rect, :diamond]
+bilder = [begin
+    b = plot(0:N, X[i, :], ls = :dash, marker = zeichen[i], color = farben[i], label = namen[i], legend = :right)
+    b
+end for i in 1:3]
+display(plot(bilder..., layout = (3, 1), size = (800, 700), xlabel = &quot;n (years)&quot;))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 2.7: Disease progression as a linear system (book, Section 2.2, Eq. 2.8)</span>
+<span class="k">% x_{n+1} = A x_n with x = (healthy, mildly ill, severely ill), x_0 = (100000, 0, 0), one step = one year</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+A = [0.997 0.6 0;
+     0.003 0   0.35;
+     0     0.4 0.65];
+N = 20;
+X = zeros(3, N + 1);
+X(:, 1) = [100000; 0; 0];
+for k = 1:N
+    X(:, k + 1) = A * X(:, k);           <span class="k">% matrix times vector</span>
+end
+fprintf(&#x27;x_20 = (%.0f, %.0f, %.0f)\n&#x27;, X(:, end));
+fprintf(&#x27;column sums of A: %g %g %g -&gt; the total number is conserved: %.0f\n&#x27;, sum(A), sum(X(:, end)));
+
+namen = {&#x27;healthy g_n&#x27;, &#x27;mildly ill l_n&#x27;, &#x27;severely ill k_n&#x27;};
+farben = [0.43 0.04 0.12; 0.89 0.44 0.49; 0.64 0.08 0.18]; marker = &#x27;osd&#x27;;
+for i = 1:3
+    subplot(3, 1, i);
+    plot(0:N, X(i, :), [&#x27;--&#x27; marker(i)], &#x27;Color&#x27;, farben(i, :)); legend(namen{i}, &#x27;Location&#x27;, &#x27;southeast&#x27;);
+end
+xlabel(&#x27;n (years)&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 2.7: Disease progression as a linear system (book, Section 2.2, Eq. 2.8)</span>
+<span class="k"># x_{n+1} = A x_n with x = (healthy, mildly ill, severely ill), x_0 = (100000, 0, 0), one step = one year</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+A = np.array([[0.997, 0.6, 0],
+              [0.003, 0, 0.35],
+              [0, 0.4, 0.65]])
+N = 20
+X = np.zeros((N + 1, 3))
+X[0] = [100000, 0, 0]
+for n in range(N):
+    X[n + 1] = A @ X[n]                 <span class="k"># matrix times vector</span>
+print(&quot;x_20 = (%.0f, %.0f, %.0f)&quot; % tuple(X[N]))
+print(&quot;column sums of A: %g %g %g&quot; % tuple(A.sum(axis=0)), &quot;-&gt; the total number is conserved: %.0f&quot; % X[N].sum())
+
+fig, axs = plt.subplots(3, 1, figsize=(8, 7), sharex=True)
+farben = [(0.43, 0.04, 0.12), (0.89, 0.44, 0.49), (0.64, 0.08, 0.18)]
+for i, (name, m) in enumerate(zip([&quot;healthy g_n&quot;, &quot;mildly ill l_n&quot;, &quot;severely ill k_n&quot;], &quot;osD&quot;)):
+    axs[i].plot(np.arange(N + 1), X[:, i], &quot;--&quot;, marker=m, color=farben[i], label=name)
+    axs[i].legend(loc=&quot;lower right&quot;)
+axs[2].set_xlabel(&quot;n (years)&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 2.7: Disease progression as a linear system (book, Section 2.2, Eq. 2.8)</span>
+<span class="k"># x_{n+1} = A x_n with x = (healthy, mildly ill, severely ill), x_0 = (100000, 0, 0), one step = one year</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+A &lt;- matrix(c(0.997, 0.6, 0,
+              0.003, 0,   0.35,
+              0,     0.4, 0.65), nrow = 3, byrow = TRUE)
+N &lt;- 20
+X &lt;- matrix(0, 3, N + 1)
+X[, 1] &lt;- c(100000, 0, 0)
+for (k in 1:N) X[, k + 1] &lt;- A %*% X[, k]   <span class="k"># matrix times vector</span>
+cat(sprintf(&quot;x_20 = (%.0f, %.0f, %.0f)\n&quot;, X[1, N + 1], X[2, N + 1], X[3, N + 1]))
+cat(sprintf(&quot;column sums of A: %g %g %g -&gt; the total number is conserved: %.0f\n&quot;, colSums(A)[1], colSums(A)[2], colSums(A)[3], sum(X[, N + 1])))
+
+namen &lt;- c(&quot;healthy g_n&quot;, &quot;mildly ill l_n&quot;, &quot;severely ill k_n&quot;)
+farben &lt;- c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49), rgb(0.64, 0.08, 0.18)); zeichen &lt;- c(16, 15, 18)
+par(mfrow = c(3, 1), mar = c(4, 4, 1, 1))
+for (i in 1:3) {
+  plot(0:N, X[i, ], type = &quot;o&quot;, lty = 2, pch = zeichen[i], col = farben[i], xlab = if (i == 3) &quot;n (years)&quot; else &quot;&quot;, ylab = &quot;&quot;)
+    legend(&quot;bottomright&quot;, legend = namen[i], col = farben[i], pch = zeichen[i], lty = 2)
+}</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>x_20 = (98957, 490, 553)
+column sums of A: 1 1 1 -&gt; the total number is conserved: 100000</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="leslie">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 2.9</p>
+    <h2>Leslie model with three age classes</h2>
+    <p class="formel">x<sub>1,n+1</sub> = 9 x<sub>3,n</sub>,&ensp; x<sub>2,n+1</sub> = 0.1 x<sub>1,n</sub>,&ensp; x<sub>3,n+1</sub> = 0.6 x<sub>2,n</sub></p>
+    <p class="lead">Only the oldest class has offspring. The population therefore pulsates with period 3, and in each period it shrinks by the factor 9 · 0.1 · 0.6 = 0.54: it dies out.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/leslie.png" alt="Output of the program leslie.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="leslie.jl" data-m="leslie.m" data-py="leslie.py" data-r="leslie.R">leslie.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/leslie.py" data-jl="code/leslie.jl" data-m="code/leslie.m" data-py="code/leslie.py" data-r="code/leslie.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 2.9: Leslie model with three age classes (book, Section 2.2, Eq. 2.11)</span>
+<span class="k"># x_{n+1} = L x_n with birth rate 9 of class 3 and survival rates 0.1 and 0.6, x_0 = (0, 0, 1000)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots, LinearAlgebra
+
+L = [0   0   9;
+     0.1 0   0;
+     0   0.6 0]
+N = 20
+X = zeros(3, N + 1)
+X[:, 1] = [0, 0, 1000]
+for k in 1:N
+    X[:, k + 1] = L * X[:, k]
+end
+println(&quot;class 3 every three steps: &quot;, join([@sprintf(&quot;%.1f&quot;, x) for x in X[3, 1:3:end]], &quot;  &quot;))
+@printf(&quot;factor per period: 9 * 0.1 * 0.6 = %g &lt; 1, the population dies out\n&quot;, 9 * 0.1 * 0.6)
+
+namen = [&quot;Class 1&quot;, &quot;Class 2&quot;, &quot;Class 3&quot;]
+farben = [RGB(0.43, 0.04, 0.12), RGB(0.89, 0.44, 0.49), RGB(0.64, 0.08, 0.18)]; zeichen = [:circle, :rect, :diamond]
+bilder = [begin
+    b = plot(0:N, X[i, :], ls = :dash, marker = zeichen[i], color = farben[i], label = namen[i], legend = :right)
+    b
+end for i in 1:3]
+display(plot(bilder..., layout = (3, 1), size = (800, 700), xlabel = &quot;n&quot;))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 2.9: Leslie model with three age classes (book, Section 2.2, Eq. 2.11)</span>
+<span class="k">% x_{n+1} = L x_n with birth rate 9 of class 3 and survival rates 0.1 and 0.6, x_0 = (0, 0, 1000)</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+L = [0   0   9;
+     0.1 0   0;
+     0   0.6 0];
+N = 20;
+X = zeros(3, N + 1);
+X(:, 1) = [0; 0; 1000];
+for k = 1:N
+    X(:, k + 1) = L * X(:, k);
+end
+fprintf(&#x27;class 3 every three steps: &#x27;); fprintf(&#x27;%.1f  &#x27;, X(3, 1:3:end)); fprintf(&#x27;\n&#x27;);
+fprintf(&#x27;factor per period: 9 * 0.1 * 0.6 = %g &lt; 1, the population dies out\n&#x27;, 9 * 0.1 * 0.6);
+
+farben = [0.43 0.04 0.12; 0.89 0.44 0.49; 0.64 0.08 0.18]; marker = &#x27;osd&#x27;;
+for i = 1:3
+    subplot(3, 1, i);
+    plot(0:N, X(i, :), [&#x27;--&#x27; marker(i)], &#x27;Color&#x27;, farben(i, :)); legend(sprintf(&#x27;Class %d&#x27;, i));
+end
+xlabel(&#x27;n&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 2.9: Leslie model with three age classes (book, Section 2.2, Eq. 2.11)</span>
+<span class="k"># x_{n+1} = L x_n with birth rate 9 of class 3 and survival rates 0.1 and 0.6, x_0 = (0, 0, 1000)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+L = np.array([[0, 0, 9],
+              [0.1, 0, 0],
+              [0, 0.6, 0]])
+N = 20
+X = np.zeros((N + 1, 3))
+X[0] = [0, 0, 1000]
+for n in range(N):
+    X[n + 1] = L @ X[n]
+print(&quot;class 3 every three steps:&quot;, &quot;  &quot;.join(f&quot;{x:.1f}&quot; for x in X[0:N + 1:3, 2]))
+print(f&quot;factor per period: 9 * 0.1 * 0.6 = {9 * 0.1 * 0.6:g} &lt; 1, the population dies out&quot;)
+
+fig, axs = plt.subplots(3, 1, figsize=(8, 7), sharex=True)
+farben = [(0.43, 0.04, 0.12), (0.89, 0.44, 0.49), (0.64, 0.08, 0.18)]
+for i, m in enumerate(&quot;osD&quot;):
+    axs[i].plot(np.arange(N + 1), X[:, i], &quot;--&quot;, marker=m, color=farben[i], label=f&quot;Class {i + 1}&quot;)
+    axs[i].legend(loc=&quot;upper right&quot;)
+axs[2].set_xlabel(&quot;n&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 2.9: Leslie model with three age classes (book, Section 2.2, Eq. 2.11)</span>
+<span class="k"># x_{n+1} = L x_n with birth rate 9 of class 3 and survival rates 0.1 and 0.6, x_0 = (0, 0, 1000)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+L &lt;- matrix(c(0,   0,   9,
+              0.1, 0,   0,
+              0,   0.6, 0), nrow = 3, byrow = TRUE)
+N &lt;- 20
+X &lt;- matrix(0, 3, N + 1)
+X[, 1] &lt;- c(0, 0, 1000)
+for (k in 1:N) X[, k + 1] &lt;- L %*% X[, k]
+cat(&quot;class 3 every three steps:&quot;, sprintf(&quot;%.1f&quot;, X[3, seq(1, N + 1, 3)]), &quot;\n&quot;)
+cat(sprintf(&quot;factor per period: 9 * 0.1 * 0.6 = %g &lt; 1, the population dies out\n&quot;, 9 * 0.1 * 0.6))
+
+namen &lt;- c(&quot;Class 1&quot;, &quot;Class 2&quot;, &quot;Class 3&quot;)
+farben &lt;- c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49), rgb(0.64, 0.08, 0.18)); zeichen &lt;- c(16, 15, 18)
+par(mfrow = c(3, 1), mar = c(4, 4, 1, 1))
+for (i in 1:3) {
+  plot(0:N, X[i, ], type = &quot;o&quot;, lty = 2, pch = zeichen[i], col = farben[i], xlab = if (i == 3) &quot;n&quot; else &quot;&quot;, ylab = &quot;&quot;)
+    legend(&quot;bottomright&quot;, legend = namen[i], col = farben[i], pch = zeichen[i], lty = 2)
+}</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>class 3 every three steps: 1000.0  540.0  291.6  157.5  85.0  45.9  24.8
+factor per period: 9 * 0.1 * 0.6 = 0.54 &lt; 1, the population dies out</code></pre></details>
+    </div>
+  </div>
+</section>
+  
+  <section class="matlab-apps"><h3>MATLAB apps from the course</h3><p>Download, put into a folder, and type the name without extension in MATLAB, e.g. <code>leslie_app</code>. The apps use the graphical user interface of MATLAB and do not run in GNU Octave. Their user interface is in German.</p><ul><li><a href="apps/leslie_app.m" download>leslie_app.m</a><span>Leslie model with three age classes</span></li></ul></section>
+  <nav class="weiter" aria-label="Page navigation"><a href="abschnitt-2-1.html"><small>Previous</small>2.1 Examples: Fibonacci and Predator–Prey</a><a href="abschnitt-2-3.html"><small>Next</small>2.3 Eigenvalues and Long-Term Behavior</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Companion website to the book “Dynamical Systems in the Life Sciences” by Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programs under the <a href="../LICENSE.txt">MIT License</a> · <a href="../../impressum.html" hreflang="de">Legal notice (German)</a> · <a href="../../datenschutz.html" hreflang="de">Privacy policy (German)</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

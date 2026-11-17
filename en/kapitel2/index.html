@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chapter 2: Discrete Dynamical Systems with Several Variables – Dynamical Systems in the Life Sciences</title>
+<meta name="description" content="Programs and apps for Chapter 2 of the book Dynamical Systems in the Life Sciences">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamical Systems in the Life Sciences</a>
+  <nav aria-label="Chapters"><a href="../index.html">Home</a> <a href="../kapitel1/index.html">Chapter 1</a> <a href="../kapitel2/index.html" aria-current="page">Chapter 2</a> <a href="../kapitel3/index.html">Chapter 3</a> <a href="../kapitel4/index.html">Chapter 4</a> <a href="../../kapitel2/index.html" lang="de" hreflang="de">Deutsch</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Sections"><h2><a href="index.html">Chapter 2</a></h2><ol><li><a href="abschnitt-2-1.html"><span class="nr">2.1</span><span>Examples: Fibonacci and Predator–Prey</span></a></li><li><a href="abschnitt-2-2.html"><span class="nr">2.2</span><span>Matrix Models</span></a></li><li><a href="abschnitt-2-3.html"><span class="nr">2.3</span><span>Eigenvalues and Long-Term Behavior</span></a></li><li><a href="abschnitt-2-4.html"><span class="nr">2.4</span><span>Nonlinear Systems: SIR Model</span></a></li><li><a href="abschnitt-2-5.html"><span class="nr">2.5</span><span>In Depth: Propagation of the Action Potential</span></a></li></ol></aside>
+<main>
+  <div class="intro"><div><p class="eyebrow">Chapter 2</p><h1>Discrete Dynamical Systems with Several Variables</h1><p>Predator and prey, matrix models, eigenvalues, the SIR model, and the propagation of the action potential. For each section there are the programs for all computed figures, apps to try in the browser, and the MATLAB apps of the course.</p>
+  <p><a href="kapitel2_programme.zip" download>Download all programs for Chapter 2 (ZIP)</a></p></div><fieldset class="lang">
+  <legend>Programming language</legend>
+  <div class="seg" role="radiogroup" aria-label="Programming language">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Applies to all pages. MATLAB programs also run in the free GNU Octave.</small>
+</fieldset></div>
+  <ul class="abschnitte"><li><a href="abschnitt-2-1.html"><span class="nr">2.1</span><span class="t">Examples: Fibonacci and Predator–Prey<small>Many processes can only be described with several quantities at once: young and adult pairs of rabbits, prey and predators. Each quantity gets its own recursion rule, and the rules depend on each other. This gives a system of difference equations.</small></span><span class="zahl">3 figs. · Apps</span></a></li><li><a href="abschnitt-2-2.html"><span class="nr">2.2</span><span class="t">Matrix Models<small>If all recursion rules are linear, the system is written compactly as x<sub>n+1</sub> = A x<sub>n</sub> with a matrix A and the state vector x<sub>n</sub>. One step is then a matrix–vector multiplication. Examples are a disease progression with three groups and the Leslie model for age classes.</small></span><span class="zahl">2 figs. · Apps</span></a></li><li><a href="abschnitt-2-3.html"><span class="nr">2.3</span><span class="t">Eigenvalues and Long-Term Behavior<small>The solution x<sub>n</sub> = A<sup>n</sup> x<sub>0</sub> can be decomposed with eigenvalues and eigenvectors. In the long run the dominant eigenvalue λ<sub>1</sub>, the one of largest modulus, prevails: it determines whether the system grows, shrinks, or comes to rest, and its eigenvector gives the distribution among the components.</small></span><span class="zahl">4 figs. · Apps</span></a></li><li><a href="abschnitt-2-4.html"><span class="nr">2.4</span><span class="t">Nonlinear Systems: SIR Model<small>In the SIR model a population is divided into susceptible (S), infected (I), and recovered (R) persons. New infections arise from contacts between S and I, hence the product β S<sub>n</sub> I<sub>n</sub>: the system is nonlinear. Whether a disease persists is decided by the basic reproduction number R<sub>0</sub>.</small></span><span class="zahl">4 figs. · Apps</span></a></li><li><a href="abschnitt-2-5.html"><span class="nr">2.5</span><span class="t">In Depth: Propagation of the Action Potential<small>With two variables per cell, the Chialvo model describes an action potential. If many such cells are coupled on a ring or in a plane, the excitation spreads as a wave. A badly timed second stimulation or a brief block can trigger a circulating excitation, a model for reentry arrhythmias.</small></span><span class="zahl">6 figs.</span></a></li></ul>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Companion website to the book “Dynamical Systems in the Life Sciences” by Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programs under the <a href="../LICENSE.txt">MIT License</a> · <a href="../../impressum.html" hreflang="de">Legal notice (German)</a> · <a href="../../datenschutz.html" hreflang="de">Privacy policy (German)</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

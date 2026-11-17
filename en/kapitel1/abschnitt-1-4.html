@@ -1,0 +1,1041 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>1.4 Steady States and Stability – Dynamical Systems in the Life Sciences</title>
+<meta name="description" content="Programs in Julia, MATLAB, Python, and R for Section 1.4 of the book Dynamical Systems in the Life Sciences">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamical Systems in the Life Sciences</a>
+  <nav aria-label="Chapters"><a href="../index.html">Home</a> <a href="../kapitel1/index.html" aria-current="page">Chapter 1</a> <a href="../kapitel2/index.html">Chapter 2</a> <a href="../kapitel3/index.html">Chapter 3</a> <a href="../kapitel4/index.html">Chapter 4</a> <a href="../../kapitel1/abschnitt-1-4.html" lang="de" hreflang="de">Deutsch</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Sections"><h2><a href="index.html">Chapter 1</a></h2><ol><li><a href="abschnitt-1-1.html"><span class="nr">1.1</span><span>Sequences and Difference Equations</span></a></li><li><a href="abschnitt-1-2.html"><span class="nr">1.2</span><span>Linear Difference Equations</span></a></li><li><a href="abschnitt-1-3.html"><span class="nr">1.3</span><span>Logistic Growth Model</span></a></li><li><a href="abschnitt-1-4.html" aria-current="page"><span class="nr">1.4</span><span>Steady States and Stability</span></a></li><li><a href="abschnitt-1-5.html"><span class="nr">1.5</span><span>Newton's Method</span></a></li><li><a href="abschnitt-1-6.html"><span class="nr">1.6</span><span>In Depth: Heart Models</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Chapter 1 · Discrete Dynamical Systems with One Variable</p>
+      <h1><span class="num">1.4</span>Steady States and Stability</h1>
+      <p>Steady states are the intersections of the update function with the diagonal. Whether a sequence runs toward a steady state or away from it is decided by the slope: for |f′(x*)| &lt; 1 it is stable, for |f′(x*)| &gt; 1 unstable. Periodic points are found as fixed points of f<sup>k</sup>.</p>
+      <p>For each figure of the section you will find the program that produces it. Change parameters and initial values and observe what happens. Figure and equation numbers refer to the book.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programming language</legend>
+  <div class="seg" role="radiogroup" aria-label="Programming language">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Applies to all pages. MATLAB programs also run in the free GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>On this page</b><ul><li><a href="#treppe-linear"><span class="abb">Fig. 1.25</span>Staircase diagram without a steady state</a></li><li><a href="#treppe-wurzel"><span class="abb">Fig. 1.26</span>Staircase diagrams for the square root function</a></li><li><a href="#wurzel-stabilitaet"><span class="abb">Fig. 1.27</span>Stable and unstable state</a></li><li><a href="#treppe-stabilitaet"><span class="abb">Fig. 1.28</span>Staircase diagrams with stable and unstable states</a></li><li><a href="#logistisch-stabilitaet"><span class="abb">Fig. 1.29</span>Steady states of the logistic model</a></li><li><a href="#logistisch-zyklen"><span class="abb">Fig. 1.30</span>Cycles as fixed points of fk</a></li><li><a href="#logistisch-treppe-500"><span class="abb">Fig. 1.31</span>Staircase diagrams over 500 steps</a></li><li><a href="#app-treppe-auswahl"><span class="abb">App</span>try it in the browser</a></li></ul></div>
+  
+<section class="fig" id="treppe-linear">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 1.25</p>
+    <h2>Staircase diagram without a steady state</h2>
+    <p class="formel">x<sub>n+1</sub> = x<sub>n</sub> + 0.5</p>
+    <p class="lead">The graph of f does not intersect the diagonal; the staircase keeps rising steadily.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/treppe_linear.png" alt="Output of the program treppe_linear.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="treppe_linear.jl" data-m="treppe_linear.m" data-py="treppe_linear.py" data-r="treppe_linear.R">treppe_linear.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/treppe_linear.py" data-jl="code/treppe_linear.jl" data-m="code/treppe_linear.m" data-py="code/treppe_linear.py" data-r="code/treppe_linear.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 1.25: Staircase diagram for x_{n+1} = x_n + 0.5 (book, Section 1.4)</span>
+<span class="k"># x_0 = 0.25; left one step, right four steps. The graph of f does not intersect y = x: no steady state.</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+f(x) = x + 0.5
+x = zeros(5); x[1] = 0.25
+for k in 1:4
+    x[k + 1] = f(x[k])
+end
+println(&quot;x_0 ... x_4 = &quot;, join([@sprintf(&quot;%g&quot;, v) for v in x], &quot;  &quot;))
+
+function treppe(x, unten = 0.0)          <span class="k"># points of the staircase: vertically to the graph, horizontally to the diagonal</span>
+    px = [x[1]]; py = [unten]
+    for k in 1:length(x) - 1
+        append!(px, [x[k], x[k + 1]]); append!(py, [x[k + 1], x[k + 1]])
+    end
+    return px, py
+end
+rot = RGB(0.64, 0.08, 0.18)
+bilder = []
+for s in (1, 4)
+    p = plot([0, 3], [f(0), f(3)], color = RGB(0, 0.447, 0.741), lw = 2, legend = false, aspect_ratio = 1,
+             xlims = (0, 3), ylims = (0, 3), xlabel = &quot;x&quot;, ylabel = &quot;f(x)&quot;)
+    plot!(p, [0, 3], [0, 3], color = :black)
+    plot!(p, treppe(x[1:s + 1])..., color = rot)
+    scatter!(p, x[1:s], x[2:s + 1], color = rot)          <span class="k"># points (x_n, x_{n+1})</span>
+    push!(bilder, p)
+end
+display(plot(bilder..., layout = (1, 2), size = (900, 450)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 1.25: Staircase diagram for x_{n+1} = x_n + 0.5 (book, Section 1.4)</span>
+<span class="k">% x_0 = 0.25; left one step, right four steps. The graph of f does not intersect y = x: no steady state.</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+f = @(x) x + 0.5;
+x = zeros(1, 5); x(1) = 0.25;
+for k = 1:4
+    x(k + 1) = f(x(k));
+end
+fprintf(&#x27;x_0 ... x_4 = &#x27;); fprintf(&#x27;%g  &#x27;, x); fprintf(&#x27;\n&#x27;);
+
+rot = [0.64 0.08 0.18];
+schrittzahl = [1 4];
+for p = 1:2
+    s = schrittzahl(p);
+    subplot(1, 2, p);
+    plot([0 3], [f(0) f(3)], &#x27;Color&#x27;, [0 0.447 0.741]); hold on
+    plot([0 3], [0 3], &#x27;k-&#x27;);
+    px = x(1); py = 0;
+    for k = 1:s
+        px = [px x(k) x(k + 1)]; py = [py x(k + 1) x(k + 1)];
+    end
+    plot(px, py, &#x27;Color&#x27;, rot);
+    plot(x(1:s), x(2:s + 1), &#x27;o&#x27;, &#x27;Color&#x27;, rot, &#x27;MarkerFaceColor&#x27;, rot);   <span class="k">% points (x_n, x_{n+1})</span>
+    hold off; axis equal; axis([0 3 0 3]); xlabel(&#x27;x&#x27;); ylabel(&#x27;f(x)&#x27;);
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 1.25: Staircase diagram for x_{n+1} = x_n + 0.5 (book, Section 1.4)</span>
+<span class="k"># x_0 = 0.25; left one step, right four steps. The graph of f does not intersect y = x: no steady state.</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+f = lambda x: x + 0.5
+x = [0.25]
+for _ in range(4):
+    x.append(f(x[-1]))
+print(&quot;x_0 ... x_4 =&quot;, &quot;  &quot;.join(f&quot;{v:g}&quot; for v in x))
+
+fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+for ax, schritte in zip(axs, (1, 4)):
+    ax.plot([0, 3], [f(0), f(3)], color=(0, 0.447, 0.741), label=&quot;f(x) = x + 0.5&quot;)
+    ax.plot([0, 3], [0, 3], &quot;k&quot;, lw=0.8, label=&quot;y = x&quot;)
+    px, py = [x[0]], [0]
+    for k in range(schritte):
+        px += [x[k], x[k + 1]]; py += [x[k + 1], x[k + 1]]
+    ax.plot(px, py, color=(0.64, 0.08, 0.18))
+    ax.plot(x[:schritte], x[1:schritte + 1], &quot;o&quot;, color=(0.64, 0.08, 0.18))    <span class="k"># points (x_n, x_{n+1})</span>
+    ax.set_xlim(0, 3); ax.set_ylim(0, 3); ax.set_aspect(&quot;equal&quot;)
+    ax.set_xlabel(&quot;x&quot;); ax.set_ylabel(&quot;f(x)&quot;)
+axs[0].legend(loc=&quot;lower right&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 1.25: Staircase diagram for x_{n+1} = x_n + 0.5 (book, Section 1.4)</span>
+<span class="k"># x_0 = 0.25; left one step, right four steps. The graph of f does not intersect y = x: no steady state.</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+f &lt;- function(x) x + 0.5
+x &lt;- numeric(5); x[1] &lt;- 0.25
+for (k in 1:4) x[k + 1] &lt;- f(x[k])
+cat(&quot;x_0 ... x_4 =&quot;, sprintf(&quot;%g&quot;, x), &quot;\n&quot;)
+
+treppe &lt;- function(x, unten = 0) {      <span class="k"># points of the staircase: vertically to the graph, horizontally to the diagonal</span>
+  px &lt;- x[1]; py &lt;- unten
+  for (k in 1:(length(x) - 1)) { px &lt;- c(px, x[k], x[k + 1]); py &lt;- c(py, x[k + 1], x[k + 1]) }
+  list(x = px, y = py)
+}
+rot &lt;- rgb(0.64, 0.08, 0.18)
+par(mfrow = c(1, 2))
+for (s in c(1, 4)) {
+  plot(c(0, 3), c(f(0), f(3)), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2, asp = 1, xlim = c(0, 3), ylim = c(0, 3),
+       xlab = &quot;x&quot;, ylab = &quot;f(x)&quot;)
+  abline(0, 1)
+  lines(treppe(x[1:(s + 1)]), col = rot)
+  points(x[1:s], x[2:(s + 1)], pch = 16, col = rot)       <span class="k"># points (x_n, x_{n+1})</span>
+}</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>x_0 ... x_4 = 0.25  0.75  1.25  1.75  2.25</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="treppe-wurzel">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 1.26</p>
+    <h2>Staircase diagrams for the square root function</h2>
+    <p class="formel">x<sub>n+1</sub> = √x<sub>n</sub></p>
+    <p class="lead">From x<sub>0</sub> = 0.5 the staircase rises, from x<sub>0</sub> = 1.4 it falls. In both cases it runs toward the intersection at 1.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/treppe_wurzel.png" alt="Output of the program treppe_wurzel.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="treppe_wurzel.jl" data-m="treppe_wurzel.m" data-py="treppe_wurzel.py" data-r="treppe_wurzel.R">treppe_wurzel.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/treppe_wurzel.py" data-jl="code/treppe_wurzel.jl" data-m="code/treppe_wurzel.m" data-py="code/treppe_wurzel.py" data-r="code/treppe_wurzel.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 1.26: Staircase diagrams for x_{n+1} = sqrt(x_n) (book, Section 1.4, Eq. 1.31)</span>
+<span class="k"># x_0 = 0.5 (left) and x_0 = 1.4 (right); the staircase runs toward the intersection of f(x) = sqrt(x) with y = x</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+function treppe(x, unten = 0.0)          <span class="k"># points of the staircase: vertically to the graph, horizontally to the diagonal</span>
+    px = [x[1]]; py = [unten]
+    for k in 1:length(x) - 1
+        append!(px, [x[k], x[k + 1]]); append!(py, [x[k + 1], x[k + 1]])
+    end
+    return px, py
+end
+xx = range(0, 1.5, length = 300)
+N = 4
+bilder = []
+for x0 in (0.5, 1.4)
+    x = zeros(N + 1); x[1] = x0
+    for k in 1:N
+        x[k + 1] = sqrt(x[k])
+    end
+    println(@sprintf(&quot;x_0 = %g: &quot;, x0), join([@sprintf(&quot;%.4f&quot;, v) for v in x], &quot;  &quot;))
+    p = plot(xx, sqrt.(xx), color = RGB(0, 0.447, 0.741), lw = 2, legend = false, aspect_ratio = 1,
+             xlims = (0, 1.5), ylims = (0, 1.5), xlabel = &quot;x&quot;, ylabel = &quot;f(x)&quot;)
+    plot!(p, [0, 1.5], [0, 1.5], color = :black)
+    plot!(p, treppe(x)..., color = RGB(0.64, 0.08, 0.18))
+    push!(bilder, p)
+end
+display(plot(bilder..., layout = (1, 2), size = (900, 450)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 1.26: Staircase diagrams for x_{n+1} = sqrt(x_n) (book, Section 1.4, Eq. 1.31)</span>
+<span class="k">% x_0 = 0.5 (left) and x_0 = 1.4 (right); the staircase runs toward the intersection of f(x) = sqrt(x) with y = x</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+xx = linspace(0, 1.5, 300);
+starts = [0.5 1.4]; N = 4;
+for p = 1:2
+    x = zeros(1, N + 1); x(1) = starts(p);
+    for k = 1:N
+        x(k + 1) = sqrt(x(k));
+    end
+    fprintf(&#x27;x_0 = %g: &#x27;, starts(p)); fprintf(&#x27;%.4f  &#x27;, x); fprintf(&#x27;\n&#x27;);
+    px = x(1); py = 0;
+    for k = 1:N
+        px = [px x(k) x(k + 1)]; py = [py x(k + 1) x(k + 1)];
+    end
+    subplot(1, 2, p);
+    plot(xx, sqrt(xx), &#x27;Color&#x27;, [0 0.447 0.741]); hold on
+    plot([0 1.5], [0 1.5], &#x27;k-&#x27;);
+    plot(px, py, &#x27;Color&#x27;, [0.64 0.08 0.18]); hold off
+    axis equal; axis([0 1.5 0 1.5]); xlabel(&#x27;x&#x27;); ylabel(&#x27;f(x)&#x27;);
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 1.26: Staircase diagrams for x_{n+1} = sqrt(x_n) (book, Section 1.4, Eq. 1.31)</span>
+<span class="k"># x_0 = 0.5 (left) and x_0 = 1.4 (right); the staircase runs toward the intersection of f(x) = sqrt(x) with y = x</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+def treppe(ax, f, x0, N):
+    x = [x0]
+    for _ in range(N):
+        x.append(f(x[-1]))
+    px, py = [x[0]], [0]
+    for k in range(N):
+        px += [x[k], x[k + 1]]; py += [x[k + 1], x[k + 1]]
+    ax.plot(px, py, color=(0.64, 0.08, 0.18))
+    return x
+
+xx = np.linspace(0, 1.5, 300)
+fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+for ax, x0 in zip(axs, (0.5, 1.4)):
+    ax.plot(xx, np.sqrt(xx), color=(0, 0.447, 0.741), label=&quot;f(x) = sqrt(x)&quot;)
+    ax.plot([0, 1.5], [0, 1.5], &quot;k&quot;, lw=0.8, label=&quot;y = x&quot;)
+    x = treppe(ax, np.sqrt, x0, 4)
+    print(f&quot;x_0 = {x0}:&quot;, &quot;  &quot;.join(f&quot;{v:.4f}&quot; for v in x))
+    ax.set_xlim(0, 1.5); ax.set_ylim(0, 1.5); ax.set_aspect(&quot;equal&quot;)
+    ax.set_xlabel(&quot;x&quot;); ax.set_ylabel(&quot;f(x)&quot;)
+axs[0].legend(loc=&quot;lower right&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 1.26: Staircase diagrams for x_{n+1} = sqrt(x_n) (book, Section 1.4, Eq. 1.31)</span>
+<span class="k"># x_0 = 0.5 (left) and x_0 = 1.4 (right); the staircase runs toward the intersection of f(x) = sqrt(x) with y = x</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+treppe &lt;- function(x, unten = 0) {      <span class="k"># points of the staircase: vertically to the graph, horizontally to the diagonal</span>
+  px &lt;- x[1]; py &lt;- unten
+  for (k in 1:(length(x) - 1)) { px &lt;- c(px, x[k], x[k + 1]); py &lt;- c(py, x[k + 1], x[k + 1]) }
+  list(x = px, y = py)
+}
+xx &lt;- seq(0, 1.5, length.out = 300)
+N &lt;- 4
+par(mfrow = c(1, 2))
+for (x0 in c(0.5, 1.4)) {
+  x &lt;- numeric(N + 1); x[1] &lt;- x0
+  for (k in 1:N) x[k + 1] &lt;- sqrt(x[k])
+  cat(sprintf(&quot;x_0 = %g:&quot;, x0), sprintf(&quot;%.4f&quot;, x), &quot;\n&quot;)
+  plot(xx, sqrt(xx), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2, asp = 1, xlim = c(0, 1.5), ylim = c(0, 1.5),
+       xlab = &quot;x&quot;, ylab = &quot;f(x)&quot;)
+  abline(0, 1)
+  lines(treppe(x), col = rgb(0.64, 0.08, 0.18))
+}</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>x_0 = 0.5: 0.5000  0.7071  0.8409  0.9170  0.9576
+x_0 = 1.4: 1.4000  1.1832  1.0878  1.0430  1.0213</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="wurzel-stabilitaet">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 1.27</p>
+    <h2>Stable and unstable state</h2>
+    <p class="formel">x<sub>a</sub>* = 0 (unstable),&ensp; x<sub>b</sub>* = 1 (stable)</p>
+    <p class="lead">Near 0 the square root function is steeper than the diagonal, and the sequence moves away. Near 1 it is flatter (f′(1) = 0.5), and the sequence approaches.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/wurzel_stabilitaet.png" alt="Output of the program wurzel_stabilitaet.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="wurzel_stabilitaet.jl" data-m="wurzel_stabilitaet.m" data-py="wurzel_stabilitaet.py" data-r="wurzel_stabilitaet.R">wurzel_stabilitaet.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/wurzel_stabilitaet.py" data-jl="code/wurzel_stabilitaet.jl" data-m="code/wurzel_stabilitaet.m" data-py="code/wurzel_stabilitaet.py" data-r="code/wurzel_stabilitaet.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 1.27: Steady states of x_{n+1} = sqrt(x_n) (book, Section 1.4, Eq. 1.31)</span>
+<span class="k"># left: start at 0.01 near the unstable state 0;  right: start at 1.01 near the stable state 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+function treppe(x, unten = 0.0)          <span class="k"># points of the staircase: vertically to the graph, horizontally to the diagonal</span>
+    px = [x[1]]; py = [unten]
+    for k in 1:length(x) - 1
+        append!(px, [x[k], x[k + 1]]); append!(py, [x[k + 1], x[k + 1]])
+    end
+    return px, py
+end
+N = 4
+bilder = []
+for (x0, lo, hi) in [(0.01, 0.0, 1.5), (1.01, 0.99, 1.01)]
+    x = zeros(N + 1); x[1] = x0
+    for k in 1:N
+        x[k + 1] = sqrt(x[k])
+    end
+    println(@sprintf(&quot;x_0 = %g: &quot;, x0), join([@sprintf(&quot;%.5f&quot;, v) for v in x], &quot;  &quot;))
+    xx = range(lo, hi, length = 300)
+    p = plot(xx, sqrt.(xx), color = RGB(0, 0.447, 0.741), lw = 2, legend = false, aspect_ratio = 1,
+             xlims = (lo, hi), ylims = (lo, hi), xlabel = &quot;x&quot;, ylabel = &quot;f(x)&quot;)
+    plot!(p, [lo, hi], [lo, hi], color = :black)
+    plot!(p, treppe(x, lo)..., color = RGB(0.64, 0.08, 0.18))
+    push!(bilder, p)
+end
+println(&quot;f&#x27;(x) = 1/(2 sqrt(x)):  f&#x27;(1) = 0.5 &lt; 1 (stable), f&#x27;(x) -&gt; infinity for x -&gt; 0 (unstable)&quot;)
+display(plot(bilder..., layout = (1, 2), size = (900, 450)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 1.27: Steady states of x_{n+1} = sqrt(x_n) (book, Section 1.4, Eq. 1.31)</span>
+<span class="k">% left: start at 0.01 near the unstable state 0;  right: start at 1.01 near the stable state 1</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+starts = [0.01 1.01]; grenzen = [0 1.5; 0.99 1.01]; N = 4;
+for p = 1:2
+    lo = grenzen(p, 1); hi = grenzen(p, 2);
+    x = zeros(1, N + 1); x(1) = starts(p);
+    for k = 1:N
+        x(k + 1) = sqrt(x(k));
+    end
+    fprintf(&#x27;x_0 = %g: &#x27;, starts(p)); fprintf(&#x27;%.5f  &#x27;, x); fprintf(&#x27;\n&#x27;);
+    px = x(1); py = lo;
+    for k = 1:N
+        px = [px x(k) x(k + 1)]; py = [py x(k + 1) x(k + 1)];
+    end
+    xx = linspace(lo, hi, 300);
+    subplot(1, 2, p);
+    plot(xx, sqrt(xx), &#x27;Color&#x27;, [0 0.447 0.741]); hold on
+    plot([lo hi], [lo hi], &#x27;k-&#x27;);
+    plot(px, py, &#x27;Color&#x27;, [0.64 0.08 0.18]); hold off
+    axis equal; axis([lo hi lo hi]); xlabel(&#x27;x&#x27;); ylabel(&#x27;f(x)&#x27;);
+end
+disp(&#x27;f&#x27;&#x27;(x) = 1/(2 sqrt(x)):  f&#x27;&#x27;(1) = 0.5 &lt; 1 (stabil), f&#x27;&#x27;(x) -&gt; unendlich für x -&gt; 0 (instabil)&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 1.27: Steady states of x_{n+1} = sqrt(x_n) (book, Section 1.4, Eq. 1.31)</span>
+<span class="k"># left: start at 0.01 near the unstable state 0;  right: start at 1.01 near the stable state 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+def treppe(ax, f, x0, N):
+    x = [x0]
+    for _ in range(N):
+        x.append(f(x[-1]))
+    px, py = [x[0]], [0 if x0 &lt; 0.5 else 0.99]
+    for k in range(N):
+        px += [x[k], x[k + 1]]; py += [x[k + 1], x[k + 1]]
+    ax.plot(px, py, color=(0.64, 0.08, 0.18))
+    return x
+
+fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+for ax, x0, (lo, hi) in zip(axs, (0.01, 1.01), ((0, 1.5), (0.99, 1.01))):
+    xx = np.linspace(lo, hi, 300)
+    ax.plot(xx, np.sqrt(xx), color=(0, 0.447, 0.741), label=&quot;f(x) = sqrt(x)&quot;)
+    ax.plot([lo, hi], [lo, hi], &quot;k&quot;, lw=0.8, label=&quot;y = x&quot;)
+    x = treppe(ax, np.sqrt, x0, 4)
+    print(f&quot;x_0 = {x0}:&quot;, &quot;  &quot;.join(f&quot;{v:.5f}&quot; for v in x))
+    ax.set_xlim(lo, hi); ax.set_ylim(lo, hi); ax.set_aspect(&quot;equal&quot;)
+    ax.set_xlabel(&quot;x&quot;); ax.set_ylabel(&quot;f(x)&quot;)
+axs[0].legend(loc=&quot;lower right&quot;)
+print(&quot;f&#x27;(x) = 1/(2 sqrt(x)):  f&#x27;(1) = 0.5 &lt; 1 (stable), f&#x27;(x) -&gt; infinity for x -&gt; 0 (unstable)&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 1.27: Steady states of x_{n+1} = sqrt(x_n) (book, Section 1.4, Eq. 1.31)</span>
+<span class="k"># left: start at 0.01 near the unstable state 0;  right: start at 1.01 near the stable state 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+treppe &lt;- function(x, unten = 0) {      <span class="k"># points of the staircase: vertically to the graph, horizontally to the diagonal</span>
+  px &lt;- x[1]; py &lt;- unten
+  for (k in 1:(length(x) - 1)) { px &lt;- c(px, x[k], x[k + 1]); py &lt;- c(py, x[k + 1], x[k + 1]) }
+  list(x = px, y = py)
+}
+N &lt;- 4
+par(mfrow = c(1, 2))
+for (p in 1:2) {
+  x0 &lt;- c(0.01, 1.01)[p]; lo &lt;- c(0, 0.99)[p]; hi &lt;- c(1.5, 1.01)[p]
+  x &lt;- numeric(N + 1); x[1] &lt;- x0
+  for (k in 1:N) x[k + 1] &lt;- sqrt(x[k])
+  cat(sprintf(&quot;x_0 = %g:&quot;, x0), sprintf(&quot;%.5f&quot;, x), &quot;\n&quot;)
+  xx &lt;- seq(lo, hi, length.out = 300)
+  plot(xx, sqrt(xx), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2, asp = 1, xlim = c(lo, hi), ylim = c(lo, hi),
+       xlab = &quot;x&quot;, ylab = &quot;f(x)&quot;)
+  abline(0, 1)
+  lines(treppe(x, lo), col = rgb(0.64, 0.08, 0.18))
+}
+cat(&quot;f&#x27;(x) = 1/(2 sqrt(x)):  f&#x27;(1) = 0.5 &lt; 1 (stable), f&#x27;(x) -&gt; infinity for x -&gt; 0 (unstable)\n&quot;)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>x_0 = 0.01: 0.01000  0.10000  0.31623  0.56234  0.74989
+x_0 = 1.01: 1.01000  1.00499  1.00249  1.00124  1.00062
+f&#x27;(x) = 1/(2 sqrt(x)):  f&#x27;(1) = 0.5 &lt; 1 (stable), f&#x27;(x) -&gt; infinity for x -&gt; 0 (unstable)</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="treppe-stabilitaet">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 1.28</p>
+    <h2>Staircase diagrams with stable and unstable states</h2>
+    <p class="formel">|f′(x*)| &lt; 1 &emsp;⇒&emsp; stable</p>
+    <p class="lead">A negative slope produces a spiral: for f(x) = e<sup>−2x</sup>, f′(x*) ≈ −0.85 and the spiral contracts; for f(x) = e<sup>−5x</sup>, f′(x*) ≈ −1.33 and it widens.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/treppe_stabilitaet.png" alt="Output of the program treppe_stabilitaet.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="treppe_stabilitaet.jl" data-m="treppe_stabilitaet.m" data-py="treppe_stabilitaet.py" data-r="treppe_stabilitaet.R">treppe_stabilitaet.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/treppe_stabilitaet.py" data-jl="code/treppe_stabilitaet.jl" data-m="code/treppe_stabilitaet.m" data-py="code/treppe_stabilitaet.py" data-r="code/treppe_stabilitaet.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 1.28: Staircase diagrams with stable and unstable steady states (book, Section 1.4, Eq. 1.34)</span>
+<span class="k"># top: f(x) = x - 2x(0.5 - x)(1 - x) with fixed points 0 and 1 (stable) and 0.5 (unstable)</span>
+<span class="k"># bottom: f(x) = exp(-2x) (spiral approach) and f(x) = exp(-5x) (spiral divergence), each with x_0 = 0.2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+function treppe(x, unten = 0.0)          <span class="k"># points of the staircase: vertically to the graph, horizontally to the diagonal</span>
+    px = [x[1]]; py = [unten]
+    for k in 1:length(x) - 1
+        append!(px, [x[k], x[k + 1]]); append!(py, [x[k + 1], x[k + 1]])
+    end
+    return px, py
+end
+g(x) = x - 2 * x * (0.5 - x) * (1 - x)
+faelle = [(g, &quot;f(x) = x - 2x(0.5-x)(1-x)&quot;, [0.6], 20, 0.5, 1.0),
+          (g, &quot;f(x) = x - 2x(0.5-x)(1-x)&quot;, [0.4, 0.6], 20, 0.0, 1.0),
+          (x -&gt; exp(-2x), &quot;f(x) = exp(-2x)&quot;, [0.2], 20, 0.0, 1.0),
+          (x -&gt; exp(-5x), &quot;f(x) = exp(-5x)&quot;, [0.2], 7, 0.0, 1.0)]
+bilder = []
+for (f, name, starts, N, lo, hi) in faelle
+    xx = range(lo, hi, length = 400)
+    p = plot(xx, f.(xx), color = RGB(0, 0.447, 0.741), lw = 2, legend = false, aspect_ratio = 1,
+             xlims = (lo, hi), ylims = (lo, hi), xlabel = &quot;x_n&quot;, ylabel = &quot;f(x_n)&quot;, title = name, titlefontsize = 9)
+    plot!(p, [lo, hi], [lo, hi], color = :black)
+    for x0 in starts
+        x = zeros(N + 1); x[1] = x0
+        for k in 1:N
+            x[k + 1] = f(x[k])
+        end
+        plot!(p, treppe(x, lo)..., color = RGB(0.64, 0.08, 0.18))
+        @printf(&quot;%s, x_0 = %g:  x_%d = %.4f\n&quot;, name, x0, N, x[end])
+    end
+    push!(bilder, p)
+end
+display(plot(bilder..., layout = (2, 2), size = (850, 850)))
+
+<span class="k"># stability criterion |f&#x27;(x*)| &lt; 1 at the fixed points</span>
+for c in (2, 5)
+    xs = 0.5
+    for k in 1:100                       <span class="k"># fixed point with Newton&#x27;s method</span>
+        xs = xs - (exp(-c * xs) - xs) / (-c * exp(-c * xs) - 1)
+    end
+    @printf(&quot;f(x) = exp(-%dx):  x* = %.4f,  f&#x27;(x*) = %.4f\n&quot;, c, xs, -c * exp(-c * xs))
+end</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 1.28: Staircase diagrams with stable and unstable steady states (book, Section 1.4, Eq. 1.34)</span>
+<span class="k">% top: f(x) = x - 2x(0.5 - x)(1 - x) with fixed points 0 and 1 (stable) and 0.5 (unstable)</span>
+<span class="k">% bottom: f(x) = exp(-2x) (spiral approach) and f(x) = exp(-5x) (spiral divergence), each with x_0 = 0.2</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+g = @(x) x - 2 * x .* (0.5 - x) .* (1 - x);
+fs = {g, g, @(x) exp(-2 * x), @(x) exp(-5 * x)};
+namen = {&#x27;f(x) = x - 2x(0.5-x)(1-x)&#x27;, &#x27;f(x) = x - 2x(0.5-x)(1-x)&#x27;, &#x27;f(x) = exp(-2x)&#x27;, &#x27;f(x) = exp(-5x)&#x27;};
+starts = {0.6, [0.4 0.6], 0.2, 0.2};
+schritte = [20 20 20 7];
+grenzen = [0.5 1; 0 1; 0 1; 0 1];
+for p = 1:4
+    f = fs{p}; N = schritte(p); lo = grenzen(p, 1); hi = grenzen(p, 2);
+    xx = linspace(lo, hi, 400);
+    subplot(2, 2, p);
+    plot(xx, f(xx), &#x27;Color&#x27;, [0 0.447 0.741]); hold on
+    plot([lo hi], [lo hi], &#x27;k-&#x27;);
+    for x0 = starts{p}
+        x = zeros(1, N + 1); x(1) = x0;
+        for k = 1:N
+            x(k + 1) = f(x(k));
+        end
+        px = x(1); py = lo;
+        for k = 1:N
+            px = [px x(k) x(k + 1)]; py = [py x(k + 1) x(k + 1)];
+        end
+        plot(px, py, &#x27;Color&#x27;, [0.64 0.08 0.18]);
+        fprintf(&#x27;%s, x_0 = %g:  x_%d = %.4f\n&#x27;, namen{p}, x0, N, x(end));
+    end
+    hold off; axis equal; axis([lo hi lo hi]);
+    xlabel(&#x27;x_n&#x27;); ylabel(&#x27;f(x_n)&#x27;); title(namen{p});
+end
+
+<span class="k">% stability criterion |f&#x27;(x*)| &lt; 1 at the fixed points</span>
+for c = [2 5]
+    xs = 0.5;
+    for k = 1:100                        <span class="k">% fixed point with Newton&#x27;s method</span>
+        xs = xs - (exp(-c * xs) - xs) / (-c * exp(-c * xs) - 1);
+    end
+    fprintf(&#x27;f(x) = exp(-%dx):  x* = %.4f,  f&#x27;&#x27;(x*) = <span class="k">%.4f\n&#x27;, c, xs, -c * exp(-c * xs));</span>
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 1.28: Staircase diagrams with stable and unstable steady states (book, Section 1.4, Eq. 1.34)</span>
+<span class="k"># top: f(x) = x - 2x(0.5 - x)(1 - x) with fixed points 0 and 1 (stable) and 0.5 (unstable)</span>
+<span class="k"># bottom: f(x) = exp(-2x) (spiral approach) and f(x) = exp(-5x) (spiral divergence), each with x_0 = 0.2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+def treppe(ax, f, x0, N, lo):
+    x = [x0]
+    for _ in range(N):
+        x.append(f(x[-1]))
+    px, py = [x[0]], [lo]
+    for k in range(N):
+        px += [x[k], x[k + 1]]; py += [x[k + 1], x[k + 1]]
+    ax.plot(px, py, color=(0.64, 0.08, 0.18), lw=1)
+    return x
+
+g = lambda x: x - 2 * x * (0.5 - x) * (1 - x)
+faelle = [(g, &quot;f(x) = x - 2x(0.5-x)(1-x)&quot;, [0.6], 20, (0.5, 1)),
+          (g, &quot;f(x) = x - 2x(0.5-x)(1-x)&quot;, [0.4, 0.6], 20, (0, 1)),
+          (lambda x: np.exp(-2 * x), &quot;f(x) = exp(-2x)&quot;, [0.2], 20, (0, 1)),
+          (lambda x: np.exp(-5 * x), &quot;f(x) = exp(-5x)&quot;, [0.2], 7, (0, 1))]
+
+fig, axs = plt.subplots(2, 2, figsize=(9, 9))
+for ax, (f, name, starts, N, (lo, hi)) in zip(axs.flat, faelle):
+    xx = np.linspace(lo, hi, 400)
+    ax.plot(xx, f(xx), color=(0, 0.447, 0.741), label=name)
+    ax.plot([lo, hi], [lo, hi], &quot;k&quot;, lw=0.8)
+    for x0 in starts:
+        x = treppe(ax, f, x0, N, lo)
+        print(f&quot;{name}, x_0 = {x0}:  x_{N} = {x[-1]:.4f}&quot;)
+    ax.set_xlim(lo, hi); ax.set_ylim(lo, hi); ax.set_aspect(&quot;equal&quot;)
+    ax.set_xlabel(&quot;x_n&quot;); ax.set_ylabel(&quot;f(x_n)&quot;); ax.legend(loc=&quot;upper left&quot;, fontsize=8)
+
+<span class="k"># stability criterion |f&#x27;(x*)| &lt; 1 at the fixed points</span>
+for c in (2, 5):
+    xs = 0.5
+    for _ in range(100):                              <span class="k"># fixed point with Newton&#x27;s method</span>
+        xs -= (np.exp(-c * xs) - xs) / (-c * np.exp(-c * xs) - 1)
+    print(f&quot;f(x) = exp(-{c}x):  x* = {xs:.4f},  f&#x27;(x*) = {-c * np.exp(-c * xs):.4f}&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 1.28: Staircase diagrams with stable and unstable steady states (book, Section 1.4, Eq. 1.34)</span>
+<span class="k"># top: f(x) = x - 2x(0.5 - x)(1 - x) with fixed points 0 and 1 (stable) and 0.5 (unstable)</span>
+<span class="k"># bottom: f(x) = exp(-2x) (spiral approach) and f(x) = exp(-5x) (spiral divergence), each with x_0 = 0.2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+treppe &lt;- function(x, unten = 0) {      <span class="k"># points of the staircase: vertically to the graph, horizontally to the diagonal</span>
+  px &lt;- x[1]; py &lt;- unten
+  for (k in 1:(length(x) - 1)) { px &lt;- c(px, x[k], x[k + 1]); py &lt;- c(py, x[k + 1], x[k + 1]) }
+  list(x = px, y = py)
+}
+g &lt;- function(x) x - 2 * x * (0.5 - x) * (1 - x)
+fs &lt;- list(g, g, function(x) exp(-2 * x), function(x) exp(-5 * x))
+namen &lt;- c(&quot;f(x) = x - 2x(0.5-x)(1-x)&quot;, &quot;f(x) = x - 2x(0.5-x)(1-x)&quot;, &quot;f(x) = exp(-2x)&quot;, &quot;f(x) = exp(-5x)&quot;)
+starts &lt;- list(0.6, c(0.4, 0.6), 0.2, 0.2)
+schritte &lt;- c(20, 20, 20, 7)
+grenzen &lt;- rbind(c(0.5, 1), c(0, 1), c(0, 1), c(0, 1))
+par(mfrow = c(2, 2))
+for (p in 1:4) {
+  f &lt;- fs[[p]]; N &lt;- schritte[p]; lo &lt;- grenzen[p, 1]; hi &lt;- grenzen[p, 2]
+  xx &lt;- seq(lo, hi, length.out = 400)
+  plot(xx, f(xx), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2, asp = 1, xlim = c(lo, hi), ylim = c(lo, hi),
+       xlab = &quot;x_n&quot;, ylab = &quot;f(x_n)&quot;, main = namen[p], cex.main = 0.9)
+  abline(0, 1)
+  for (x0 in starts[[p]]) {
+    x &lt;- numeric(N + 1); x[1] &lt;- x0
+    for (k in 1:N) x[k + 1] &lt;- f(x[k])
+    lines(treppe(x, lo), col = rgb(0.64, 0.08, 0.18))
+    cat(sprintf(&quot;%s, x_0 = %g:  x_%d = %.4f\n&quot;, namen[p], x0, N, x[N + 1]))
+  }
+}
+
+<span class="k"># stability criterion |f&#x27;(x*)| &lt; 1 at the fixed points</span>
+for (c in c(2, 5)) {
+  xs &lt;- 0.5
+  for (k in 1:100) xs &lt;- xs - (exp(-c * xs) - xs) / (-c * exp(-c * xs) - 1)   <span class="k"># fixed point with Newton&#x27;s method</span>
+  cat(sprintf(&quot;f(x) = exp(-%dx):  x* = %.4f,  f&#x27;(x*) = %.4f\n&quot;, c, xs, -c * exp(-c * xs)))
+}</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>f(x) = x - 2x(0.5-x)(1-x), x_0 = 0.6:  x_20 = 1.0000
+f(x) = x - 2x(0.5-x)(1-x), x_0 = 0.4:  x_20 = 0.0000
+f(x) = x - 2x(0.5-x)(1-x), x_0 = 0.6:  x_20 = 1.0000
+f(x) = exp(-2x), x_0 = 0.2:  x_20 = 0.4165
+f(x) = exp(-5x), x_0 = 0.2:  x_7 = 0.7729
+f(x) = exp(-2x):  x* = 0.4263,  f&#x27;(x*) = -0.8526
+f(x) = exp(-5x):  x* = 0.2653,  f&#x27;(x*) = -1.3267</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="logistisch-stabilitaet">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 1.29</p>
+    <h2>Steady states of the logistic model</h2>
+    <p class="formel">y<sub>α</sub>* = 0,&ensp; y<sub>β</sub>* = 1 − 1/a</p>
+    <p class="lead">At a = 1 the two steady states exchange their stability (transcritical bifurcation); at a = 3, y<sub>β</sub>* becomes unstable and a 2-cycle arises (period doubling).</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/logistisch_stabilitaet.png" alt="Output of the program logistisch_stabilitaet.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="logistisch_stabilitaet.jl" data-m="logistisch_stabilitaet.m" data-py="logistisch_stabilitaet.py" data-r="logistisch_stabilitaet.R">logistisch_stabilitaet.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/logistisch_stabilitaet.py" data-jl="code/logistisch_stabilitaet.jl" data-m="code/logistisch_stabilitaet.m" data-py="code/logistisch_stabilitaet.py" data-r="code/logistisch_stabilitaet.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 1.29: Steady states of the logistic model and their stability (book, Section 1.4, Eq. 1.35)</span>
+<span class="k"># y*_alpha = 0 and y*_beta = 1 - 1/a (solid stable, dashed unstable) with the bifurcation diagram</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Plots
+
+blau = RGB(0, 0.447, 0.741)
+a = range(3.0, 4.0, length = 1001)       <span class="k"># bifurcation diagram (light green) for 3 &lt;= a &lt;= 4</span>
+y = fill(0.5, length(a))
+for k in 1:2000
+    global y = a .* y .* (1 .- y)
+end
+A = Float64[]; Y = Float64[]
+for k in 1:300
+    global y = a .* y .* (1 .- y)
+    append!(A, a); append!(Y, y)
+end
+p = scatter(A, Y, ms = 0.5, msw = 0, color = RGB(0.47, 0.71, 0.47), legend = false,
+            xlims = (0, 4), ylims = (-0.25, 1.05), xlabel = &quot;a&quot;, ylabel = &quot;y&quot;)
+plot!(p, [0, 1], [0, 0], color = blau, lw = 2); plot!(p, [1, 4], [0, 0], ls = :dash, color = blau, lw = 2)   <span class="k"># y*_alpha = 0</span>
+for (von, bis, stil) in [(0.8, 1, :dash), (1, 3, :solid), (3, 4, :dash)]                                   <span class="k"># y*_beta = 1 - 1/a</span>
+    aa = range(von, bis, length = 100)
+    plot!(p, aa, 1 .- 1 ./ aa, ls = stil, color = blau, lw = 2)
+end
+vline!(p, [1, 3], ls = :dot, color = :gray)
+println(&quot;f&#x27;(y) = a (1 - 2y):  f&#x27;(0) = a, f&#x27;(1 - 1/a) = 2 - a&quot;)
+println(&quot;y*_alpha stable for a &lt; 1, y*_beta stable for 1 &lt; a &lt; 3&quot;)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 1.29: Steady states of the logistic model and their stability (book, Section 1.4, Eq. 1.35)</span>
+<span class="k">% y*_alpha = 0 and y*_beta = 1 - 1/a (solid stable, dashed unstable) with the bifurcation diagram</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+blau = [0 0.447 0.741];
+a = linspace(3.0, 4.0, 1001);            <span class="k">% bifurcation diagram (light green) for 3 &lt;= a &lt;= 4</span>
+y = 0.5 * ones(size(a));
+for k = 1:2000
+    y = a .* y .* (1 - y);
+end
+A = []; Y = [];
+for k = 1:300
+    y = a .* y .* (1 - y);
+    A = [A a]; Y = [Y y];
+end
+plot(A, Y, &#x27;.&#x27;, &#x27;Color&#x27;, [0.47 0.71 0.47], &#x27;MarkerSize&#x27;, 1); hold on
+
+plot([0 1], [0 0], &#x27;-&#x27;, &#x27;Color&#x27;, blau); plot([1 4], [0 0], &#x27;--&#x27;, &#x27;Color&#x27;, blau);    <span class="k">% y*_alpha = 0</span>
+aa = linspace(0.8, 1, 50);  plot(aa, 1 - 1 ./ aa, &#x27;--&#x27;, &#x27;Color&#x27;, blau);           <span class="k">% y*_beta = 1 - 1/a</span>
+aa = linspace(1, 3, 200);   plot(aa, 1 - 1 ./ aa, &#x27;-&#x27;, &#x27;Color&#x27;, blau);
+aa = linspace(3, 4, 100);   plot(aa, 1 - 1 ./ aa, &#x27;--&#x27;, &#x27;Color&#x27;, blau);
+plot([1 1], [-0.25 1.05], &#x27;:&#x27;, &#x27;Color&#x27;, [0.6 0.6 0.6]); plot([3 3], [-0.25 1.05], &#x27;:&#x27;, &#x27;Color&#x27;, [0.6 0.6 0.6]);
+hold off; axis([0 4 -0.25 1.05]); xlabel(&#x27;a&#x27;); ylabel(&#x27;y&#x27;);
+disp(&#x27;f&#x27;&#x27;(y) = a (1 - 2y):  f&#x27;&#x27;(0) = a, f&#x27;&#x27;(1 - 1/a) = 2 - a&#x27;);
+disp(&#x27;y*_alpha stable for a &lt; 1, y*_beta stable for 1 &lt; a &lt; 3&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 1.29: Steady states of the logistic model and their stability (book, Section 1.4, Eq. 1.35)</span>
+<span class="k"># y*_alpha = 0 and y*_beta = 1 - 1/a (solid stable, dashed unstable) with the bifurcation diagram</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+blau = (0, 0.447, 0.741)
+a = np.linspace(3.0, 4.0, 1001)          <span class="k"># bifurcation diagram (light green) for 3 &lt;= a &lt;= 4</span>
+y = np.full_like(a, 0.5)
+for _ in range(2000):
+    y = a * y * (1 - y)
+for _ in range(300):
+    y = a * y * (1 - y)
+    plt.plot(a, y, &quot;,&quot;, color=(0.47, 0.71, 0.47))
+
+plt.plot([0, 1], [0, 0], color=blau); plt.plot([1, 4], [0, 0], &quot;--&quot;, color=blau)        <span class="k"># y*_alpha = 0</span>
+for lo, hi, ls in [(0.8, 1, &quot;--&quot;), (1, 3, &quot;-&quot;), (3, 4, &quot;--&quot;)]:                           <span class="k"># y*_beta = 1 - 1/a</span>
+    aa = np.linspace(lo, hi, 200)
+    plt.plot(aa, 1 - 1 / aa, ls, color=blau)
+for aw in (1, 3):
+    plt.axvline(aw, color=&quot;0.6&quot;, ls=&quot;:&quot;)
+print(&quot;f&#x27;(y) = a (1 - 2y):  f&#x27;(0) = a, f&#x27;(1 - 1/a) = 2 - a&quot;)
+print(&quot;y*_alpha stable for a &lt; 1, y*_beta stable for 1 &lt; a &lt; 3&quot;)
+plt.xlim(0, 4); plt.ylim(-0.25, 1.05)
+plt.xlabel(&quot;a&quot;); plt.ylabel(&quot;y&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 1.29: Steady states of the logistic model and their stability (book, Section 1.4, Eq. 1.35)</span>
+<span class="k"># y*_alpha = 0 and y*_beta = 1 - 1/a (solid stable, dashed unstable) with the bifurcation diagram</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+blau &lt;- rgb(0, 0.447, 0.741)
+a &lt;- seq(3.0, 4.0, length.out = 1001)   <span class="k"># bifurcation diagram (light green) for 3 &lt;= a &lt;= 4</span>
+y &lt;- rep(0.5, length(a))
+for (k in 1:2000) y &lt;- a * y * (1 - y)
+A &lt;- c(); Y &lt;- c()
+for (k in 1:300) { y &lt;- a * y * (1 - y); A &lt;- c(A, a); Y &lt;- c(Y, y) }
+plot(A, Y, pch = &quot;.&quot;, col = rgb(0.47, 0.71, 0.47), xlim = c(0, 4), ylim = c(-0.25, 1.05), xlab = &quot;a&quot;, ylab = &quot;y&quot;)
+
+lines(c(0, 1), c(0, 0), col = blau, lwd = 2); lines(c(1, 4), c(0, 0), lty = 2, col = blau, lwd = 2)   <span class="k"># y*_alpha = 0</span>
+aa &lt;- seq(0.8, 1, length.out = 50);  lines(aa, 1 - 1/aa, lty = 2, col = blau, lwd = 2)              <span class="k"># y*_beta = 1 - 1/a</span>
+aa &lt;- seq(1, 3, length.out = 200);   lines(aa, 1 - 1/aa, col = blau, lwd = 2)
+aa &lt;- seq(3, 4, length.out = 100);   lines(aa, 1 - 1/aa, lty = 2, col = blau, lwd = 2)
+abline(v = c(1, 3), lty = 3, col = &quot;grey60&quot;)
+cat(&quot;f&#x27;(y) = a (1 - 2y):  f&#x27;(0) = a, f&#x27;(1 - 1/a) = 2 - a\n&quot;)
+cat(&quot;y*_alpha stable for a &lt; 1, y*_beta stable for 1 &lt; a &lt; 3\n&quot;)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>f&#x27;(y) = a (1 - 2y):  f&#x27;(0) = a, f&#x27;(1 - 1/a) = 2 - a
+y*_alpha stable for a &lt; 1, y*_beta stable for 1 &lt; a &lt; 3</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="logistisch-zyklen">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 1.30</p>
+    <h2>Cycles as fixed points of <i>f</i><sup>k</sup></h2>
+    <p class="formel">f<sup>2</sup>(x) = f(f(x)),&ensp; f<sup>3</sup>(x) = f(f(f(x)))</p>
+    <p class="lead">A 2-cycle of f consists of two fixed points of f<sup>2</sup>, a 3-cycle of three fixed points of f<sup>3</sup>. The program finds all fixed points and checks their stability.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/logistisch_zyklen.png" alt="Output of the program logistisch_zyklen.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="logistisch_zyklen.jl" data-m="logistisch_zyklen.m" data-py="logistisch_zyklen.py" data-r="logistisch_zyklen.R">logistisch_zyklen.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/logistisch_zyklen.py" data-jl="code/logistisch_zyklen.jl" data-m="code/logistisch_zyklen.m" data-py="code/logistisch_zyklen.py" data-r="code/logistisch_zyklen.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 1.30: Iterates f^2 and f^3 of the logistic model (book, Section 1.4, Eq. 1.38)</span>
+<span class="k"># left: f^2 with a = 3.1 (stable 2-cycle);  right: f^3 with a = 3.835 (stable 3-cycle)</span>
+<span class="k"># fixed points of f^k: filled black = stable (|(f^k)&#x27;| &lt; 1), white = unstable</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+<span class="k"># root of g in the interval [lo, hi] by bisection (like fzero/brentq, without extra package)</span>
+function bisektion(g, lo, hi)
+    for _ in 1:100
+        m = (lo + hi) / 2
+        sign(g(m)) == sign(g(lo)) ? (lo = m) : (hi = m)
+    end
+    return (lo + hi) / 2
+end
+
+x = range(0, 1, length = 2000)
+bilder = []
+for (a, k) in [(3.1, 2), (3.835, 3)]
+    f(y) = a * y * (1 - y)
+    fk = k == 2 ? (y -&gt; f(f(y))) : (y -&gt; f(f(f(y))))   <span class="k"># f^2 or f^3</span>
+    p = plot(x, fk.(x), color = RGB(0, 0.447, 0.741), lw = 2, legend = false, aspect_ratio = 1,
+             xlims = (0, 1), ylims = (0, 1), xlabel = &quot;x&quot;, ylabel = &quot;f^$k(x)&quot;, title = &quot;a = $a&quot;)
+    plot!(p, [0, 1], [0, 1], color = :black)
+    <span class="k"># fixed points: look for sign changes of f^k(x) - x, then determine precisely</span>
+    xg = range(0, 1, length = 20001); g = fk.(xg) .- xg
+    idx = findall(sign.(g[1:end-1]) .!= sign.(g[2:end]))
+    pts = unique(round.([0.0; [bisektion(z -&gt; fk(z) - z, xg[i], xg[i + 1]) for i in idx]], digits = 10))
+    for q in pts
+        e = 1e-7; ableitung = (fk(q + e) - fk(q - e)) / (2 * e)
+        stabil = abs(ableitung) &lt; 1
+        scatter!(p, [q], [q], color = stabil ? :black : :white, msc = :black)
+        @printf(&quot;a = %g, f^%d:  x = %.4f  %s  (derivative %.3f)\n&quot;, a, k, q, stabil ? &quot;stable&quot; : &quot;unstable&quot;, ableitung)
+    end
+    push!(bilder, p)
+end
+display(plot(bilder..., layout = (1, 2), size = (900, 450)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 1.30: Iterates f^2 and f^3 of the logistic model (book, Section 1.4, Eq. 1.38)</span>
+<span class="k">% left: f^2 with a = 3.1 (stable 2-cycle);  right: f^3 with a = 3.835 (stable 3-cycle)</span>
+<span class="k">% fixed points of f^k: filled black = stable (|(f^k)&#x27;| &lt; 1), white = unstable</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+as = [3.1 3.835]; ks = [2 3];
+x = linspace(0, 1, 2000);
+for p = 1:2
+    a = as(p); k = ks(p);
+    f = @(y) a * y .* (1 - y);
+    if k == 2
+        fk = @(y) f(f(y));               <span class="k">% f^2</span>
+    else
+        fk = @(y) f(f(f(y)));            <span class="k">% f^3</span>
+    end
+    subplot(1, 2, p);
+    plot(x, fk(x), &#x27;Color&#x27;, [0 0.447 0.741]); hold on
+    plot([0 1], [0 1], &#x27;k-&#x27;);
+    <span class="k">% fixed points: look for sign changes of f^k(x) - x, then determine precisely with fzero</span>
+    xg = linspace(0, 1, 20001); g = fk(xg) - xg;
+    idx = find(sign(g(1:end-1)) ~= sign(g(2:end)));
+    pts = 0;
+    for i = idx
+        pts(end + 1) = fzero(@(z) fk(z) - z, [xg(i) xg(i + 1)]);
+    end
+    pts = unique(round(pts * 1e10) / 1e10);
+    for q = pts
+        e = 1e-7; ableitung = (fk(q + e) - fk(q - e)) / (2 * e);
+        if abs(ableitung) &lt; 1
+            plot(q, q, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); art = &#x27;stable&#x27;;
+        else
+            plot(q, q, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;w&#x27;); art = &#x27;unstable&#x27;;
+        end
+        fprintf(&#x27;a = %g, f^%d:  x = %.4f  %s  (derivative %.3f)\n&#x27;, a, k, q, art, ableitung);
+    end
+    hold off; axis equal; axis([0 1 0 1]);
+    xlabel(&#x27;x&#x27;); ylabel(sprintf(&#x27;f^%d(x)&#x27;, k)); title(sprintf(&#x27;a = %g&#x27;, a));
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 1.30: Iterates f^2 and f^3 of the logistic model (book, Section 1.4, Eq. 1.38)</span>
+<span class="k"># left: f^2 with a = 3.1 (stable 2-cycle);  right: f^3 with a = 3.835 (stable 3-cycle)</span>
+<span class="k"># fixed points of f^k: filled black = stable (|(f^k)&#x27;| &lt; 1), white = unstable</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+def fk(x, a, k):                         <span class="k"># k-fold application of f(y) = a y (1 - y)</span>
+    for _ in range(k):
+        x = a * x * (1 - x)
+    return x
+
+def fixpunkte(a, k):                     <span class="k"># look for sign changes of f^k(x) - x, then bisect</span>
+    x = np.linspace(0, 1, 200001)
+    g = fk(x, a, k) - x
+    pts = [0.0]
+    for i in np.where(np.sign(g[:-1]) != np.sign(g[1:]))[0]:
+        lo, hi = x[i], x[i + 1]
+        for _ in range(60):
+            m = (lo + hi) / 2
+            if np.sign(fk(lo, a, k) - lo) == np.sign(fk(m, a, k) - m): lo = m
+            else: hi = m
+        pts.append((lo + hi) / 2)
+    return sorted(set(np.round(pts, 10)))
+
+fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+x = np.linspace(0, 1, 2000)
+for ax, (a, k) in zip(axs, [(3.1, 2), (3.835, 3)]):
+    ax.plot(x, fk(x, a, k), color=(0, 0.447, 0.741), label=f&quot;f^{k}(x), a = {a}&quot;)
+    ax.plot([0, 1], [0, 1], &quot;k&quot;, lw=0.8)
+    for p in fixpunkte(a, k):
+        e = 1e-7
+        ableitung = (fk(p + e, a, k) - fk(p - e, a, k)) / (2 * e)
+        stabil = abs(ableitung) &lt; 1
+        ax.plot(p, p, &quot;o&quot;, mec=&quot;k&quot;, mfc=&quot;k&quot; if stabil else &quot;w&quot;, ms=8)
+        print(f&quot;a = {a}, f^{k}:  x = {p:.4f}  {&#x27;stable&#x27; if stabil else &#x27;unstable&#x27;}  (derivative {ableitung:.3f})&quot;)
+    ax.set_xlim(0, 1); ax.set_ylim(0, 1); ax.set_aspect(&quot;equal&quot;)
+    ax.set_xlabel(&quot;x&quot;); ax.set_ylabel(f&quot;f^{k}(x)&quot;); ax.legend(loc=&quot;upper left&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 1.30: Iterates f^2 and f^3 of the logistic model (book, Section 1.4, Eq. 1.38)</span>
+<span class="k"># left: f^2 with a = 3.1 (stable 2-cycle);  right: f^3 with a = 3.835 (stable 3-cycle)</span>
+<span class="k"># fixed points of f^k: filled black = stable (|(f^k)&#x27;| &lt; 1), white = unstable</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+x &lt;- seq(0, 1, length.out = 2000)
+par(mfrow = c(1, 2))
+for (p in 1:2) {
+  a &lt;- c(3.1, 3.835)[p]; k &lt;- c(2, 3)[p]
+  f &lt;- function(y) a * y * (1 - y)
+  fk &lt;- if (k == 2) function(y) f(f(y)) else function(y) f(f(f(y)))   <span class="k"># f^2 or f^3</span>
+  plot(x, fk(x), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2, asp = 1, xlim = c(0, 1), ylim = c(0, 1),
+       xlab = &quot;x&quot;, ylab = sprintf(&quot;f^%d(x)&quot;, k), main = sprintf(&quot;a = %g&quot;, a))
+  abline(0, 1)
+  <span class="k"># fixed points: look for sign changes of f^k(x) - x, then determine precisely with uniroot</span>
+  xg &lt;- seq(0, 1, length.out = 20001); g &lt;- fk(xg) - xg
+  idx &lt;- which(sign(g[-length(g)]) != sign(g[-1]))
+  pts &lt;- 0
+  for (i in idx) pts &lt;- c(pts, uniroot(function(z) fk(z) - z, c(xg[i], xg[i + 1]), tol = 1e-12)$root)
+  pts &lt;- unique(round(pts * 1e10) / 1e10)
+  for (q in pts) {
+    e &lt;- 1e-7; ableitung &lt;- (fk(q + e) - fk(q - e)) / (2 * e)
+    stabil &lt;- abs(ableitung) &lt; 1
+    points(q, q, pch = 21, bg = if (stabil) &quot;black&quot; else &quot;white&quot;)
+    cat(sprintf(&quot;a = %g, f^%d:  x = %.4f  %s  (derivative %.3f)\n&quot;, a, k, q, if (stabil) &quot;stable&quot; else &quot;unstable&quot;, ableitung))
+  }
+}</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>a = 3.1, f^2:  x = 0.0000  unstable  (derivative 9.610)
+a = 3.1, f^2:  x = 0.5580  stable  (derivative 0.590)
+a = 3.1, f^2:  x = 0.6774  unstable  (derivative 1.210)
+a = 3.1, f^2:  x = 0.7646  stable  (derivative 0.590)
+a = 3.835, f^3:  x = 0.0000  unstable  (derivative 56.402)
+a = 3.835, f^3:  x = 0.1521  stable  (derivative -0.395)
+a = 3.835, f^3:  x = 0.1672  unstable  (derivative 2.321)
+a = 3.835, f^3:  x = 0.4945  stable  (derivative -0.395)
+a = 3.835, f^3:  x = 0.5340  unstable  (derivative 2.321)
+a = 3.835, f^3:  x = 0.7392  unstable  (derivative -6.179)
+a = 3.835, f^3:  x = 0.9543  unstable  (derivative 2.321)
+a = 3.835, f^3:  x = 0.9586  stable  (derivative -0.395)</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="logistisch-treppe-500">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 1.31</p>
+    <h2>Staircase diagrams over 500 steps</h2>
+    <p class="formel">a = 2,&ensp; 3.3,&ensp; 3.55,&ensp; 4</p>
+    <p class="lead">After a transient, a fixed point, a 2-cycle, an 8-cycle, or aperiodic behavior remains. The program counts the distinct values at the end of the sequence.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/logistisch_treppe_500.png" alt="Output of the program logistisch_treppe_500.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="logistisch_treppe_500.jl" data-m="logistisch_treppe_500.m" data-py="logistisch_treppe_500.py" data-r="logistisch_treppe_500.R">logistisch_treppe_500.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/logistisch_treppe_500.py" data-jl="code/logistisch_treppe_500.jl" data-m="code/logistisch_treppe_500.m" data-py="code/logistisch_treppe_500.py" data-r="code/logistisch_treppe_500.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 1.31: Staircase diagrams of the logistic model over 500 steps (book, Section 1.4)</span>
+<span class="k"># initial value 0.05; a = 2 (fixed point), 3.3 (2-cycle), 3.55 (8-cycle), 4 (aperiodic)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+N = 500
+xx = range(0, 1, length = 400)
+bilder = []
+for a in (2, 3.3, 3.55, 4)
+    f(y) = a * y * (1 - y)
+    y = zeros(N + 1); y[1] = 0.05
+    for k in 1:N
+        y[k + 1] = f(y[k])
+    end
+    px = [y[1]]; py = [0.0]                                <span class="k"># staircase</span>
+    for k in 1:N
+        append!(px, [y[k], y[k + 1]]); append!(py, [y[k + 1], y[k + 1]])
+    end
+    p = plot(xx, f.(xx), color = RGB(0, 0.447, 0.741), lw = 2, legend = false, aspect_ratio = 1, xlims = (0, 1), ylims = (0, 1),
+             xlabel = &quot;x_n&quot;, ylabel = &quot;f(x_n)&quot;, title = &quot;a = $a&quot;)
+    plot!(p, [0, 1], [0, 1], color = :black)
+    plot!(p, px, py, color = RGB(0.64, 0.08, 0.18), lw = a &lt; 4 ? 1.5 : 0.3)
+    push!(bilder, p)
+    werte = sort(unique(round.(y[end-15:end] .* 1e4) ./ 1e4))   <span class="k"># long-term behavior: distinct values at the end</span>
+    if length(werte) &lt;= 8
+        println(@sprintf(&quot;a = %g:  %d distinct values at the end: &quot;, a, length(werte)), join([@sprintf(&quot;%.4f&quot;, w) for w in werte], &quot;  &quot;))
+    else
+        @printf(&quot;a = %g:  %d distinct values at the end: aperiodic\n&quot;, a, length(werte))
+    end
+end
+display(plot(bilder..., layout = (2, 2), size = (850, 850)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 1.31: Staircase diagrams of the logistic model over 500 steps (book, Section 1.4)</span>
+<span class="k">% initial value 0.05; a = 2 (fixed point), 3.3 (2-cycle), 3.55 (8-cycle), 4 (aperiodic)</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+N = 500; as = [2 3.3 3.55 4];
+xx = linspace(0, 1, 400);
+for p = 1:4
+    a = as(p);
+    f = @(y) a * y .* (1 - y);
+    y = zeros(1, N + 1); y(1) = 0.05;
+    for k = 1:N
+        y(k + 1) = f(y(k));
+    end
+    px = zeros(1, 2 * N + 1); py = zeros(1, 2 * N + 1);
+    px(1) = y(1);
+    for k = 1:N
+        px(2 * k) = y(k); py(2 * k) = y(k + 1);
+        px(2 * k + 1) = y(k + 1); py(2 * k + 1) = y(k + 1);
+    end
+    subplot(2, 2, p);
+    plot(xx, f(xx), &#x27;Color&#x27;, [0 0.447 0.741]); hold on
+    plot([0 1], [0 1], &#x27;k-&#x27;);
+    if a &lt; 4, lw = 1.5; else, lw = 0.3; end
+    plot(px, py, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, lw); hold off
+    axis equal; axis([0 1 0 1]); xlabel(&#x27;x_n&#x27;); ylabel(&#x27;f(x_n)&#x27;); title(sprintf(&#x27;a = %g&#x27;, a));
+    werte = unique(round(y(end-15:end) * 1e4) / 1e4);     <span class="k">% long-term behavior: distinct values at the end</span>
+    if numel(werte) &lt;= 8
+        fprintf(&#x27;a = %g:  %d distinct values at the end: &#x27;, a, numel(werte)); fprintf(&#x27;%.4f &#x27;, werte); fprintf(&#x27;\n&#x27;);
+    else
+        fprintf(&#x27;a = %g:  %d distinct values at the end: aperiodic\n&#x27;, a, numel(werte));
+    end
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 1.31: Staircase diagrams of the logistic model over 500 steps (book, Section 1.4)</span>
+<span class="k"># initial value 0.05; a = 2 (fixed point), 3.3 (2-cycle), 3.55 (8-cycle), 4 (aperiodic)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+N = 500
+fig, axs = plt.subplots(2, 2, figsize=(9, 9))
+xx = np.linspace(0, 1, 400)
+for ax, a in zip(axs.flat, [2, 3.3, 3.55, 4]):
+    f = lambda y: a * y * (1 - y)
+    y = [0.05]
+    for _ in range(N):
+        y.append(f(y[-1]))
+    px, py = [y[0]], [0]
+    for k in range(N):
+        px += [y[k], y[k + 1]]; py += [y[k + 1], y[k + 1]]
+    ax.plot(xx, f(xx), color=(0, 0.447, 0.741), label=f&quot;a = {a}&quot;)
+    ax.plot([0, 1], [0, 1], &quot;k&quot;, lw=0.8)
+    ax.plot(px, py, color=(0.64, 0.08, 0.18), lw=1.5 if a &lt; 4 else 0.3)
+    ax.set_xlim(0, 1); ax.set_ylim(0, 1); ax.set_aspect(&quot;equal&quot;)
+    ax.set_xlabel(&quot;x_n&quot;); ax.set_ylabel(&quot;f(x_n)&quot;); ax.legend(loc=&quot;upper left&quot;)
+    werte = sorted(set(round(float(v), 4) for v in y[-16:]))   <span class="k"># long-term behavior: distinct values at the end</span>
+    print(f&quot;a = {a}:  {len(werte)} distinct values at the end:&quot;, &quot;  &quot;.join(f&quot;{v:.4f}&quot; for v in werte) if len(werte) &lt;= 8 else &quot;aperiodic&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 1.31: Staircase diagrams of the logistic model over 500 steps (book, Section 1.4)</span>
+<span class="k"># initial value 0.05; a = 2 (fixed point), 3.3 (2-cycle), 3.55 (8-cycle), 4 (aperiodic)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+N &lt;- 500
+xx &lt;- seq(0, 1, length.out = 400)
+par(mfrow = c(2, 2))
+for (a in c(2, 3.3, 3.55, 4)) {
+  f &lt;- function(y) a * y * (1 - y)
+  y &lt;- numeric(N + 1); y[1] &lt;- 0.05
+  for (k in 1:N) y[k + 1] &lt;- f(y[k])
+  px &lt;- c(y[1], rep(y[1:N], each = 2)); py &lt;- c(0, rep(y[2:(N + 1)], each = 2))   <span class="k"># staircase</span>
+  px[seq(3, 2 * N + 1, 2)] &lt;- y[2:(N + 1)]
+  plot(xx, f(xx), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2, asp = 1, xlim = c(0, 1), ylim = c(0, 1),
+       xlab = &quot;x_n&quot;, ylab = &quot;f(x_n)&quot;, main = sprintf(&quot;a = %g&quot;, a))
+  abline(0, 1)
+  lines(px, py, col = rgb(0.64, 0.08, 0.18), lwd = if (a &lt; 4) 1.5 else 0.3)
+  werte &lt;- sort(unique(round(y[(N - 14):(N + 1)] * 1e4) / 1e4))   <span class="k"># long-term behavior: distinct values at the end</span>
+  if (length(werte) &lt;= 8) {
+    cat(sprintf(&quot;a = %g:  %d distinct values at the end:&quot;, a, length(werte)), sprintf(&quot;%.4f&quot;, werte), &quot;\n&quot;)
+  } else {
+    cat(sprintf(&quot;a = %g:  %d distinct values at the end: aperiodic\n&quot;, a, length(werte)))
+  }
+}</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>a = 2:  1 distinct values at the end: 0.5000
+a = 3.3:  2 distinct values at the end: 0.4794  0.8236
+a = 3.55:  8 distinct values at the end: 0.3548  0.3703  0.5060  0.5405  0.8127  0.8278  0.8817  0.8874
+a = 4:  16 distinct values at the end: aperiodic</code></pre></details>
+    </div>
+  </div>
+</section>
+  <section class="apps" id="app-treppe-auswahl">
+  <div class="fig-head"><p class="eyebrow">Try it in the browser · no installation</p><h2>Explore staircase diagrams yourself</h2><p class="lead">Choose an update function. The app determines the steady states and checks their stability with the criterion |f′(x*)| &lt; 1.</p></div>
+  <div class="app" data-app="treppe">
+    <canvas width="720" height="560" aria-label="Explore staircase diagrams yourself"></canvas>
+    <div class="regler"><label><span>Function</span><select aria-label="Function"><option value="wurzel">f(x) = √x</option><option value="kubisch">f(x) = x − 2x(0,5 − x)(1 − x)</option><option value="exp">f(x) = e^(−c x)</option><option value="logistisch" selected>f(y) = a y (1 − y)</option><option value="heron">f(x) = (x + c/x)/2</option></select></label><div data-zeile="p"><label><span><span data-pname>Parameter</span></span> <output data-o="p"></output><input type="range" data-r="p" min="0" max="1" step="0.01" value="0.5" aria-label="Parameter"></label></div><label><span>Initial value x<sub>0</sub></span> <output data-o="x0"></output><input type="range" data-r="x0" min="0" max="1" step="0.01" value="0.1" aria-label="Initial value x0"></label><label><span>Steps</span> <output data-o="n"></output><input type="range" data-r="n" min="1" max="300" step="1" value="12" aria-label="Steps"></label><p class="zustand"></p><pre class="werte"></pre></div>
+  </div>
+</section>
+  
+  <nav class="weiter" aria-label="Page navigation"><a href="abschnitt-1-3.html"><small>Previous</small>1.3 Logistic Growth Model</a><a href="abschnitt-1-5.html"><small>Next</small>1.5 Newton's Method</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Companion website to the book “Dynamical Systems in the Life Sciences” by Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programs under the <a href="../LICENSE.txt">MIT License</a> · <a href="../../impressum.html" hreflang="de">Legal notice (German)</a> · <a href="../../datenschutz.html" hreflang="de">Privacy policy (German)</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

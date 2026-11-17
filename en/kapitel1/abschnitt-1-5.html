@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>1.5 Newton&#x27;s Method – Dynamical Systems in the Life Sciences</title>
+<meta name="description" content="Programs in Julia, MATLAB, Python, and R for Section 1.5 of the book Dynamical Systems in the Life Sciences">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamical Systems in the Life Sciences</a>
+  <nav aria-label="Chapters"><a href="../index.html">Home</a> <a href="../kapitel1/index.html" aria-current="page">Chapter 1</a> <a href="../kapitel2/index.html">Chapter 2</a> <a href="../kapitel3/index.html">Chapter 3</a> <a href="../kapitel4/index.html">Chapter 4</a> <a href="../../kapitel1/abschnitt-1-5.html" lang="de" hreflang="de">Deutsch</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Sections"><h2><a href="index.html">Chapter 1</a></h2><ol><li><a href="abschnitt-1-1.html"><span class="nr">1.1</span><span>Sequences and Difference Equations</span></a></li><li><a href="abschnitt-1-2.html"><span class="nr">1.2</span><span>Linear Difference Equations</span></a></li><li><a href="abschnitt-1-3.html"><span class="nr">1.3</span><span>Logistic Growth Model</span></a></li><li><a href="abschnitt-1-4.html"><span class="nr">1.4</span><span>Steady States and Stability</span></a></li><li><a href="abschnitt-1-5.html" aria-current="page"><span class="nr">1.5</span><span>Newton's Method</span></a></li><li><a href="abschnitt-1-6.html"><span class="nr">1.6</span><span>In Depth: Heart Models</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Chapter 1 · Discrete Dynamical Systems with One Variable</p>
+      <h1><span class="num">1.5</span>Newton's Method</h1>
+      <p>Many equations cannot be solved for x. Newton's method replaces the function by its tangent and takes the root of the tangent as the next approximation. It is itself a difference equation and, when it converges, converges very fast.</p>
+      <p>For each figure of the section you will find the program that produces it. Change parameters and initial values and observe what happens. Figure and equation numbers refer to the book.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programming language</legend>
+  <div class="seg" role="radiogroup" aria-label="Programming language">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Applies to all pages. MATLAB programs also run in the free GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>On this page</b><ul><li><a href="#fixpunkt-exp"><span class="abb">Fig. 1.32</span>Steady state as a root</a></li><li><a href="#newton-schritte"><span class="abb">Fig. 1.33</span>The first steps of Newton's method</a></li><li><a href="#newton-zyklus"><span class="abb">Fig. 1.34</span>Newton's method without convergence</a></li><li><a href="#newton-wirkstoff"><span class="abb">Fig. 1.35</span>Drug level below 1 mg/l</a></li><li><a href="#app-newton"><span class="abb">App</span>try it in the browser</a></li></ul></div>
+  
+<section class="fig" id="fixpunkt-exp">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 1.32</p>
+    <h2>Steady state as a root</h2>
+    <p class="formel">e<sup>−x</sup> = x &emsp;⇔&emsp; g(x) = e<sup>−x</sup> − x = 0</p>
+    <p class="lead">The intersection with the diagonal is at the same time the root of g. The fixed-point iteration needs many steps here.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/fixpunkt_exp.png" alt="Output of the program fixpunkt_exp.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="fixpunkt_exp.jl" data-m="fixpunkt_exp.m" data-py="fixpunkt_exp.py" data-r="fixpunkt_exp.R">fixpunkt_exp.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/fixpunkt_exp.py" data-jl="code/fixpunkt_exp.jl" data-m="code/fixpunkt_exp.m" data-py="code/fixpunkt_exp.py" data-r="code/fixpunkt_exp.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 1.32: Steady state of x_{n+1} = exp(-x_n) (book, Section 1.5)</span>
+<span class="k"># left: intersection of f(x) = exp(-x) with y = x;  right: equivalently the root of g(x) = exp(-x) - x</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+x = 0.5
+for n in 1:100                           <span class="k"># fixed-point iteration x_{n+1} = exp(-x_n)</span>
+    global x = exp(-x)
+end
+@printf(&quot;fixed-point iteration after 100 steps: x = %.10f\n&quot;, x)
+@printf(&quot;g(x) = exp(-x) - x = %.1e\n&quot;, exp(-x) - x)
+
+blau = RGB(0, 0.447, 0.741)
+xx = range(0, 1, length = 200)
+p1 = plot(xx, exp.(-xx), color = blau, lw = 2, label = &quot;f(x) = exp(-x)&quot;, xlabel = &quot;x&quot;)
+plot!(p1, [0, 1], [0, 1], color = :black, label = &quot;y = x&quot;); scatter!(p1, [x], [x], color = :black, label = &quot;&quot;)
+p2 = plot(xx, exp.(-xx) .- xx, color = blau, lw = 2, label = &quot;g(x) = exp(-x) - x&quot;, xlabel = &quot;x&quot;)
+hline!(p2, [0], color = :black, label = &quot;&quot;); scatter!(p2, [x], [0], color = :black, label = &quot;&quot;)
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 1.32: Steady state of x_{n+1} = exp(-x_n) (book, Section 1.5)</span>
+<span class="k">% left: intersection of f(x) = exp(-x) with y = x;  right: equivalently the root of g(x) = exp(-x) - x</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+x = 0.5;
+for n = 1:100                            <span class="k">% fixed-point iteration x_{n+1} = exp(-x_n)</span>
+    x = exp(-x);
+end
+fprintf(&#x27;fixed-point iteration after 100 steps: x = %.10f\n&#x27;, x);
+fprintf(&#x27;g(x) = exp(-x) - x = %.1e\n&#x27;, exp(-x) - x);
+
+blau = [0 0.447 0.741];
+xx = linspace(0, 1, 200);
+subplot(1, 2, 1);
+plot(xx, exp(-xx), &#x27;Color&#x27;, blau); hold on
+plot([0 1], [0 1], &#x27;k-&#x27;); plot(x, x, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+xlabel(&#x27;x&#x27;); legend(&#x27;f(x) = exp(-x)&#x27;, &#x27;y = x&#x27;);
+subplot(1, 2, 2);
+plot(xx, exp(-xx) - xx, &#x27;Color&#x27;, blau); hold on
+plot([0 1], [0 0], &#x27;k-&#x27;); plot(x, 0, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+xlabel(&#x27;x&#x27;); legend(&#x27;g(x) = exp(-x) - x&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 1.32: Steady state of x_{n+1} = exp(-x_n) (book, Section 1.5)</span>
+<span class="k"># left: intersection of f(x) = exp(-x) with y = x;  right: equivalently the root of g(x) = exp(-x) - x</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = 0.5
+for n in range(100):                     <span class="k"># fixed-point iteration x_{n+1} = exp(-x_n)</span>
+    x = np.exp(-x)
+print(f&quot;fixed-point iteration after 100 steps: x = {x:.10f}&quot;)
+print(f&quot;g(x) = exp(-x) - x = {np.exp(-x) - x:.1e}&quot;)
+
+xx = np.linspace(0, 1, 200)
+fig, axs = plt.subplots(1, 2, figsize=(10, 4.8))
+axs[0].plot(xx, np.exp(-xx), color=(0, 0.447, 0.741), label=&quot;f(x) = exp(-x)&quot;)
+axs[0].plot([0, 1], [0, 1], &quot;k&quot;, lw=0.8, label=&quot;y = x&quot;)
+axs[0].plot(x, x, &quot;ko&quot;)
+axs[1].plot(xx, np.exp(-xx) - xx, color=(0, 0.447, 0.741), label=&quot;g(x) = exp(-x) - x&quot;)
+axs[1].axhline(0, color=&quot;k&quot;, lw=0.8)
+axs[1].plot(x, 0, &quot;ko&quot;)
+for ax in axs:
+    ax.set_xlabel(&quot;x&quot;); ax.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 1.32: Steady state of x_{n+1} = exp(-x_n) (book, Section 1.5)</span>
+<span class="k"># left: intersection of f(x) = exp(-x) with y = x;  right: equivalently the root of g(x) = exp(-x) - x</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+x &lt;- 0.5
+for (n in 1:100) x &lt;- exp(-x)            <span class="k"># fixed-point iteration x_{n+1} = exp(-x_n)</span>
+cat(sprintf(&quot;fixed-point iteration after 100 steps: x = %.10f\n&quot;, x))
+cat(sprintf(&quot;g(x) = exp(-x) - x = %.1e\n&quot;, exp(-x) - x))
+
+blau &lt;- rgb(0, 0.447, 0.741)
+xx &lt;- seq(0, 1, length.out = 200)
+par(mfrow = c(1, 2))
+plot(xx, exp(-xx), type = &quot;l&quot;, col = blau, lwd = 2, xlab = &quot;x&quot;, ylab = &quot;&quot;)
+abline(0, 1); points(x, x, pch = 16)
+legend(&quot;topright&quot;, legend = c(&quot;f(x) = exp(-x)&quot;, &quot;y = x&quot;), col = c(blau, &quot;black&quot;), lwd = c(2, 1))
+plot(xx, exp(-xx) - xx, type = &quot;l&quot;, col = blau, lwd = 2, xlab = &quot;x&quot;, ylab = &quot;&quot;)
+abline(h = 0); points(x, 0, pch = 16)
+legend(&quot;topright&quot;, legend = &quot;g(x) = exp(-x) - x&quot;, col = blau, lwd = 2)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>fixed-point iteration after 100 steps: x = 0.5671432904
+g(x) = exp(-x) - x = 0.0e+00</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="newton-schritte">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 1.33</p>
+    <h2>The first steps of Newton's method</h2>
+    <p class="formel">x<sub>n+1</sub> = x<sub>n</sub> − g(x<sub>n</sub>) / g′(x<sub>n</sub>)</p>
+    <p class="lead">For g(x) = e<sup>−5x</sup> − x and x<sub>0</sub> = 0.05: the root of each tangent gives the next approximation. The number of correct digits roughly doubles per step.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/newton_schritte.png" alt="Output of the program newton_schritte.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="newton_schritte.jl" data-m="newton_schritte.m" data-py="newton_schritte.py" data-r="newton_schritte.R">newton_schritte.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/newton_schritte.py" data-jl="code/newton_schritte.jl" data-m="code/newton_schritte.m" data-py="code/newton_schritte.py" data-r="code/newton_schritte.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 1.33: The first steps of Newton&#x27;s method (book, Section 1.5, Eq. 1.44)</span>
+<span class="k"># x_{n+1} = x_n - g(x_n)/g&#x27;(x_n) for g(x) = exp(-5x) - x with x_0 = 0.05</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+g(x) = exp(-5x) - x
+dg(x) = -5exp(-5x) - 1
+
+x = zeros(7); x[1] = 0.05
+for k in 1:6
+    x[k + 1] = x[k] - g(x[k]) / dg(x[k])
+end
+for k in 1:7
+    @printf(&quot;x_%d = %.12f\n&quot;, k - 1, x[k])   <span class="k"># the number of correct digits roughly doubles per step</span>
+end
+
+xx = range(0, 0.35, length = 300)
+bilder = []
+for p in 1:2
+    b = plot(xx, g.(xx), color = RGB(0, 0.447, 0.741), lw = 2, legend = false, xlims = (0, 0.35), ylims = (-0.35, 1), xlabel = &quot;x&quot;)
+    hline!(b, [0], color = :black)
+    for j in 1:p                         <span class="k"># tangent at x_{j-1}, its root is x_j</span>
+        plot!(b, xx, g(x[j]) .+ dg(x[j]) .* (xx .- x[j]), color = :black)
+        plot!(b, [x[j], x[j]], [0, g(x[j])], ls = :dot, color = :black)
+    end
+    scatter!(b, x[1:p + 1], zeros(p + 1), color = RGB(0.64, 0.08, 0.18))
+    push!(bilder, b)
+end
+display(plot(bilder..., layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 1.33: The first steps of Newton&#x27;s method (book, Section 1.5, Eq. 1.44)</span>
+<span class="k">% x_{n+1} = x_n - g(x_n)/g&#x27;(x_n) for g(x) = exp(-5x) - x with x_0 = 0.05</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+g = @(x) exp(-5 * x) - x;
+dg = @(x) -5 * exp(-5 * x) - 1;
+
+x = zeros(1, 7); x(1) = 0.05;
+for k = 1:6
+    x(k + 1) = x(k) - g(x(k)) / dg(x(k));
+end
+for k = 1:7
+    fprintf(&#x27;x_%d = %.12f\n&#x27;, k - 1, x(k));   <span class="k">% the number of correct digits roughly doubles per step</span>
+end
+
+xx = linspace(0, 0.35, 300);
+for p = 1:2
+    subplot(1, 2, p);
+    plot(xx, g(xx), &#x27;Color&#x27;, [0 0.447 0.741]); hold on
+    plot([0 0.35], [0 0], &#x27;k-&#x27;);
+    for j = 1:p                          <span class="k">% tangent at x_{j-1}, its root is x_j</span>
+        plot(xx, g(x(j)) + dg(x(j)) * (xx - x(j)), &#x27;k-&#x27;);
+        plot([x(j) x(j)], [0 g(x(j))], &#x27;k:&#x27;);
+    end
+    plot(x(1:p + 1), zeros(1, p + 1), &#x27;o&#x27;, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;MarkerFaceColor&#x27;, [0.64 0.08 0.18]);
+    hold off; axis([0 0.35 -0.35 1]); xlabel(&#x27;x&#x27;);
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 1.33: The first steps of Newton&#x27;s method (book, Section 1.5, Eq. 1.44)</span>
+<span class="k"># x_{n+1} = x_n - g(x_n)/g&#x27;(x_n) for g(x) = exp(-5x) - x with x_0 = 0.05</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+g = lambda x: np.exp(-5 * x) - x
+dg = lambda x: -5 * np.exp(-5 * x) - 1
+
+x = [0.05]
+for n in range(6):
+    x.append(x[-1] - g(x[-1]) / dg(x[-1]))
+for n, v in enumerate(x):
+    print(f&quot;x_{n} = {v:.12f}&quot;)           <span class="k"># the number of correct digits roughly doubles per step</span>
+
+xx = np.linspace(0, 0.35, 300)
+fig, axs = plt.subplots(1, 2, figsize=(10, 4.8))
+for ax, k in zip(axs, (1, 2)):
+    ax.plot(xx, g(xx), color=(0, 0.447, 0.741), label=&quot;g(x)&quot;)
+    ax.axhline(0, color=&quot;k&quot;, lw=0.8)
+    for j in range(k):                   <span class="k"># tangent at x_j, its root is x_{j+1}</span>
+        ax.plot(xx, g(x[j]) + dg(x[j]) * (xx - x[j]), &quot;k--&quot; if j &lt; k - 1 else &quot;k-&quot;, lw=1)
+        ax.plot([x[j], x[j]], [0, g(x[j])], &quot;k:&quot;)
+    ax.plot(x[:k + 1], np.zeros(k + 1), &quot;o&quot;, color=(0.64, 0.08, 0.18))
+    ax.set_xlim(0, 0.35); ax.set_ylim(-0.35, 1); ax.set_xlabel(&quot;x&quot;); ax.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 1.33: The first steps of Newton&#x27;s method (book, Section 1.5, Eq. 1.44)</span>
+<span class="k"># x_{n+1} = x_n - g(x_n)/g&#x27;(x_n) for g(x) = exp(-5x) - x with x_0 = 0.05</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+g &lt;- function(x) exp(-5 * x) - x
+dg &lt;- function(x) -5 * exp(-5 * x) - 1
+
+x &lt;- numeric(7); x[1] &lt;- 0.05
+for (k in 1:6) x[k + 1] &lt;- x[k] - g(x[k]) / dg(x[k])
+for (k in 1:7) cat(sprintf(&quot;x_%d = %.12f\n&quot;, k - 1, x[k]))   <span class="k"># the number of correct digits roughly doubles per step</span>
+
+xx &lt;- seq(0, 0.35, length.out = 300)
+par(mfrow = c(1, 2))
+for (p in 1:2) {
+  plot(xx, g(xx), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2, xlim = c(0, 0.35), ylim = c(-0.35, 1), xlab = &quot;x&quot;, ylab = &quot;&quot;)
+  abline(h = 0)
+  for (j in 1:p) {                       <span class="k"># tangent at x_{j-1}, its root is x_j</span>
+    lines(xx, g(x[j]) + dg(x[j]) * (xx - x[j]))
+    lines(c(x[j], x[j]), c(0, g(x[j])), lty = 3)
+  }
+  points(x[1:(p + 1)], rep(0, p + 1), pch = 16, col = rgb(0.64, 0.08, 0.18))
+}</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>x_0 = 0.050000000000
+x_1 = 0.198917082143
+x_2 = 0.258915906327
+x_3 = 0.265285835375
+x_4 = 0.265344928070
+x_5 = 0.265344933048
+x_6 = 0.265344933048</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="newton-zyklus">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 1.34</p>
+    <h2>Newton's method without convergence</h2>
+    <p class="formel">g(x) = x<sup>3</sup> − 2x + 2,&ensp; x<sub>0</sub> = 0</p>
+    <p class="lead">The approximations jump back and forth between 0 and 1. With the initial value −1 the method finds the root x* ≈ −1.769 at once.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/newton_zyklus.png" alt="Output of the program newton_zyklus.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="newton_zyklus.jl" data-m="newton_zyklus.m" data-py="newton_zyklus.py" data-r="newton_zyklus.R">newton_zyklus.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/newton_zyklus.py" data-jl="code/newton_zyklus.jl" data-m="code/newton_zyklus.m" data-py="code/newton_zyklus.py" data-r="code/newton_zyklus.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 1.34: Newton&#x27;s method without convergence (book, Section 1.5, Eq. 1.44)</span>
+<span class="k"># g(x) = x^3 - 2x + 2 with x_0 = 0: the approximations jump between 0 and 1, the root at -1.769 is not found</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+g(x) = x^3 - 2x + 2
+dg(x) = 3x^2 - 2
+
+x = zeros(7)
+for k in 1:6
+    x[k + 1] = x[k] - g(x[k]) / dg(x[k])
+end
+println(&quot;x_0 ... x_6 = &quot;, join([@sprintf(&quot;%g&quot;, v) for v in x], &quot;  &quot;))
+
+xs = -1.0                                <span class="k"># with a better initial value it works</span>
+for k in 1:8
+    global xs = xs - g(xs) / dg(xs)
+end
+@printf(&quot;start at -1: root x* = %.6f\n&quot;, xs)
+
+xx = range(-2.2, 1.8, length = 400)
+p = plot(xx, g.(xx), color = RGB(0, 0.447, 0.741), lw = 2, legend = false, ylims = (-2.2, 4.5), xlabel = &quot;x&quot;)
+hline!(p, [0], color = :black)
+zz = range(-0.6, 1.6, length = 10)
+for a in (0, 1)                          <span class="k"># the two tangents</span>
+    plot!(p, zz, g(a) .+ dg(a) .* (zz .- a), color = :black)
+end
+scatter!(p, [0, 1], [0, 0], color = RGB(0.64, 0.08, 0.18))
+scatter!(p, [xs], [0], color = :black)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 1.34: Newton&#x27;s method without convergence (book, Section 1.5, Eq. 1.44)</span>
+<span class="k">% g(x) = x^3 - 2x + 2 with x_0 = 0: the approximations jump between 0 and 1, the root at -1.769 is not found</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+g = @(x) x.^3 - 2 * x + 2;
+dg = @(x) 3 * x.^2 - 2;
+
+x = zeros(1, 7);
+for k = 1:6
+    x(k + 1) = x(k) - g(x(k)) / dg(x(k));
+end
+fprintf(&#x27;x_0 ... x_6 = &#x27;); fprintf(&#x27;%g  &#x27;, x); fprintf(&#x27;\n&#x27;);
+
+xs = -1;                                 <span class="k">% with a better initial value it works</span>
+for k = 1:8
+    xs = xs - g(xs) / dg(xs);
+end
+fprintf(&#x27;start at -1: root x* = %.6f\n&#x27;, xs);
+
+xx = linspace(-2.2, 1.8, 400);
+plot(xx, g(xx), &#x27;Color&#x27;, [0 0.447 0.741]); hold on
+plot([-2.2 1.8], [0 0], &#x27;k-&#x27;);
+zz = linspace(-0.6, 1.6, 10);
+for a = [0 1]                            <span class="k">% the two tangents</span>
+    plot(zz, g(a) + dg(a) * (zz - a), &#x27;k-&#x27;);
+end
+plot([0 1], [0 0], &#x27;o&#x27;, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;MarkerFaceColor&#x27;, [0.64 0.08 0.18]);
+plot(xs, 0, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;);
+hold off; ylim([-2.2 4.5]); xlabel(&#x27;x&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 1.34: Newton&#x27;s method without convergence (book, Section 1.5, Eq. 1.44)</span>
+<span class="k"># g(x) = x^3 - 2x + 2 with x_0 = 0: the approximations jump between 0 and 1, the root at -1.769 is not found</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+g = lambda x: x**3 - 2 * x + 2
+dg = lambda x: 3 * x**2 - 2
+
+x = [0.0]
+for n in range(6):
+    x.append(x[-1] - g(x[-1]) / dg(x[-1]))
+print(&quot;x_0 ... x_6 =&quot;, &quot;  &quot;.join(f&quot;{v:g}&quot; for v in x))
+
+xs = -1.0                                <span class="k"># with a better initial value it works</span>
+for n in range(8):
+    xs = xs - g(xs) / dg(xs)
+print(f&quot;start at -1: root x* = {xs:.6f}&quot;)
+
+xx = np.linspace(-2.2, 1.8, 400)
+plt.plot(xx, g(xx), color=(0, 0.447, 0.741), label=&quot;g(x) = x^3 - 2x + 2&quot;)
+plt.axhline(0, color=&quot;k&quot;, lw=0.8)
+zz = np.linspace(-0.6, 1.6, 10)
+for a in (0, 1):                         <span class="k"># the two tangents</span>
+    plt.plot(zz, g(a) + dg(a) * (zz - a), &quot;k&quot;, lw=1)
+plt.plot([0, 1], [0, 0], &quot;o&quot;, color=(0.64, 0.08, 0.18))
+plt.plot(xs, 0, &quot;ko&quot;)
+plt.ylim(-2.2, 4.5); plt.xlabel(&quot;x&quot;); plt.legend(loc=&quot;upper left&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 1.34: Newton&#x27;s method without convergence (book, Section 1.5, Eq. 1.44)</span>
+<span class="k"># g(x) = x^3 - 2x + 2 with x_0 = 0: the approximations jump between 0 and 1, the root at -1.769 is not found</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+g &lt;- function(x) x^3 - 2 * x + 2
+dg &lt;- function(x) 3 * x^2 - 2
+
+x &lt;- numeric(7)
+for (k in 1:6) x[k + 1] &lt;- x[k] - g(x[k]) / dg(x[k])
+cat(&quot;x_0 ... x_6 =&quot;, sprintf(&quot;%g&quot;, x), &quot;\n&quot;)
+
+xs &lt;- -1                                 <span class="k"># with a better initial value it works</span>
+for (k in 1:8) xs &lt;- xs - g(xs) / dg(xs)
+cat(sprintf(&quot;start at -1: root x* = %.6f\n&quot;, xs))
+
+xx &lt;- seq(-2.2, 1.8, length.out = 400)
+plot(xx, g(xx), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2, ylim = c(-2.2, 4.5), xlab = &quot;x&quot;, ylab = &quot;&quot;)
+abline(h = 0)
+zz &lt;- seq(-0.6, 1.6, length.out = 10)
+for (a in c(0, 1)) lines(zz, g(a) + dg(a) * (zz - a))   <span class="k"># the two tangents</span>
+points(c(0, 1), c(0, 0), pch = 16, col = rgb(0.64, 0.08, 0.18))
+points(xs, 0, pch = 16)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>x_0 ... x_6 = 0  1  0  1  0  1  0
+start at -1: root x* = -1.769292</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="newton-wirkstoff">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 1.35</p>
+    <h2>Drug level below 1 mg/l</h2>
+    <p class="formel">c(t) = 5 (e<sup>−0.2t</sup> − e<sup>−t</sup>) = 1</p>
+    <p class="lead">When does the concentration fall below 1 mg/l? Newton's method with initial value 10 h gives t* ≈ 8.04 h after a few steps.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/newton_wirkstoff.png" alt="Output of the program newton_wirkstoff.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="newton_wirkstoff.jl" data-m="newton_wirkstoff.m" data-py="newton_wirkstoff.py" data-r="newton_wirkstoff.R">newton_wirkstoff.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/newton_wirkstoff.py" data-jl="code/newton_wirkstoff.jl" data-m="code/newton_wirkstoff.m" data-py="code/newton_wirkstoff.py" data-r="code/newton_wirkstoff.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 1.35: When does the drug level fall below 1 mg/l? (book, Section 1.5, Eq. 1.44)</span>
+<span class="k"># c(t) = 5 (exp(-0.2 t) - exp(-t)); Newton&#x27;s method for g(t) = c(t) - 1 with initial value t_0 = 10 h</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+c(t) = 5 * (exp(-0.2t) - exp(-t))
+dc(t) = 5 * (-0.2exp(-0.2t) + exp(-t))
+
+t = zeros(6); t[1] = 10
+for k in 1:5
+    t[k + 1] = t[k] - (c(t[k]) - 1) / dc(t[k])
+end
+for k in 1:6
+    @printf(&quot;t_%d = %.6f h\n&quot;, k - 1, t[k])
+end
+
+tt = range(0, 24, length = 500)
+p = plot(tt, c.(tt), color = RGB(0.64, 0.08, 0.18), lw = 2, legend = false, xlims = (0, 24), ylims = (0, 3),
+         xlabel = &quot;Time t (h)&quot;, ylabel = &quot;c(t) (mg/l)&quot;)
+hline!(p, [1], color = :black); scatter!(p, [t[end]], [1], color = :black)
+annotate!(p, t[end] + 0.5, 1.15, text(@sprintf(&quot;t* = %.2f h&quot;, t[end]), 9, :left))
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 1.35: When does the drug level fall below 1 mg/l? (book, Section 1.5, Eq. 1.44)</span>
+<span class="k">% c(t) = 5 (exp(-0.2 t) - exp(-t)); Newton&#x27;s method for g(t) = c(t) - 1 with initial value t_0 = 10 h</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+c = @(t) 5 * (exp(-0.2 * t) - exp(-t));
+dc = @(t) 5 * (-0.2 * exp(-0.2 * t) + exp(-t));
+
+t = zeros(1, 6); t(1) = 10;
+for k = 1:5
+    t(k + 1) = t(k) - (c(t(k)) - 1) / dc(t(k));
+end
+for k = 1:6
+    fprintf(&#x27;t_%d = %.6f h\n&#x27;, k - 1, t(k));
+end
+
+tt = linspace(0, 24, 500);
+plot(tt, c(tt), &#x27;Color&#x27;, [0.64 0.08 0.18]); hold on
+plot([0 24], [1 1], &#x27;k-&#x27;); plot(t(end), 1, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;);
+text(t(end) + 0.5, 1.15, sprintf(&#x27;t* = %.2f h&#x27;, t(end)));
+hold off; axis([0 24 0 3]); xlabel(&#x27;Time t (h)&#x27;); ylabel(&#x27;c(t) (mg/l)&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 1.35: When does the drug level fall below 1 mg/l? (book, Section 1.5, Eq. 1.44)</span>
+<span class="k"># c(t) = 5 (exp(-0.2 t) - exp(-t)); Newton&#x27;s method for g(t) = c(t) - 1 with initial value t_0 = 10 h</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+c = lambda t: 5 * (np.exp(-0.2 * t) - np.exp(-t))
+dc = lambda t: 5 * (-0.2 * np.exp(-0.2 * t) + np.exp(-t))
+
+t = [10.0]
+for n in range(5):
+    t.append(t[-1] - (c(t[-1]) - 1) / dc(t[-1]))
+for n, v in enumerate(t):
+    print(f&quot;t_{n} = {v:.6f} h&quot;)
+
+tt = np.linspace(0, 24, 500)
+plt.plot(tt, c(tt), color=(0.64, 0.08, 0.18), label=&quot;c(t)&quot;)
+plt.axhline(1, color=&quot;k&quot;, lw=0.8)
+plt.plot(t[-1], 1, &quot;ko&quot;)
+plt.text(t[-1] + 0.5, 1.15, f&quot;t* ≈ {t[-1]:.2f} h&quot;)
+plt.xlim(0, 24); plt.ylim(0, 3)
+plt.xlabel(&quot;Time t (h)&quot;); plt.ylabel(&quot;c(t) (mg/l)&quot;); plt.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 1.35: When does the drug level fall below 1 mg/l? (book, Section 1.5, Eq. 1.44)</span>
+<span class="k"># c(t) = 5 (exp(-0.2 t) - exp(-t)); Newton&#x27;s method for g(t) = c(t) - 1 with initial value t_0 = 10 h</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+konz &lt;- function(t) 5 * (exp(-0.2 * t) - exp(-t))   <span class="k"># c(t); in R the name c() is already taken</span>
+dc &lt;- function(t) 5 * (-0.2 * exp(-0.2 * t) + exp(-t))
+
+t &lt;- numeric(6); t[1] &lt;- 10
+for (k in 1:5) t[k + 1] &lt;- t[k] - (konz(t[k]) - 1) / dc(t[k])
+for (k in 1:6) cat(sprintf(&quot;t_%d = %.6f h\n&quot;, k - 1, t[k]))
+
+tt &lt;- seq(0, 24, length.out = 500)
+plot(tt, konz(tt), type = &quot;l&quot;, col = rgb(0.64, 0.08, 0.18), lwd = 2, xlim = c(0, 24), ylim = c(0, 3),
+     xlab = &quot;Time t (h)&quot;, ylab = &quot;c(t) (mg/l)&quot;)
+abline(h = 1); points(t[6], 1, pch = 16)
+text(t[6] + 0.5, 1.15, sprintf(&quot;t* = %.2f h&quot;, t[6]), adj = 0)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>t_0 = 10.000000 h
+t_1 = 7.605250 h
+t_2 = 8.021572 h
+t_3 = 8.039102 h
+t_4 = 8.039131 h
+t_5 = 8.039131 h</code></pre></details>
+    </div>
+  </div>
+</section>
+  <section class="apps" id="app-newton">
+  <div class="fig-head"><p class="eyebrow">Try it in the browser · no installation</p><h2>Try Newton's method</h2><p class="lead">Choose a function and an initial value. The app draws the tangents and lists the approximations.</p></div>
+  <div class="app" data-app="newton">
+    <canvas width="720" height="560" aria-label="Try Newton&#x27;s method"></canvas>
+    <div class="regler"><label><span>Function</span><select aria-label="Function"><option value="expo">g(x) = e^(−5x) − x</option><option value="kubisch">g(x) = x³ − 2x + 2</option><option value="wurzel">g(x) = x² − 2</option><option value="wirkstoff">Drug: c(t) − 1</option></select></label><label><span>Initial value x<sub>0</sub></span> <output data-o="x0"></output><input type="range" data-r="x0" min="0" max="1" step="0.01" value="0.05" aria-label="Initial value x0"></label><label><span>Steps</span> <output data-o="n"></output><input type="range" data-r="n" min="1" max="8" step="1" value="5" aria-label="Steps"></label><p class="zustand"></p><pre class="werte"></pre></div>
+  </div>
+</section>
+  <section class="matlab-apps"><h3>MATLAB apps from the course</h3><p>Download, put into a folder, and type the name without extension in MATLAB, e.g. <code>heron_newton_app</code>. The apps use the graphical user interface of MATLAB and do not run in GNU Octave. Their user interface is in German.</p><ul><li><a href="apps/heron_newton_app.m" download>heron_newton_app.m</a><span>Heron sequence and Newton's method</span></li></ul></section>
+  <nav class="weiter" aria-label="Page navigation"><a href="abschnitt-1-4.html"><small>Previous</small>1.4 Steady States and Stability</a><a href="abschnitt-1-6.html"><small>Next</small>1.6 In Depth: Heart Models</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Companion website to the book “Dynamical Systems in the Life Sciences” by Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programs under the <a href="../LICENSE.txt">MIT License</a> · <a href="../../impressum.html" hreflang="de">Legal notice (German)</a> · <a href="../../datenschutz.html" hreflang="de">Privacy policy (German)</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

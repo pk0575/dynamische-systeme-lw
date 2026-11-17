@@ -1,0 +1,747 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>4.1 Systems of Differential Equations – Dynamical Systems in the Life Sciences</title>
+<meta name="description" content="Programs in Julia, MATLAB, Python, and R for Section 4.1 of the book Dynamical Systems in the Life Sciences">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamical Systems in the Life Sciences</a>
+  <nav aria-label="Chapters"><a href="../index.html">Home</a> <a href="../kapitel1/index.html">Chapter 1</a> <a href="../kapitel2/index.html">Chapter 2</a> <a href="../kapitel3/index.html">Chapter 3</a> <a href="../kapitel4/index.html" aria-current="page">Chapter 4</a> <a href="../../kapitel4/abschnitt-4-1.html" lang="de" hreflang="de">Deutsch</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Sections"><h2><a href="index.html">Chapter 4</a></h2><ol><li><a href="abschnitt-4-1.html" aria-current="page"><span class="nr">4.1</span><span>Systems of Differential Equations</span></a></li><li><a href="abschnitt-4-2.html"><span class="nr">4.2</span><span>Linear Systems</span></a></li><li><a href="abschnitt-4-3.html"><span class="nr">4.3</span><span>Michaelis–Menten Kinetics</span></a></li><li><a href="abschnitt-4-4.html"><span class="nr">4.4</span><span>Steady States and Stability</span></a></li><li><a href="abschnitt-4-5.html"><span class="nr">4.5</span><span>In Depth: Excitability in the Phase Plane</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Chapter 4 · Continuous Dynamical Systems with Several Variables</p>
+      <h1><span class="num">4.1</span>Systems of Differential Equations</h1>
+      <p>Several quantities that influence each other lead to a system of differential equations. Its solution is viewed as time courses or as an orbit in the phase plane, where the direction field determines the motion. The programs solve the systems with <code>solve_ivp</code> (Python) or <code>ode45</code> (MATLAB), or with Euler's method.</p>
+      <p>For each figure of the section you will find the program that produces it. Change parameters and initial values and observe what happens. Figure and equation numbers refer to the book.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programming language</legend>
+  <div class="seg" role="radiogroup" aria-label="Programming language">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Applies to all pages. MATLAB programs also run in the free GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>On this page</b><ul><li><a href="#rb-logistisch"><span class="abb">Fig. 4.2</span>Predator–prey model</a></li><li><a href="#rb-richtungsfeld"><span class="abb">Fig. 4.3</span>Direction field of the predator–prey model</a></li><li><a href="#lotka-volterra"><span class="abb">Fig. 4.4</span>Classical Lotka–Volterra model</a></li><li><a href="#hefe-konkurrenz"><span class="abb">Fig. 4.5</span>Competition between two yeast species</a></li><li><a href="#oszillator"><span class="abb">Fig. 4.6</span>Damped oscillator</a></li><li><a href="#lv-euler"><span class="abb">Fig. 4.7</span>Euler's method for a system</a></li></ul></div>
+  
+<section class="fig" id="rb-logistisch">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 4.2</p>
+    <h2>Predator–prey model</h2>
+    <p class="formel">dx/dt = r (1 − x/K) x − c x y,&ensp; dy/dt = d x y − e y</p>
+    <p class="lead">Prey and predators oscillate with a shift and approach the steady state (5, 1). In the phase plane this becomes a spiral.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/rb_logistisch.png" alt="Output of the program rb_logistisch.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="rb_logistisch.jl" data-m="rb_logistisch.m" data-py="rb_logistisch.py" data-r="rb_logistisch.R">rb_logistisch.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/rb_logistisch.py" data-jl="code/rb_logistisch.jl" data-m="code/rb_logistisch.m" data-py="code/rb_logistisch.py" data-r="code/rb_logistisch.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 4.2: Continuous predator-prey model (book, Section 4.1, Eq. 4.2)</span>
+<span class="k"># dx/dt = r (1 - x/K) x - c x y,  dy/dt = d x y - e y  with r = 1, K = 10, c = 0.5, d = 0.2, e = 1, x(0) = 8, y(0) = 0.5</span>
+<span class="k"># left time courses, right the same solution in the phase plane</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># package OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># solves dz/dt = f(t, z) and returns the solution at the times t (row i = component i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+idx(t, tt) = findfirst(t .&gt;= tt - 1e-9)    <span class="k"># first index with t &gt;= tt</span>
+r = 1; K = 10; c = 0.5; d = 0.2; e = 1
+f(t, z) = [r * (1 - z[1] / K) * z[1] - c * z[1] * z[2], d * z[1] * z[2] - e * z[2]]
+
+t = range(0, 40, length = 2001)
+z = loese(f, [8, 0.5], t); x = z[1, :]; y = z[2, :]
+for tt in (10, 20, 40)
+    i = idx(t, tt)
+    @printf(&quot;t = %2d: x = %.3f,  y = %.3f\n&quot;, tt, x[i], y[i])
+end
+@printf(&quot;steady state (e/d, r/c (1 - e/(d K))) = (%g, %g)\n&quot;, e / d, r / c * (1 - e / (d * K)))
+p1 = plot(t, x, color = R1, lw = 2, label = &quot;Prey x(t)&quot;, xlabel = &quot;t&quot;)
+plot!(p1, t, y, color = R3, lw = 2, label = &quot;Predators y(t)&quot;)
+p2 = plot(x, y, color = R2, lw = 2, legend = false, xlabel = &quot;Prey x&quot;, ylabel = &quot;Predators y&quot;)
+scatter!(p2, [8, 5], [0.5, 1], color = :black)
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 4.2: Continuous predator-prey model (book, Section 4.1, Eq. 4.2)</span>
+<span class="k">% dx/dt = r (1 - x/K) x - c x y,  dy/dt = d x y - e y  with r = 1, K = 10, c = 0.5, d = 0.2, e = 1, x(0) = 8, y(0) = 0.5</span>
+<span class="k">% left time courses, right the same solution in the phase plane</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+r = 1; K = 10; c = 0.5; d = 0.2; e = 1;
+f = @(t, z) [r * (1 - z(1) / K) * z(1) - c * z(1) * z(2); d * z(1) * z(2) - e * z(2)];
+opt = odeset(&#x27;RelTol&#x27;, 1e-9, &#x27;AbsTol&#x27;, 1e-11);
+t = linspace(0, 40, 2001);
+[t, z] = ode45(f, t, [8; 0.5], opt);                     <span class="k">% row i of z: solution at time t(i)</span>
+x = z(:, 1); y = z(:, 2);
+for tt = [10 20 40]
+    i = find(t &gt;= tt - 1e-9, 1);
+    fprintf(&#x27;t = %2d: x = %.3f,  y = %.3f\n&#x27;, tt, x(i), y(i));
+end
+fprintf(&#x27;steady state (e/d, r/c (1 - e/(d K))) = (%g, %g)\n&#x27;, e / d, r / c * (1 - e / (d * K)));
+subplot(1, 2, 1);
+plot(t, x, &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2); hold on
+plot(t, y, &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;LineWidth&#x27;, 2); hold off
+xlabel(&#x27;t&#x27;); legend(&#x27;Prey x(t)&#x27;, &#x27;Predators y(t)&#x27;);
+subplot(1, 2, 2);
+plot(x, y, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2); hold on
+plot([x(1) 5], [y(1) 1], &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+xlabel(&#x27;Prey x&#x27;); ylabel(&#x27;Predators y&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 4.2: Continuous predator-prey model (book, Section 4.1, Eq. 4.2)</span>
+<span class="k"># dx/dt = r (1 - x/K) x - c x y,  dy/dt = d x y - e y  with r = 1, K = 10, c = 0.5, d = 0.2, e = 1, x(0) = 8, y(0) = 0.5</span>
+<span class="k"># left time courses, right the same solution in the phase plane</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+r, K, c, d, e = 1, 10, 0.5, 0.2, 1
+f = lambda t, z: [r * (1 - z[0] / K) * z[0] - c * z[0] * z[1], d * z[0] * z[1] - e * z[1]]
+
+t = np.linspace(0, 40, 2001)
+s = solve_ivp(f, [0, 40], [8, 0.5], t_eval=t, rtol=1e-9, atol=1e-11)
+x, y = s.y
+for tt in [10, 20, 40]:
+    i = np.searchsorted(t, tt)
+    print(f&quot;t = {tt:2d}: x = {x[i]:.3f},  y = {y[i]:.3f}&quot;)
+print(f&quot;steady state (e/d, r/c (1 - e/(d K))) = ({e / d:g}, {r / c * (1 - e / (d * K)):g})&quot;)
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+axs[0].plot(t, x, color=(0.43, 0.04, 0.12), lw=2, label=&quot;Prey x(t)&quot;)
+axs[0].plot(t, y, color=(0.89, 0.44, 0.49), lw=2, label=&quot;Predators y(t)&quot;)
+axs[0].set_xlabel(&quot;t&quot;); axs[0].legend()
+axs[1].plot(x, y, color=(0.64, 0.08, 0.18), lw=2); axs[1].plot(x[0], y[0], &quot;ko&quot;); axs[1].plot(5, 1, &quot;ko&quot;)
+axs[1].set_xlabel(&quot;Prey x&quot;); axs[1].set_ylabel(&quot;Predators y&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 4.2: Continuous predator-prey model (book, Section 4.1, Eq. 4.2)</span>
+<span class="k"># dx/dt = r (1 - x/K) x - c x y,  dy/dt = d x y - e y  with r = 1, K = 10, c = 0.5, d = 0.2, e = 1, x(0) = 8, y(0) = 0.5</span>
+<span class="k"># left time courses, right the same solution in the phase plane</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+library(deSolve)                         <span class="k"># package deSolve: install.packages(&quot;deSolve&quot;)</span>
+r &lt;- 1; K &lt;- 10; c &lt;- 0.5; d &lt;- 0.2; e &lt;- 1
+f &lt;- function(t, z) c(r * (1 - z[1] / K) * z[1] - c * z[1] * z[2], d * z[1] * z[2] - e * z[2])
+loese &lt;- function(f, z0, t) ode(z0, t, function(t, z, p) list(f(t, z)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-12)
+
+x &lt;- loese(f, c(8, 0.5), seq(0, 40, length.out = 2001))   <span class="k"># columns: time, x, y</span>
+for (tt in c(10, 20, 40)) {
+  i &lt;- which(x[, 1] &gt;= tt - 1e-9)[1]
+  cat(sprintf(&quot;t = %2d: x = %.3f,  y = %.3f\n&quot;, tt, x[i, 2], x[i, 3]))
+}
+cat(sprintf(&quot;steady state (e/d, r/c (1 - e/(d K))) = (%g, %g)\n&quot;, e / d, r / c * (1 - e / (d * K))))
+par(mfrow = c(1, 2))
+plot(x[, 1], x[, 2], type = &quot;l&quot;, col = rgb(0.43, 0.04, 0.12), lwd = 2, ylim = c(0, 10), xlab = &quot;t&quot;, ylab = &quot;&quot;)
+lines(x[, 1], x[, 3], col = rgb(0.89, 0.44, 0.49), lwd = 2)
+legend(&quot;topright&quot;, legend = c(&quot;Prey x(t)&quot;, &quot;Predators y(t)&quot;), col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)), lwd = 2)
+plot(x[, 2], x[, 3], type = &quot;l&quot;, col = rgb(0.64, 0.08, 0.18), lwd = 2, xlab = &quot;Prey x&quot;, ylab = &quot;Predators y&quot;)
+points(c(8, 5), c(0.5, 1), pch = 16)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>t = 10: x = 5.199,  y = 0.976
+t = 20: x = 5.016,  y = 1.000
+t = 40: x = 5.000,  y = 1.000
+steady state (e/d, r/c (1 - e/(d K))) = (5, 1)</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="rb-richtungsfeld">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 4.3</p>
+    <h2>Direction field of the predator–prey model</h2>
+    <p class="formel">arrow at the point (x, y) in the direction (dx/dt, dy/dt)</p>
+    <p class="lead">All arrows have the same length and show only the direction. At the steady states (0, 0), (10, 0), and (5, 1) both derivatives vanish.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/rb_richtungsfeld.png" alt="Output of the program rb_richtungsfeld.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="rb_richtungsfeld.jl" data-m="rb_richtungsfeld.m" data-py="rb_richtungsfeld.py" data-r="rb_richtungsfeld.R">rb_richtungsfeld.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/rb_richtungsfeld.py" data-jl="code/rb_richtungsfeld.jl" data-m="code/rb_richtungsfeld.m" data-py="code/rb_richtungsfeld.py" data-r="code/rb_richtungsfeld.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 4.3: Direction field of the predator-prey model (book, Section 4.1, Eq. 4.2)</span>
+<span class="k"># arrows in the direction (dx/dt, dy/dt), all of equal length; plus the solution from Fig. 4.2 and the steady states</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># package OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># solves dz/dt = f(t, z) and returns the solution at the times t (row i = component i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+r = 1; K = 10; c = 0.5; d = 0.2; e = 1
+f(t, z) = [r * (1 - z[1] / K) * z[1] - c * z[1] * z[2], d * z[1] * z[2] - e * z[2]]
+function feldpfeile(f)                   <span class="k"># direction field: arrows of equal length in the plot</span>
+    X = Float64[]; Y = Float64[]; U = Float64[]; W = Float64[]
+    for x in range(0.4, 10.6, length = 18), y in range(0.15, 2.85, length = 10)
+        u, w = f(0, [x, y]); u /= 11; w /= 3; L = hypot(u, w)
+        push!(X, x); push!(Y, y); push!(U, u / L * 0.3); push!(W, w / L * 0.3 * 3 / 11)
+    end
+    return X, Y, U, W
+end
+
+X, Y, U, W = feldpfeile(f)
+p = quiver(X, Y, quiver = (U, W), color = GR, legend = false, xlims = (0, 11), ylims = (0, 3), xlabel = &quot;Prey x&quot;, ylabel = &quot;Predators y&quot;)
+z = loese(f, [8, 0.5], range(0, 40, length = 2001))
+plot!(p, z[1, :], z[2, :], color = R2, lw = 2)
+scatter!(p, [0, 10], [0, 0], color = :white, msc = :black, ms = 7)    <span class="k"># unstable</span>
+scatter!(p, [5], [1], color = :black, ms = 7)                          <span class="k"># stable</span>
+for (xs, ys) in [(0, 0), (10, 0), (5, 1)]
+    u, w = f(0, [xs, ys])
+    @printf(&quot;(%2d, %d): dx/dt = %g, dy/dt = %g\n&quot;, xs, ys, u, w)
+end
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 4.3: Direction field of the predator-prey model (book, Section 4.1, Eq. 4.2)</span>
+<span class="k">% arrows in the direction (dx/dt, dy/dt), all of equal length; plus the solution from Fig. 4.2 and the steady states</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+r = 1; K = 10; c = 0.5; d = 0.2; e = 1;
+f = @(t, z) [r * (1 - z(1) / K) * z(1) - c * z(1) * z(2); d * z(1) * z(2) - e * z(2)];
+opt = odeset(&#x27;RelTol&#x27;, 1e-9, &#x27;AbsTol&#x27;, 1e-11);
+[X, Y] = meshgrid(linspace(0.4, 10.6, 18), linspace(0.15, 2.85, 10));
+U = (r * (1 - X / K) .* X - c * X .* Y) / 11;            <span class="k">% relative to the axis lengths, so that all arrows have equal length</span>
+V = (d * X .* Y - e * Y) / 3;
+L = sqrt(U.^2 + V.^2);
+quiver(X, Y, U ./ L * 0.3, V ./ L * 0.3 * 3 / 11, 0, &#x27;Color&#x27;, [0.2 0.6 0.25]); hold on
+[t, z] = ode45(f, linspace(0, 40, 2001), [8; 0.5], opt);
+plot(z(:, 1), z(:, 2), &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2);
+plot([0 10], [0 0], &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;w&#x27;, &#x27;MarkerSize&#x27;, 9);      <span class="k">% unstable</span>
+plot(5, 1, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;, &#x27;MarkerSize&#x27;, 9); hold off      <span class="k">% stable</span>
+P = [0 0; 10 0; 5 1];
+for i = 1:3
+    w = f(0, P(i, :)&#x27;);
+    fprintf(&#x27;(%2d, %d): dx/dt = %g, dy/dt = %g\n&#x27;, P(i, 1), P(i, 2), w(1), w(2));
+end
+xlim([0 11]); ylim([0 3]); xlabel(&#x27;Prey x&#x27;); ylabel(&#x27;Predators y&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 4.3: Direction field of the predator-prey model (book, Section 4.1, Eq. 4.2)</span>
+<span class="k"># arrows in the direction (dx/dt, dy/dt), all of equal length; plus the solution from Fig. 4.2 and the steady states</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+r, K, c, d, e = 1, 10, 0.5, 0.2, 1
+f = lambda t, z: [r * (1 - z[0] / K) * z[0] - c * z[0] * z[1], d * z[0] * z[1] - e * z[1]]
+
+X, Y = np.meshgrid(np.linspace(0.4, 10.6, 18), np.linspace(0.15, 2.85, 10))
+U, V = f(0, [X, Y])
+U, V = U / 11, V / 3                                     <span class="k"># relative to the axis lengths, so that all arrows in the plot have equal length</span>
+L = np.hypot(U, V)
+plt.quiver(X, Y, U / L * 0.3, V / L * 0.3 * 3 / 11, color=(0.2, 0.6, 0.25), angles=&quot;xy&quot;, scale_units=&quot;xy&quot;, scale=1, width=0.003)
+s = solve_ivp(f, [0, 40], [8, 0.5], t_eval=np.linspace(0, 40, 2001), rtol=1e-9, atol=1e-11)
+plt.plot(s.y[0], s.y[1], color=(0.64, 0.08, 0.18), lw=2)
+plt.plot([0, 10], [0, 0], &quot;o&quot;, mfc=&quot;w&quot;, mec=&quot;k&quot;, ms=9, clip_on=False)      <span class="k"># unstable</span>
+plt.plot(5, 1, &quot;ko&quot;, ms=9)                                                  <span class="k"># stable</span>
+for xs, ys in [(0, 0), (10, 0), (5, 1)]:
+    print(f&quot;({xs:2d}, {ys}): dx/dt = {f(0, [xs, ys])[0]:g}, dy/dt = {f(0, [xs, ys])[1]:g}&quot;)
+plt.xlim(0, 11); plt.ylim(0, 3); plt.xlabel(&quot;Prey x&quot;); plt.ylabel(&quot;Predators y&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 4.3: Direction field of the predator-prey model (book, Section 4.1, Eq. 4.2)</span>
+<span class="k"># arrows in the direction (dx/dt, dy/dt), all of equal length; plus the solution from Fig. 4.2 and the steady states</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+library(deSolve)                         <span class="k"># package deSolve: install.packages(&quot;deSolve&quot;)</span>
+r &lt;- 1; K &lt;- 10; c &lt;- 0.5; d &lt;- 0.2; e &lt;- 1
+f &lt;- function(t, z) c(r * (1 - z[1] / K) * z[1] - c * z[1] * z[2], d * z[1] * z[2] - e * z[2])
+loese &lt;- function(f, z0, t) ode(z0, t, function(t, z, p) list(f(t, z)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-12)
+feld &lt;- function(f, xl, yl, nx, ny, laenge = 0.3) {   <span class="k"># direction field: arrows of equal length (relative to the axis lengths)</span>
+  g &lt;- expand.grid(x = seq(xl[1], xl[2], length.out = nx), y = seq(yl[1], yl[2], length.out = ny))
+  w &lt;- t(apply(g, 1, function(p) f(0, p))); sx &lt;- diff(xl); sy &lt;- diff(yl)
+  u &lt;- w[, 1] / sx; v &lt;- w[, 2] / sy; L &lt;- sqrt(u^2 + v^2) + 1e-12
+  arrows(g$x, g$y, g$x + u / L * laenge * sx / 11, g$y + v / L * laenge * sy / 11, length = 0.04, col = rgb(0.2, 0.6, 0.25))
+}
+
+plot(NULL, xlim = c(0, 11), ylim = c(0, 3), xlab = &quot;Prey x&quot;, ylab = &quot;Predators y&quot;)
+feld(f, c(0.4, 10.6), c(0.15, 2.85), 18, 10)
+x &lt;- loese(f, c(8, 0.5), seq(0, 40, length.out = 2001))
+lines(x[, 2], x[, 3], col = rgb(0.64, 0.08, 0.18), lwd = 2)
+points(c(0, 10), c(0, 0), pch = 21, bg = &quot;white&quot;, cex = 1.3, xpd = TRUE)   <span class="k"># unstable</span>
+points(5, 1, pch = 16, cex = 1.3)                                          <span class="k"># stable</span>
+for (p in list(c(0, 0), c(10, 0), c(5, 1))) { w &lt;- f(0, p); cat(sprintf(&quot;(%2d, %g): dx/dt = %g, dy/dt = %g\n&quot;, p[1], p[2], w[1], w[2])) }</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>( 0, 0): dx/dt = 0, dy/dt = 0
+(10, 0): dx/dt = 0, dy/dt = 0
+( 5, 1): dx/dt = 0, dy/dt = 0</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="lotka-volterra">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 4.4</p>
+    <h2>Classical Lotka–Volterra model</h2>
+    <p class="formel">dx/dt = r x − c x y,&ensp; dy/dt = d x y − e y</p>
+    <p class="lead">Without a carrying capacity the orbits are closed: the quantity H(x, y) = d x − e ln x + c y − r ln y remains constant along every solution, as the output confirms.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/lotka_volterra.png" alt="Output of the program lotka_volterra.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="lotka_volterra.jl" data-m="lotka_volterra.m" data-py="lotka_volterra.py" data-r="lotka_volterra.R">lotka_volterra.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/lotka_volterra.py" data-jl="code/lotka_volterra.jl" data-m="code/lotka_volterra.m" data-py="code/lotka_volterra.py" data-r="code/lotka_volterra.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 4.4: Classical Lotka-Volterra model (book, Section 4.1, Eq. 4.3)</span>
+<span class="k"># dx/dt = r x - c x y,  dy/dt = d x y - e y  with r = 1, c = 0.5, d = 0.2, e = 1</span>
+<span class="k"># left periodic time courses for x(0) = 3, y(0) = 2, right closed orbits for different initial values</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># package OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># solves dz/dt = f(t, z) and returns the solution at the times t (row i = component i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+
+r = 1; c = 0.5; d = 0.2; e = 1
+f(t, z) = [r * z[1] - c * z[1] * z[2], d * z[1] * z[2] - e * z[2]]
+H(x, y) = d * x - e * log(x) + c * y - r * log(y)    <span class="k"># remains constant along every solution</span>
+t = range(0, 25, length = 2501)
+z = loese(f, [3, 2], t)
+p1 = plot(t, z[1, :], color = R1, lw = 2, label = &quot;Prey&quot;, xlabel = &quot;t&quot;)
+plot!(p1, t, z[2, :], color = R3, lw = 2, label = &quot;Predators&quot;)
+p2 = plot(legend = false, xlabel = &quot;Prey x&quot;, ylabel = &quot;Predators y&quot;)
+for (i, x0) in enumerate([4, 3, 1.5])
+    z = loese(f, [x0, 2], range(0, 12, length = 1201))
+    plot!(p2, z[1, :], z[2, :], color = [R1, R2, R3][i], lw = 2)
+    @printf(&quot;x(0) = %g: H at the start %.6f, at the end %.6f\n&quot;, x0, H(x0, 2), H(z[1, end], z[2, end]))
+end
+scatter!(p2, [e / d], [r / c], color = :black)
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 4.4: Classical Lotka-Volterra model (book, Section 4.1, Eq. 4.3)</span>
+<span class="k">% dx/dt = r x - c x y,  dy/dt = d x y - e y  with r = 1, c = 0.5, d = 0.2, e = 1</span>
+<span class="k">% left periodic time courses for x(0) = 3, y(0) = 2, right closed orbits for different initial values</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+r = 1; c = 0.5; d = 0.2; e = 1;
+f = @(t, z) [r * z(1) - c * z(1) * z(2); d * z(1) * z(2) - e * z(2)];
+H = @(x, y) d * x - e * log(x) + c * y - r * log(y);     <span class="k">% remains constant along every solution</span>
+opt = odeset(&#x27;RelTol&#x27;, 1e-9, &#x27;AbsTol&#x27;, 1e-11);
+subplot(1, 2, 1);
+[t, z] = ode45(f, linspace(0, 25, 2501), [3; 2], opt);
+plot(t, z(:, 1), &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2); hold on
+plot(t, z(:, 2), &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;LineWidth&#x27;, 2); hold off
+xlabel(&#x27;t&#x27;); legend(&#x27;Prey&#x27;, &#x27;Predators&#x27;);
+subplot(1, 2, 2); hold on
+rot = [0.43 0.04 0.12; 0.64 0.08 0.18; 0.89 0.44 0.49]; x0s = [4 3 1.5];
+for i = 1:3
+    [t, z] = ode45(f, linspace(0, 12, 1201), [x0s(i); 2], opt);
+    plot(z(:, 1), z(:, 2), &#x27;Color&#x27;, rot(i, :), &#x27;LineWidth&#x27;, 2);
+    fprintf(&#x27;x(0) = %g: H at the start %.6f, at the end %.6f\n&#x27;, x0s(i), H(x0s(i), 2), H(z(end, 1), z(end, 2)));
+end
+plot(e / d, r / c, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+xlabel(&#x27;Prey x&#x27;); ylabel(&#x27;Predators y&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 4.4: Classical Lotka-Volterra model (book, Section 4.1, Eq. 4.3)</span>
+<span class="k"># dx/dt = r x - c x y,  dy/dt = d x y - e y  with r = 1, c = 0.5, d = 0.2, e = 1</span>
+<span class="k"># left periodic time courses for x(0) = 3, y(0) = 2, right closed orbits for different initial values</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+r, c, d, e = 1, 0.5, 0.2, 1
+f = lambda t, z: [r * z[0] - c * z[0] * z[1], d * z[0] * z[1] - e * z[1]]
+H = lambda x, y: d * x - e * np.log(x) + c * y - r * np.log(y)    <span class="k"># remains constant along every solution</span>
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+t = np.linspace(0, 25, 2501)
+s = solve_ivp(f, [0, 25], [3, 2], t_eval=t, rtol=1e-9, atol=1e-11)
+axs[0].plot(t, s.y[0], color=(0.43, 0.04, 0.12), lw=2, label=&quot;Prey&quot;)
+axs[0].plot(t, s.y[1], color=(0.89, 0.44, 0.49), lw=2, label=&quot;Predators&quot;)
+axs[0].set_xlabel(&quot;t&quot;); axs[0].legend()
+rot = [(0.43, 0.04, 0.12), (0.64, 0.08, 0.18), (0.89, 0.44, 0.49)]
+for i, x0 in enumerate([4, 3, 1.5]):
+    s = solve_ivp(f, [0, 12], [x0, 2], t_eval=np.linspace(0, 12, 1201), rtol=1e-9, atol=1e-11)
+    axs[1].plot(s.y[0], s.y[1], color=rot[i], lw=2)
+    print(f&quot;x(0) = {x0}: H at the start {H(x0, 2):.6f}, at the end {H(s.y[0][-1], s.y[1][-1]):.6f}&quot;)
+axs[1].plot(e / d, r / c, &quot;ko&quot;); axs[1].set_xlabel(&quot;Prey x&quot;); axs[1].set_ylabel(&quot;Predators y&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 4.4: Classical Lotka-Volterra model (book, Section 4.1, Eq. 4.3)</span>
+<span class="k"># dx/dt = r x - c x y,  dy/dt = d x y - e y  with r = 1, c = 0.5, d = 0.2, e = 1</span>
+<span class="k"># left periodic time courses for x(0) = 3, y(0) = 2, right closed orbits for different initial values</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+library(deSolve)                         <span class="k"># package deSolve: install.packages(&quot;deSolve&quot;)</span>
+r &lt;- 1; c &lt;- 0.5; d &lt;- 0.2; e &lt;- 1
+f &lt;- function(t, z) c(r * z[1] - c * z[1] * z[2], d * z[1] * z[2] - e * z[2])
+H &lt;- function(x, y) d * x - e * log(x) + c * y - r * log(y)   <span class="k"># remains constant along every solution</span>
+loese &lt;- function(f, z0, t) ode(z0, t, function(t, z, p) list(f(t, z)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-12)
+
+par(mfrow = c(1, 2))
+x &lt;- loese(f, c(3, 2), seq(0, 25, length.out = 2501))
+plot(x[, 1], x[, 2], type = &quot;l&quot;, col = rgb(0.43, 0.04, 0.12), lwd = 2, ylim = c(0, 10), xlab = &quot;t&quot;, ylab = &quot;&quot;)
+lines(x[, 1], x[, 3], col = rgb(0.89, 0.44, 0.49), lwd = 2)
+legend(&quot;topright&quot;, legend = c(&quot;Prey&quot;, &quot;Predators&quot;), col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)), lwd = 2)
+rot &lt;- c(rgb(0.43, 0.04, 0.12), rgb(0.64, 0.08, 0.18), rgb(0.89, 0.44, 0.49))
+plot(NULL, xlim = c(0, 16), ylim = c(0, 7), xlab = &quot;Prey x&quot;, ylab = &quot;Predators y&quot;)
+x0s &lt;- c(4, 3, 1.5)
+for (i in 1:3) {
+  x &lt;- loese(f, c(x0s[i], 2), seq(0, 12, length.out = 1201))
+  lines(x[, 2], x[, 3], col = rot[i], lwd = 2)
+  n &lt;- nrow(x)
+  cat(sprintf(&quot;x(0) = %g: H at the start %.6f, at the end %.6f\n&quot;, x0s[i], H(x0s[i], 2), H(x[n, 2], x[n, 3])))
+}
+points(e / d, r / c, pch = 16)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>x(0) = 4: H at the start -0.279442, at the end -0.279442
+x(0) = 3: H at the start -0.191759, at the end -0.191759
+x(0) = 1.5: H at the start 0.201388, at the end 0.201388</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="hefe-konkurrenz">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 4.5</p>
+    <h2>Competition between two yeast species</h2>
+    <p class="formel">dx/dt = r<sub>1</sub> (1 − x/K<sub>1</sub> − γ<sub>1</sub> y) x,&ensp; dy/dt = r<sub>2</sub> (1 − y/K<sub>2</sub> − γ<sub>2</sub> x) y</p>
+    <p class="lead">S. cerevisiae grows faster at first but is displaced by S. kephir in the long run.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/hefe_konkurrenz.png" alt="Output of the program hefe_konkurrenz.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="hefe_konkurrenz.jl" data-m="hefe_konkurrenz.m" data-py="hefe_konkurrenz.py" data-r="hefe_konkurrenz.R">hefe_konkurrenz.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/hefe_konkurrenz.py" data-jl="code/hefe_konkurrenz.jl" data-m="code/hefe_konkurrenz.m" data-py="code/hefe_konkurrenz.py" data-r="code/hefe_konkurrenz.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 4.5: Competition between two yeast species (book, Section 4.1, Eq. 4.4)</span>
+<span class="k"># dx/dt = r1 (1 - x/K1 - g1 y) x,  dy/dt = r2 (1 - y/K2 - g2 x) y  with the parameters after Gause, x(0) = y(0) = 0.5</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># package OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># solves dz/dt = f(t, z) and returns the solution at the times t (row i = component i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+idx(t, tt) = findfirst(t .&gt;= tt - 1e-9)    <span class="k"># first index with t &gt;= tt</span>
+
+r1 = 0.0607; K1 = 5.8; g1 = 0.0757     <span class="k"># S. kephir</span>
+r2 = 0.2183; K2 = 13; g2 = 0.2423      <span class="k"># S. cerevisiae</span>
+f(t, z) = [r1 * (1 - z[1] / K1 - g1 * z[2]) * z[1], r2 * (1 - z[2] / K2 - g2 * z[1]) * z[2]]
+t = range(0, 300, length = 3001)
+z = loese(f, [0.5, 0.5], t); x = z[1, :]; y = z[2, :]
+for tt in (50, 100, 300)
+    i = idx(t, tt)
+    @printf(&quot;t = %3d h: x = %.3f,  y = %.3f\n&quot;, tt, x[i], y[i])
+end
+@printf(&quot;y reaches its maximum %.3f at t = %.1f h\n&quot;, maximum(y), t[argmax(y)])
+p = plot(t, x, color = R1, lw = 2, label = &quot;S. kephir x(t)&quot;, xlabel = &quot;t (hours)&quot;, ylabel = &quot;Yeast volume&quot;)
+plot!(p, t, y, color = R3, lw = 2, label = &quot;S. cerevisiae y(t)&quot;)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 4.5: Competition between two yeast species (book, Section 4.1, Eq. 4.4)</span>
+<span class="k">% dx/dt = r1 (1 - x/K1 - g1 y) x,  dy/dt = r2 (1 - y/K2 - g2 x) y  with the parameters after Gause, x(0) = y(0) = 0.5</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+r1 = 0.0607; K1 = 5.8; g1 = 0.0757;     <span class="k">% S. kephir</span>
+r2 = 0.2183; K2 = 13; g2 = 0.2423;      <span class="k">% S. cerevisiae</span>
+f = @(t, z) [r1 * (1 - z(1) / K1 - g1 * z(2)) * z(1); r2 * (1 - z(2) / K2 - g2 * z(1)) * z(2)];
+opt = odeset(&#x27;RelTol&#x27;, 1e-9, &#x27;AbsTol&#x27;, 1e-11);
+[t, z] = ode45(f, linspace(0, 300, 3001), [0.5; 0.5], opt);
+x = z(:, 1); y = z(:, 2);
+for tt = [50 100 300]
+    i = find(t &gt;= tt - 1e-9, 1);
+    fprintf(&#x27;t = %3d h: x = %.3f,  y = %.3f\n&#x27;, tt, x(i), y(i));
+end
+[ym, im] = max(y);
+fprintf(&#x27;y reaches its maximum %.3f at t = %.1f h\n&#x27;, ym, t(im));
+plot(t, x, &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2); hold on
+plot(t, y, &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;LineWidth&#x27;, 2); hold off
+xlabel(&#x27;t (hours)&#x27;); ylabel(&#x27;Yeast volume&#x27;); legend(&#x27;S. kephir x(t)&#x27;, &#x27;S. cerevisiae y(t)&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 4.5: Competition between two yeast species (book, Section 4.1, Eq. 4.4)</span>
+<span class="k"># dx/dt = r1 (1 - x/K1 - g1 y) x,  dy/dt = r2 (1 - y/K2 - g2 x) y  with the parameters after Gause, x(0) = y(0) = 0.5</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+r1, K1, g1 = 0.0607, 5.8, 0.0757      <span class="k"># S. kephir</span>
+r2, K2, g2 = 0.2183, 13, 0.2423       <span class="k"># S. cerevisiae</span>
+f = lambda t, z: [r1 * (1 - z[0] / K1 - g1 * z[1]) * z[0], r2 * (1 - z[1] / K2 - g2 * z[0]) * z[1]]
+
+t = np.linspace(0, 300, 3001)
+s = solve_ivp(f, [0, 300], [0.5, 0.5], t_eval=t, rtol=1e-9, atol=1e-11)
+x, y = s.y
+for tt in [50, 100, 300]:
+    i = np.searchsorted(t, tt)
+    print(f&quot;t = {tt:3d} h: x = {x[i]:.3f},  y = {y[i]:.3f}&quot;)
+print(f&quot;y reaches its maximum {y.max():.3f} at t = {t[y.argmax()]:.1f} h&quot;)
+plt.plot(t, x, color=(0.43, 0.04, 0.12), lw=2, label=&quot;S. kephir x(t)&quot;)
+plt.plot(t, y, color=(0.89, 0.44, 0.49), lw=2, label=&quot;S. cerevisiae y(t)&quot;)
+plt.xlabel(&quot;t (hours)&quot;); plt.ylabel(&quot;Yeast volume&quot;); plt.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 4.5: Competition between two yeast species (book, Section 4.1, Eq. 4.4)</span>
+<span class="k"># dx/dt = r1 (1 - x/K1 - g1 y) x,  dy/dt = r2 (1 - y/K2 - g2 x) y  with the parameters after Gause, x(0) = y(0) = 0.5</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+library(deSolve)                         <span class="k"># package deSolve: install.packages(&quot;deSolve&quot;)</span>
+r1 &lt;- 0.0607; K1 &lt;- 5.8; g1 &lt;- 0.0757      <span class="k"># S. kephir</span>
+r2 &lt;- 0.2183; K2 &lt;- 13; g2 &lt;- 0.2423       <span class="k"># S. cerevisiae</span>
+f &lt;- function(t, z) c(r1 * (1 - z[1] / K1 - g1 * z[2]) * z[1], r2 * (1 - z[2] / K2 - g2 * z[1]) * z[2])
+loese &lt;- function(f, z0, t) ode(z0, t, function(t, z, p) list(f(t, z)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-12)
+
+x &lt;- loese(f, c(0.5, 0.5), seq(0, 300, length.out = 3001))
+for (tt in c(50, 100, 300)) {
+  i &lt;- which(x[, 1] &gt;= tt - 1e-9)[1]
+  cat(sprintf(&quot;t = %3d h: x = %.3f,  y = %.3f\n&quot;, tt, x[i, 2], x[i, 3]))
+}
+cat(sprintf(&quot;y reaches its maximum %.3f at t = %.1f h\n&quot;, max(x[, 3]), x[which.max(x[, 3]), 1]))
+plot(x[, 1], x[, 2], type = &quot;l&quot;, col = rgb(0.43, 0.04, 0.12), lwd = 2, ylim = c(0, 10), xlab = &quot;t (hours)&quot;, ylab = &quot;Yeast volume&quot;)
+lines(x[, 1], x[, 3], col = rgb(0.89, 0.44, 0.49), lwd = 2)
+legend(&quot;topright&quot;, legend = c(&quot;S. kephir x(t)&quot;, &quot;S. cerevisiae y(t)&quot;), col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)), lwd = 2)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>t =  50 h: x = 1.425,  y = 8.652
+t = 100 h: x = 1.983,  y = 7.093
+t = 300 h: x = 5.791,  y = 0.001
+y reaches its maximum 8.780 at t = 39.9 h</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="oszillator">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 4.6</p>
+    <h2>Damped oscillator</h2>
+    <p class="formel">x<sub>1</sub>′ = x<sub>2</sub>,&ensp; x<sub>2</sub>′ = −(k x<sub>1</sub> + μ x<sub>2</sub>)/m</p>
+    <p class="lead">With the velocity as the second variable, a second-order differential equation becomes a system. The orbit spirals into the rest position.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/oszillator.png" alt="Output of the program oszillator.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="oszillator.jl" data-m="oszillator.m" data-py="oszillator.py" data-r="oszillator.R">oszillator.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/oszillator.py" data-jl="code/oszillator.jl" data-m="code/oszillator.m" data-py="code/oszillator.py" data-r="code/oszillator.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 4.6: Damped oscillator (book, Section 4.1, Eq. 4.5 and 4.6)</span>
+<span class="k"># m x&#x27;&#x27; + mu x&#x27; + k x = 0 as the system dx1/dt = x2, dx2/dt = -(k x1 + mu x2)/m  with m = 1, mu = 0.4, k = 4, x1(0) = 1, x2(0) = 0</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># package OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># solves dz/dt = f(t, z) and returns the solution at the times t (row i = component i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+idx(t, tt) = findfirst(t .&gt;= tt - 1e-9)    <span class="k"># first index with t &gt;= tt</span>
+
+m = 1; mu = 0.4; k = 4
+f(t, z) = [z[2], -(k * z[1] + mu * z[2]) / m]
+t = range(0, 20, length = 2001)
+z = loese(f, [1, 0], t); x1 = z[1, :]; x2 = z[2, :]
+for tt in (5, 10, 20)
+    i = idx(t, tt)
+    @printf(&quot;t = %2d: x1 = %7.4f,  x2 = %7.4f\n&quot;, tt, x1[i], x2[i])
+end
+p1 = hline([0], color = :black, label = &quot;&quot;, xlabel = &quot;t&quot;)
+plot!(p1, t, x1, color = R1, lw = 2, label = &quot;Position x1&quot;)
+plot!(p1, t, x2, color = R3, lw = 2, label = &quot;Velocity x2&quot;)
+p2 = plot(x1, x2, color = R2, lw = 2, legend = false, xlabel = &quot;Position x1&quot;, ylabel = &quot;Velocity x2&quot;)
+scatter!(p2, [1, 0], [0, 0], color = :black)
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 4.6: Damped oscillator (book, Section 4.1, Eq. 4.5 and 4.6)</span>
+<span class="k">% m x&#x27;&#x27; + mu x&#x27; + k x = 0 as the system dx1/dt = x2, dx2/dt = -(k x1 + mu x2)/m  with m = 1, mu = 0.4, k = 4, x1(0) = 1, x2(0) = 0</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+m = 1; mu = 0.4; k = 4;
+f = @(t, z) [z(2); -(k * z(1) + mu * z(2)) / m];
+opt = odeset(&#x27;RelTol&#x27;, 1e-9, &#x27;AbsTol&#x27;, 1e-11);
+[t, z] = ode45(f, linspace(0, 20, 2001), [1; 0], opt);
+x1 = z(:, 1); x2 = z(:, 2);
+for tt = [5 10 20]
+    i = find(t &gt;= tt - 1e-9, 1);
+    fprintf(&#x27;t = %2d: x1 = %7.4f,  x2 = %7.4f\n&#x27;, tt, x1(i), x2(i));
+end
+subplot(1, 2, 1);
+plot([0 20], [0 0], &#x27;k&#x27;); hold on
+plot(t, x1, &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2);
+plot(t, x2, &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;LineWidth&#x27;, 2); hold off
+xlabel(&#x27;t&#x27;); legend(&#x27;&#x27;, &#x27;Position x1&#x27;, &#x27;Velocity x2&#x27;);
+subplot(1, 2, 2);
+plot(x1, x2, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2); hold on
+plot([1 0], [0 0], &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+xlabel(&#x27;Position x1&#x27;); ylabel(&#x27;Velocity x2&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 4.6: Damped oscillator (book, Section 4.1, Eq. 4.5 and 4.6)</span>
+<span class="k"># m x&#x27;&#x27; + mu x&#x27; + k x = 0 as the system dx1/dt = x2, dx2/dt = -(k x1 + mu x2)/m  with m = 1, mu = 0.4, k = 4, x1(0) = 1, x2(0) = 0</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+m, mu, k = 1, 0.4, 4
+f = lambda t, z: [z[1], -(k * z[0] + mu * z[1]) / m]
+t = np.linspace(0, 20, 2001)
+s = solve_ivp(f, [0, 20], [1, 0], t_eval=t, rtol=1e-9, atol=1e-11)
+x1, x2 = s.y
+for tt in [5, 10, 20]:
+    i = np.searchsorted(t, tt)
+    print(f&quot;t = {tt:2d}: x1 = {x1[i]:7.4f},  x2 = {x2[i]:7.4f}&quot;)
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+axs[0].axhline(0, color=&quot;k&quot;, lw=1)
+axs[0].plot(t, x1, color=(0.43, 0.04, 0.12), lw=2, label=&quot;Position x1&quot;)
+axs[0].plot(t, x2, color=(0.89, 0.44, 0.49), lw=2, label=&quot;Velocity x2&quot;)
+axs[0].set_xlabel(&quot;t&quot;); axs[0].legend()
+axs[1].plot(x1, x2, color=(0.64, 0.08, 0.18), lw=2); axs[1].plot([1, 0], [0, 0], &quot;ko&quot;)
+axs[1].set_xlabel(&quot;Position x1&quot;); axs[1].set_ylabel(&quot;Velocity x2&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 4.6: Damped oscillator (book, Section 4.1, Eq. 4.5 and 4.6)</span>
+<span class="k"># m x&#x27;&#x27; + mu x&#x27; + k x = 0 as the system dx1/dt = x2, dx2/dt = -(k x1 + mu x2)/m  with m = 1, mu = 0.4, k = 4, x1(0) = 1, x2(0) = 0</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+library(deSolve)                         <span class="k"># package deSolve: install.packages(&quot;deSolve&quot;)</span>
+m &lt;- 1; mu &lt;- 0.4; k &lt;- 4
+f &lt;- function(t, z) c(z[2], -(k * z[1] + mu * z[2]) / m)
+loese &lt;- function(f, z0, t) ode(z0, t, function(t, z, p) list(f(t, z)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-12)
+
+x &lt;- loese(f, c(1, 0), seq(0, 20, length.out = 2001))
+for (tt in c(5, 10, 20)) {
+  i &lt;- which(x[, 1] &gt;= tt - 1e-9)[1]
+  cat(sprintf(&quot;t = %2d: x1 = %7.4f,  x2 = %7.4f\n&quot;, tt, x[i, 2], x[i, 3]))
+}
+par(mfrow = c(1, 2))
+plot(x[, 1], x[, 2], type = &quot;l&quot;, col = rgb(0.43, 0.04, 0.12), lwd = 2, ylim = c(-2.2, 2.2), xlab = &quot;t&quot;, ylab = &quot;&quot;)
+lines(x[, 1], x[, 3], col = rgb(0.89, 0.44, 0.49), lwd = 2); abline(h = 0)
+legend(&quot;topright&quot;, legend = c(&quot;Position x1&quot;, &quot;Velocity x2&quot;), col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)), lwd = 2)
+plot(x[, 2], x[, 3], type = &quot;l&quot;, col = rgb(0.64, 0.08, 0.18), lwd = 2, xlab = &quot;Position x1&quot;, ylab = &quot;Velocity x2&quot;)
+points(c(1, 0), c(0, 0), pch = 16)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>t =  5: x1 = -0.3369,  x2 =  0.3707
+t = 10: x1 =  0.0791,  x2 = -0.2360
+t = 20: x1 = -0.0077,  x2 = -0.0318</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="lv-euler">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 4.7</p>
+    <h2>Euler's method for a system</h2>
+    <p class="formel"><b>x</b><sub>n+1</sub> = <b>x</b><sub>n</sub> + h <b>f</b>(<b>x</b><sub>n</sub>),&ensp; h = 0.1</p>
+    <p class="lead">Euler's method leaves the closed orbit and spirals outward. The output shows how the quantity H, which should be constant, grows.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/lv_euler.png" alt="Output of the program lv_euler.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="lv_euler.jl" data-m="lv_euler.m" data-py="lv_euler.py" data-r="lv_euler.R">lv_euler.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/lv_euler.py" data-jl="code/lv_euler.jl" data-m="code/lv_euler.m" data-py="code/lv_euler.py" data-r="code/lv_euler.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 4.7: Euler&#x27;s method for the Lotka-Volterra model (book, Section 4.1, Eq. 4.7)</span>
+<span class="k"># x_{n+1} = x_n + h (r x_n - c x_n y_n),  y_{n+1} = y_n + h (d x_n y_n - e y_n)  with h = 0.1; the exact orbit is closed</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># package OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># solves dz/dt = f(t, z) and returns the solution at the times t (row i = component i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+
+r = 1; c = 0.5; d = 0.2; e = 1
+f(t, z) = [r * z[1] - c * z[1] * z[2], d * z[1] * z[2] - e * z[2]]
+h = 0.1; N = 160
+x = zeros(N + 1); y = zeros(N + 1); x[1] = 3; y[1] = 2
+for n in 1:N
+    x[n + 1] = x[n] + h * (r * x[n] - c * x[n] * y[n])
+    y[n + 1] = y[n] + h * (d * x[n] * y[n] - e * y[n])
+end
+z = loese(f, [3, 2], range(0, 6.5, length = 651))
+H(x, y) = d * x - e * log(x) + c * y - r * log(y)
+@printf(&quot;H exact (constant): %.4f\n&quot;, H(3, 2))
+println(&quot;H Euler after 40, 80, 160 steps: &quot;, join([@sprintf(&quot;%.4f&quot;, H(x[n + 1], y[n + 1])) for n in (40, 80, 160)], &quot;  &quot;))
+p = plot(x, y, marker = :circle, ms = 2, color = R3, lw = 1, label = &quot;Euler, h = 0.1&quot;, xlabel = &quot;Prey x&quot;, ylabel = &quot;Predators y&quot;)
+plot!(p, z[1, :], z[2, :], color = R1, lw = 2.5, label = &quot;exact&quot;)
+scatter!(p, [3, 5], [2, 2], color = :black, label = &quot;&quot;)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 4.7: Euler&#x27;s method for the Lotka-Volterra model (book, Section 4.1, Eq. 4.7)</span>
+<span class="k">% x_{n+1} = x_n + h (r x_n - c x_n y_n),  y_{n+1} = y_n + h (d x_n y_n - e y_n)  with h = 0.1; the exact orbit is closed</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+r = 1; c = 0.5; d = 0.2; e = 1;
+f = @(t, z) [r * z(1) - c * z(1) * z(2); d * z(1) * z(2) - e * z(2)];
+h = 0.1; N = 160;
+x = zeros(1, N + 1); y = zeros(1, N + 1); x(1) = 3; y(1) = 2;
+for n = 1:N
+    x(n + 1) = x(n) + h * (r * x(n) - c * x(n) * y(n));
+    y(n + 1) = y(n) + h * (d * x(n) * y(n) - e * y(n));
+end
+opt = odeset(&#x27;RelTol&#x27;, 1e-9, &#x27;AbsTol&#x27;, 1e-11);
+[t, z] = ode45(f, linspace(0, 6.5, 651), [3; 2], opt);
+H = @(x, y) d * x - e * log(x) + c * y - r * log(y);
+fprintf(&#x27;H exact (constant): %.4f\n&#x27;, H(3, 2));
+fprintf(&#x27;H Euler after 40, 80, 160 steps: %.4f  %.4f  %.4f\n&#x27;, H(x([41 81 161]), y([41 81 161])));
+plot(x, y, &#x27;-o&#x27;, &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;MarkerSize&#x27;, 3); hold on
+plot(z(:, 1), z(:, 2), &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2.5);
+plot([3 5], [2 2], &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+xlabel(&#x27;Prey x&#x27;); ylabel(&#x27;Predators y&#x27;); legend(&#x27;Euler, h = 0.1&#x27;, &#x27;exact&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 4.7: Euler&#x27;s method for the Lotka-Volterra model (book, Section 4.1, Eq. 4.7)</span>
+<span class="k"># x_{n+1} = x_n + h (r x_n - c x_n y_n),  y_{n+1} = y_n + h (d x_n y_n - e y_n)  with h = 0.1; the exact orbit is closed</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+r, c, d, e = 1, 0.5, 0.2, 1
+f = lambda t, z: [r * z[0] - c * z[0] * z[1], d * z[0] * z[1] - e * z[1]]
+h, N = 0.1, 160
+x = np.zeros(N + 1); y = np.zeros(N + 1); x[0], y[0] = 3, 2
+for n in range(N):
+    x[n + 1] = x[n] + h * (r * x[n] - c * x[n] * y[n])
+    y[n + 1] = y[n] + h * (d * x[n] * y[n] - e * y[n])
+s = solve_ivp(f, [0, 6.5], [3, 2], t_eval=np.linspace(0, 6.5, 651), rtol=1e-9, atol=1e-11)
+H = lambda x, y: d * x - e * np.log(x) + c * y - r * np.log(y)
+print(f&quot;H exact (constant): {H(3, 2):.4f}&quot;)
+print(&quot;H Euler after 40, 80, 160 steps:&quot;, &quot;  &quot;.join(f&quot;{H(x[n], y[n]):.4f}&quot; for n in [40, 80, 160]))
+plt.plot(x, y, &quot;-o&quot;, color=(0.89, 0.44, 0.49), ms=3, lw=1, label=&quot;Euler, h = 0.1&quot;)
+plt.plot(s.y[0], s.y[1], color=(0.43, 0.04, 0.12), lw=2.5, label=&quot;exact&quot;)
+plt.plot([3, 5], [2, 2], &quot;ko&quot;)
+plt.xlabel(&quot;Prey x&quot;); plt.ylabel(&quot;Predators y&quot;); plt.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 4.7: Euler&#x27;s method for the Lotka-Volterra model (book, Section 4.1, Eq. 4.7)</span>
+<span class="k"># x_{n+1} = x_n + h (r x_n - c x_n y_n),  y_{n+1} = y_n + h (d x_n y_n - e y_n)  with h = 0.1; the exact orbit is closed</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+library(deSolve)                         <span class="k"># package deSolve: install.packages(&quot;deSolve&quot;)</span>
+r &lt;- 1; c &lt;- 0.5; d &lt;- 0.2; e &lt;- 1
+f &lt;- function(t, z) c(r * z[1] - c * z[1] * z[2], d * z[1] * z[2] - e * z[2])
+h &lt;- 0.1; N &lt;- 160
+x &lt;- numeric(N + 1); y &lt;- numeric(N + 1); x[1] &lt;- 3; y[1] &lt;- 2
+for (n in 1:N) {
+  x[n + 1] &lt;- x[n] + h * (r * x[n] - c * x[n] * y[n])
+  y[n + 1] &lt;- y[n] + h * (d * x[n] * y[n] - e * y[n])
+}
+loese &lt;- function(f, z0, t) ode(z0, t, function(t, z, p) list(f(t, z)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-12)
+ex &lt;- loese(f, c(3, 2), seq(0, 6.5, length.out = 651))
+H &lt;- function(x, y) d * x - e * log(x) + c * y - r * log(y)
+cat(sprintf(&quot;H exact (constant): %.4f\n&quot;, H(3, 2)))
+cat(&quot;H Euler after 40, 80, 160 steps:&quot;, sprintf(&quot;%.4f&quot;, H(x[c(41, 81, 161)], y[c(41, 81, 161)])), &quot;\n&quot;)
+plot(x, y, type = &quot;o&quot;, pch = 16, cex = 0.5, col = rgb(0.89, 0.44, 0.49), xlab = &quot;Prey x&quot;, ylab = &quot;Predators y&quot;)
+lines(ex[, 2], ex[, 3], col = rgb(0.43, 0.04, 0.12), lwd = 2.5)
+points(c(3, 5), c(2, 2), pch = 16)
+legend(&quot;topright&quot;, legend = c(&quot;Euler, h = 0.1&quot;, &quot;exact&quot;), col = c(rgb(0.89, 0.44, 0.49), rgb(0.43, 0.04, 0.12)), lwd = c(1, 2.5), pch = c(16, NA))</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>H exact (constant): -0.1918
+H Euler after 40, 80, 160 steps: -0.1439  -0.0681  0.1756</code></pre></details>
+    </div>
+  </div>
+</section>
+  
+  <section class="matlab-apps"><h3>MATLAB apps from the course</h3><p>Download, put into a folder, and type the name without extension in MATLAB, e.g. <code>hai_thunfisch_app</code>. The apps use the graphical user interface of MATLAB and do not run in GNU Octave. Their user interface is in German.</p><ul><li><a href="apps/hai_thunfisch_app.m" download>hai_thunfisch_app.m</a><span>Predator–prey model “shark and tuna”</span></li></ul></section>
+  <nav class="weiter" aria-label="Page navigation"><a href="abschnitt-4-2.html"><small>Next</small>4.2 Linear Systems</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Companion website to the book “Dynamical Systems in the Life Sciences” by Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programs under the <a href="../LICENSE.txt">MIT License</a> · <a href="../../impressum.html" hreflang="de">Legal notice (German)</a> · <a href="../../datenschutz.html" hreflang="de">Privacy policy (German)</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

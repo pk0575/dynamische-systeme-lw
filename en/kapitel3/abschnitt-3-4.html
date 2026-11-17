@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>3.4 Euler&#x27;s Method – Dynamical Systems in the Life Sciences</title>
+<meta name="description" content="Programs in Julia, MATLAB, Python, and R for Section 3.4 of the book Dynamical Systems in the Life Sciences">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamical Systems in the Life Sciences</a>
+  <nav aria-label="Chapters"><a href="../index.html">Home</a> <a href="../kapitel1/index.html">Chapter 1</a> <a href="../kapitel2/index.html">Chapter 2</a> <a href="../kapitel3/index.html" aria-current="page">Chapter 3</a> <a href="../kapitel4/index.html">Chapter 4</a> <a href="../../kapitel3/abschnitt-3-4.html" lang="de" hreflang="de">Deutsch</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Sections"><h2><a href="index.html">Chapter 3</a></h2><ol><li><a href="abschnitt-3-1.html"><span class="nr">3.1</span><span>Differential Equations and Initial Value Problems</span></a></li><li><a href="abschnitt-3-2.html"><span class="nr">3.2</span><span>Exponential and Logistic Growth</span></a></li><li><a href="abschnitt-3-3.html"><span class="nr">3.3</span><span>Steady States and Stability</span></a></li><li><a href="abschnitt-3-4.html" aria-current="page"><span class="nr">3.4</span><span>Euler's Method</span></a></li><li><a href="abschnitt-3-5.html"><span class="nr">3.5</span><span>In Depth: Excitability of Heart Cells</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Chapter 3 · Continuous Dynamical Systems with One Variable</p>
+      <h1><span class="num">3.4</span>Euler's Method</h1>
+      <p>Most differential equations cannot be solved in closed form. Euler's method replaces the solution by short line segments with the slope of the direction field: x<sub>n+1</sub> = x<sub>n</sub> + h f(t<sub>n</sub>, x<sub>n</sub>). Smaller step sizes h give more accurate approximations; step sizes that are too large can make the method unstable.</p>
+      <p>For each figure of the section you will find the program that produces it. Change parameters and initial values and observe what happens. Figure and equation numbers refer to the book.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programming language</legend>
+  <div class="seg" role="radiogroup" aria-label="Programming language">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Applies to all pages. MATLAB programs also run in the free GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>On this page</b><ul><li><a href="#michaelis-menten"><span class="abb">Fig. 3.19</span>Michaelis–Menten kinetics</a></li><li><a href="#euler-schritte"><span class="abb">Fig. 3.20</span>Euler steps along the tangents</a></li><li><a href="#euler-abkuehlung"><span class="abb">Fig. 3.21</span>Influence of the step size</a></li><li><a href="#euler-instabil"><span class="abb">Fig. 3.22</span>Step size too large</a></li><li><a href="#app-euler"><span class="abb">App</span>try it in the browser</a></li></ul></div>
+  
+<section class="fig" id="michaelis-menten">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 3.19</p>
+    <h2>Michaelis–Menten kinetics</h2>
+    <p class="formel">dS/dt = −k<sub>max</sub> S/(k<sub>50</sub> + S),&ensp; h = 0.01</p>
+    <p class="lead">For this equation there is no solution formula in terms of elementary functions. The loop computes the approximation in 1000 Euler steps.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/michaelis_menten.png" alt="Output of the program michaelis_menten.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="michaelis_menten.jl" data-m="michaelis_menten.m" data-py="michaelis_menten.py" data-r="michaelis_menten.R">michaelis_menten.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/michaelis_menten.py" data-jl="code/michaelis_menten.jl" data-m="code/michaelis_menten.m" data-py="code/michaelis_menten.py" data-r="code/michaelis_menten.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 3.19: Michaelis-Menten kinetics, approximate solution with Euler&#x27;s method (book, Section 3.4, Eq. 3.24 and 3.26)</span>
+<span class="k"># dS/dt = -kmax S/(k50 + S) with kmax = 0.5, k50 = 1, S(0) = 2; Euler&#x27;s method S_{n+1} = S_n + h f(S_n) with h = 0.01</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+kmax = 0.5; k50 = 1
+f(S) = -kmax * S / (k50 + S)
+h = 0.01; T = 10
+N = round(Int, T / h)
+t = h .* (0:N)
+S = zeros(N + 1); S[1] = 2
+for n in 1:N
+    S[n + 1] = S[n] + h * f(S[n])        <span class="k"># one Euler step</span>
+end
+for tt in (2, 5, 10)
+    @printf(&quot;S(%2d) ≈ %.4f\n&quot;, tt, S[round(Int, tt / h) + 1])
+end
+display(plot(t, S, color = RGB(0.64, 0.08, 0.18), lw = 2.5, legend = false, ylims = (0, 2.1), xlabel = &quot;t&quot;, ylabel = &quot;S(t)&quot;))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 3.19: Michaelis-Menten kinetics, approximate solution with Euler&#x27;s method (book, Section 3.4, Eq. 3.24 and 3.26)</span>
+<span class="k">% dS/dt = -kmax S/(k50 + S) with kmax = 0.5, k50 = 1, S(0) = 2; Euler&#x27;s method S_{n+1} = S_n + h f(S_n) with h = 0.01</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+kmax = 0.5; k50 = 1;
+f = @(S) -kmax * S / (k50 + S);
+h = 0.01; T = 10;
+N = round(T / h);
+t = h * (0:N);
+S = zeros(1, N + 1); S(1) = 2;
+for n = 1:N
+    S(n + 1) = S(n) + h * f(S(n));                       <span class="k">% one Euler step</span>
+end
+for tt = [2 5 10]
+    fprintf(&#x27;S(%2d) ≈ %.4f\n&#x27;, tt, S(round(tt / h) + 1));
+end
+plot(t, S, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2.5);
+xlabel(&#x27;t&#x27;); ylabel(&#x27;S(t)&#x27;); ylim([0 2.1]);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 3.19: Michaelis-Menten kinetics, approximate solution with Euler&#x27;s method (book, Section 3.4, Eq. 3.24 and 3.26)</span>
+<span class="k"># dS/dt = -kmax S/(k50 + S) with kmax = 0.5, k50 = 1, S(0) = 2; Euler&#x27;s method S_{n+1} = S_n + h f(S_n) with h = 0.01</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+kmax, k50 = 0.5, 1
+f = lambda S: -kmax * S / (k50 + S)
+h, T = 0.01, 10
+N = int(round(T / h))
+t = h * np.arange(N + 1)
+S = np.zeros(N + 1); S[0] = 2
+for n in range(N):
+    S[n + 1] = S[n] + h * f(S[n])                       <span class="k"># one Euler step</span>
+for tt in [2, 5, 10]:
+    print(f&quot;S({tt:2d}) ≈ {S[int(round(tt / h))]:.4f}&quot;)
+plt.plot(t, S, color=(0.64, 0.08, 0.18), lw=2.5)
+plt.xlabel(&quot;t&quot;); plt.ylabel(&quot;S(t)&quot;); plt.ylim(0, 2.1)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 3.19: Michaelis-Menten kinetics, approximate solution with Euler&#x27;s method (book, Section 3.4, Eq. 3.24 and 3.26)</span>
+<span class="k"># dS/dt = -kmax S/(k50 + S) with kmax = 0.5, k50 = 1, S(0) = 2; Euler&#x27;s method S_{n+1} = S_n + h f(S_n) with h = 0.01</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+kmax &lt;- 0.5; k50 &lt;- 1
+f &lt;- function(S) -kmax * S / (k50 + S)
+h &lt;- 0.01; T &lt;- 10
+N &lt;- round(T / h)
+t &lt;- h * (0:N)
+S &lt;- numeric(N + 1); S[1] &lt;- 2
+for (n in 1:N) S[n + 1] &lt;- S[n] + h * f(S[n])        <span class="k"># one Euler step</span>
+for (tt in c(2, 5, 10)) cat(sprintf(&quot;S(%2d) ≈ %.4f\n&quot;, tt, S[round(tt / h) + 1]))
+plot(t, S, type = &quot;l&quot;, col = rgb(0.64, 0.08, 0.18), lwd = 2.5, ylim = c(0, 2.1), xlab = &quot;t&quot;, ylab = &quot;S(t)&quot;)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>S( 2) ≈ 1.3746
+S( 5) ≈ 0.6393
+S(10) ≈ 0.0905</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="euler-schritte">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 3.20</p>
+    <h2>Euler steps along the tangents</h2>
+    <p class="formel">T<sub>n+1</sub> = T<sub>n</sub> + h · 0.03 (5 − T<sub>n</sub>),&ensp; h = 20</p>
+    <p class="lead">Each step follows the tangent at the current point. Because the exact solution is curved upward, the Euler values lie below it.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/euler_schritte.png" alt="Output of the program euler_schritte.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="euler_schritte.jl" data-m="euler_schritte.m" data-py="euler_schritte.py" data-r="euler_schritte.R">euler_schritte.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/euler_schritte.py" data-jl="code/euler_schritte.jl" data-m="code/euler_schritte.m" data-py="code/euler_schritte.py" data-r="code/euler_schritte.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 3.20: Euler&#x27;s method follows the slope of the direction field (book, Section 3.4, Eq. 3.26)</span>
+<span class="k"># dT/dt = 0.03 (5 - T), T(0) = 80, step size h = 20:  T_{n+1} = T_n + h · 0.03 (5 - T_n)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+k = 0.03; Tu = 5; T0 = 80; h = 20
+N = 6
+t = h .* (0:N)
+T = zeros(N + 1); T[1] = T0
+for n in 1:N
+    T[n + 1] = T[n] + h * k * (Tu - T[n])
+end
+tt = range(0, 120, length = 300)
+p = plot(tt, Tu .+ (T0 - Tu) .* exp.(-k .* tt), color = RGB(0.43, 0.04, 0.12), lw = 2, label = &quot;exact solution T(t)&quot;,
+         xticks = t, xlabel = &quot;t (min)&quot;, ylabel = &quot;T (°C)&quot;)
+plot!(p, t, T, color = RGB(0.2, 0.6, 0.25), lw = 2, label = &quot;Tangent segments&quot;)
+scatter!(p, t, T, color = RGB(0.89, 0.44, 0.49), ms = 6, label = &quot;Euler T_n, h = 20&quot;)
+for n in 1:N + 1
+    @printf(&quot;t = %5.0f: T_n = %6.2f,  exact %6.2f\n&quot;, t[n], T[n], Tu + (T0 - Tu) * exp(-k * t[n]))
+end
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 3.20: Euler&#x27;s method follows the slope of the direction field (book, Section 3.4, Eq. 3.26)</span>
+<span class="k">% dT/dt = 0.03 (5 - T), T(0) = 80, step size h = 20:  T_{n+1} = T_n + h · 0.03 (5 - T_n)</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+k = 0.03; Tu = 5; T0 = 80; h = 20;
+N = 6;
+t = h * (0:N);
+T = zeros(1, N + 1); T(1) = T0;
+for n = 1:N
+    T(n + 1) = T(n) + h * k * (Tu - T(n));
+end
+tt = linspace(0, 120, 300);
+plot(tt, Tu + (T0 - Tu) * exp(-k * tt), &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2); hold on
+plot(t, T, &#x27;Color&#x27;, [0.2 0.6 0.25], &#x27;LineWidth&#x27;, 2);
+plot(t, T, &#x27;o&#x27;, &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;MarkerFaceColor&#x27;, [0.89 0.44 0.49], &#x27;MarkerSize&#x27;, 9); hold off
+for n = 1:N + 1
+    fprintf(&#x27;t = %5.0f: T_n = %6.2f,  exact %6.2f\n&#x27;, t(n), T(n), Tu + (T0 - Tu) * exp(-k * t(n)));
+end
+set(gca, &#x27;XTick&#x27;, t); xlabel(&#x27;t (min)&#x27;); ylabel(&#x27;T (°C)&#x27;); legend(&#x27;exact solution T(t)&#x27;, &#x27;Tangent segments&#x27;, &#x27;Euler T_n, h = 20&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 3.20: Euler&#x27;s method follows the slope of the direction field (book, Section 3.4, Eq. 3.26)</span>
+<span class="k"># dT/dt = 0.03 (5 - T), T(0) = 80, step size h = 20:  T_{n+1} = T_n + h · 0.03 (5 - T_n)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+k, Tu, T0, h = 0.03, 5, 80, 20
+N = 6
+t = h * np.arange(N + 1)
+T = np.zeros(N + 1); T[0] = T0
+for n in range(N):
+    T[n + 1] = T[n] + h * k * (Tu - T[n])
+tt = np.linspace(0, 120, 300)
+plt.plot(tt, Tu + (T0 - Tu) * np.exp(-k * tt), color=(0.43, 0.04, 0.12), lw=2, label=&quot;exact solution T(t)&quot;)
+plt.plot(t, T, color=(0.2, 0.6, 0.25), lw=2, label=&quot;Tangent segments&quot;)
+plt.plot(t, T, &quot;o&quot;, color=(0.89, 0.44, 0.49), ms=9, label=&quot;Euler T_n, h = 20&quot;)
+for n in range(N + 1):
+    print(f&quot;t = {t[n]:5.0f}: T_n = {T[n]:6.2f},  exact {Tu + (T0 - Tu) * np.exp(-k * t[n]):6.2f}&quot;)
+plt.xticks(t); plt.xlabel(&quot;t (min)&quot;); plt.ylabel(&quot;T (°C)&quot;); plt.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 3.20: Euler&#x27;s method follows the slope of the direction field (book, Section 3.4, Eq. 3.26)</span>
+<span class="k"># dT/dt = 0.03 (5 - T), T(0) = 80, step size h = 20:  T_{n+1} = T_n + h · 0.03 (5 - T_n)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+k &lt;- 0.03; Tu &lt;- 5; T0 &lt;- 80; h &lt;- 20
+N &lt;- 6
+t &lt;- h * (0:N)
+T &lt;- numeric(N + 1); T[1] &lt;- T0
+for (n in 1:N) T[n + 1] &lt;- T[n] + h * k * (Tu - T[n])
+tt &lt;- seq(0, 120, length.out = 300)
+plot(tt, Tu + (T0 - Tu) * exp(-k * tt), type = &quot;l&quot;, col = rgb(0.43, 0.04, 0.12), lwd = 2, xaxt = &quot;n&quot;, xlab = &quot;t (min)&quot;, ylab = &quot;T (°C)&quot;)
+axis(1, at = t)
+lines(t, T, col = rgb(0.2, 0.6, 0.25), lwd = 2)
+points(t, T, pch = 16, cex = 1.4, col = rgb(0.89, 0.44, 0.49))
+for (n in 1:(N + 1)) cat(sprintf(&quot;t = %5.0f: T_n = %6.2f,  exact %6.2f\n&quot;, t[n], T[n], Tu + (T0 - Tu) * exp(-k * t[n])))
+legend(&quot;topright&quot;, legend = c(&quot;exact solution T(t)&quot;, &quot;Tangent segments&quot;, &quot;Euler T_n, h = 20&quot;),
+       col = c(rgb(0.43, 0.04, 0.12), rgb(0.2, 0.6, 0.25), rgb(0.89, 0.44, 0.49)), lwd = c(2, 2, NA), pch = c(NA, NA, 16))</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>t =     0: T_n =  80.00,  exact  80.00
+t =    20: T_n =  35.00,  exact  46.16
+t =    40: T_n =  17.00,  exact  27.59
+t =    60: T_n =   9.80,  exact  17.40
+t =    80: T_n =   6.92,  exact  11.80
+t =   100: T_n =   5.77,  exact   8.73
+t =   120: T_n =   5.31,  exact   7.05</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="euler-abkuehlung">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 3.21</p>
+    <h2>Influence of the step size</h2>
+    <p class="formel">h = 10 and h = 5</p>
+    <p class="lead">Halving the step size roughly halves the error: Euler's method has order 1.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/euler_abkuehlung.png" alt="Output of the program euler_abkuehlung.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="euler_abkuehlung.jl" data-m="euler_abkuehlung.m" data-py="euler_abkuehlung.py" data-r="euler_abkuehlung.R">euler_abkuehlung.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/euler_abkuehlung.py" data-jl="code/euler_abkuehlung.jl" data-m="code/euler_abkuehlung.m" data-py="code/euler_abkuehlung.py" data-r="code/euler_abkuehlung.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 3.21: Euler&#x27;s method for cooling with different step sizes (book, Section 3.4, Eq. 3.26)</span>
+<span class="k"># dT/dt = 0.03 (5 - T), T(0) = 80; Euler with h = 10 and h = 5 compared with the exact solution</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+k = 0.03; Tu = 5; T0 = 80
+exakt(t) = Tu + (T0 - Tu) * exp(-k * t)
+tt = range(0, 120, length = 300)
+p = plot(tt, exakt.(tt), color = RGB(0.43, 0.04, 0.12), lw = 2, label = &quot;exact&quot;, xlabel = &quot;t (min)&quot;, ylabel = &quot;T (°C)&quot;)
+for (h, farbe, zeichen) in [(10, RGB(0.64, 0.08, 0.18), :rect), (5, RGB(0.89, 0.44, 0.49), :diamond)]
+    N = 120 ÷ h
+    t = h .* (0:N); T = zeros(N + 1); T[1] = T0
+    for n in 1:N
+        T[n + 1] = T[n] + h * k * (Tu - T[n])
+    end
+    plot!(p, t, T, ls = :dash, marker = zeichen, color = farbe, label = &quot;Euler, h = $h&quot;)
+    @printf(&quot;h = %2d: T(60) ≈ %.3f,  error %.3f\n&quot;, h, T[60 ÷ h + 1], abs(T[60 ÷ h + 1] - exakt(60)))
+end
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 3.21: Euler&#x27;s method for cooling with different step sizes (book, Section 3.4, Eq. 3.26)</span>
+<span class="k">% dT/dt = 0.03 (5 - T), T(0) = 80; Euler with h = 10 and h = 5 compared with the exact solution</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+k = 0.03; Tu = 5; T0 = 80;
+exakt = @(t) Tu + (T0 - Tu) * exp(-k * t);
+tt = linspace(0, 120, 300);
+plot(tt, exakt(tt), &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2, &#x27;DisplayName&#x27;, &#x27;exact&#x27;); hold on
+farben = [0.64 0.08 0.18; 0.89 0.44 0.49]; marker = &#x27;sd&#x27;; hs = [10 5];
+for i = 1:2
+    h = hs(i); N = 120 / h;
+    t = h * (0:N); T = zeros(1, N + 1); T(1) = T0;
+    for n = 1:N
+        T(n + 1) = T(n) + h * k * (Tu - T(n));
+    end
+    plot(t, T, [&#x27;--&#x27; marker(i)], &#x27;Color&#x27;, farben(i, :), &#x27;MarkerSize&#x27;, 6, &#x27;DisplayName&#x27;, sprintf(&#x27;Euler, h = %d&#x27;, h));
+    fprintf(&#x27;h = %2d: T(60) ≈ %.3f,  error %.3f\n&#x27;, h, T(60 / h + 1), abs(T(60 / h + 1) - exakt(60)));
+end
+hold off
+xlabel(&#x27;t (min)&#x27;); ylabel(&#x27;T (°C)&#x27;); legend(&#x27;show&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 3.21: Euler&#x27;s method for cooling with different step sizes (book, Section 3.4, Eq. 3.26)</span>
+<span class="k"># dT/dt = 0.03 (5 - T), T(0) = 80; Euler with h = 10 and h = 5 compared with the exact solution</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+k, Tu, T0 = 0.03, 5, 80
+exakt = lambda t: Tu + (T0 - Tu) * np.exp(-k * t)
+tt = np.linspace(0, 120, 300)
+plt.plot(tt, exakt(tt), color=(0.43, 0.04, 0.12), lw=2, label=&quot;exact&quot;)
+farben = [(0.64, 0.08, 0.18), (0.89, 0.44, 0.49)]
+for i, h in enumerate([10, 5]):
+    N = int(120 / h)
+    t = h * np.arange(N + 1); T = np.zeros(N + 1); T[0] = T0
+    for n in range(N):
+        T[n + 1] = T[n] + h * k * (Tu - T[n])
+    plt.plot(t, T, &quot;--&quot; + &quot;sd&quot;[i], color=farben[i], ms=6, lw=1, label=f&quot;Euler, h = {h}&quot;)
+    print(f&quot;h = {h:2d}: T(60) ≈ {T[int(60 / h)]:.3f},  error {abs(T[int(60 / h)] - exakt(60)):.3f}&quot;)
+plt.xlabel(&quot;t (min)&quot;); plt.ylabel(&quot;T (°C)&quot;); plt.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 3.21: Euler&#x27;s method for cooling with different step sizes (book, Section 3.4, Eq. 3.26)</span>
+<span class="k"># dT/dt = 0.03 (5 - T), T(0) = 80; Euler with h = 10 and h = 5 compared with the exact solution</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+k &lt;- 0.03; Tu &lt;- 5; T0 &lt;- 80
+exakt &lt;- function(t) Tu + (T0 - Tu) * exp(-k * t)
+tt &lt;- seq(0, 120, length.out = 300)
+plot(tt, exakt(tt), type = &quot;l&quot;, col = rgb(0.43, 0.04, 0.12), lwd = 2, xlab = &quot;t (min)&quot;, ylab = &quot;T (°C)&quot;)
+farben &lt;- c(rgb(0.64, 0.08, 0.18), rgb(0.89, 0.44, 0.49)); zeichen &lt;- c(15, 18)
+hs &lt;- c(10, 5)
+for (i in 1:2) {
+  h &lt;- hs[i]; N &lt;- 120 / h
+  t &lt;- h * (0:N); T &lt;- numeric(N + 1); T[1] &lt;- T0
+  for (n in 1:N) T[n + 1] &lt;- T[n] + h * k * (Tu - T[n])
+  lines(t, T, type = &quot;o&quot;, lty = 2, pch = zeichen[i], col = farben[i])
+  cat(sprintf(&quot;h = %2d: T(60) ≈ %.3f,  error %.3f\n&quot;, h, T[60 / h + 1], abs(T[60 / h + 1] - exakt(60))))
+}
+legend(&quot;topright&quot;, legend = c(&quot;exact&quot;, sprintf(&quot;Euler, h = %d&quot;, hs)), col = c(rgb(0.43, 0.04, 0.12), farben), lty = c(1, 2, 2), pch = c(NA, zeichen))</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>h = 10: T(60) ≈ 13.824,  error 3.574
+h =  5: T(60) ≈ 15.668,  error 1.729</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="euler-instabil">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 3.22</p>
+    <h2>Step size too large</h2>
+    <p class="formel">T<sub>n+1</sub> − 5 = (1 − kh)(T<sub>n</sub> − 5)</p>
+    <p class="lead">For h = 40 the factor is −0.2: the approximation oscillates but decays. For h = 70 it is −1.1: the approximation builds up although the exact solution decays.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/euler_instabil.png" alt="Output of the program euler_instabil.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="euler_instabil.jl" data-m="euler_instabil.m" data-py="euler_instabil.py" data-r="euler_instabil.R">euler_instabil.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/euler_instabil.py" data-jl="code/euler_instabil.jl" data-m="code/euler_instabil.m" data-py="code/euler_instabil.py" data-r="code/euler_instabil.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 3.22: Euler&#x27;s method with too large a step size (book, Section 3.4, Eq. 3.27)</span>
+<span class="k"># T_{n+1} - 5 = (1 - k h)(T_n - 5): for h = 40 the factor is -0.2 (damped oscillation), for h = 70 it is -1.1 (growing oscillation)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+k = 0.03; Tu = 5; T0 = 80
+tt = range(0, 700, length = 400)
+bilder = []
+for h in (40, 70)
+    N = ceil(Int, 700 / h)
+    t = h .* (0:N); T = zeros(N + 1); T[1] = T0
+    for n in 1:N
+        T[n + 1] = T[n] + h * k * (Tu - T[n])
+    end
+    p = plot(tt, Tu .+ (T0 - Tu) .* exp.(-k .* tt), color = RGB(0.43, 0.04, 0.12), lw = 2, legend = false,
+             title = @sprintf(&quot;h = %d: factor 1 - kh = %.1f&quot;, h, 1 - k * h), xlabel = &quot;t (min)&quot;)
+    plot!(p, t, T, ls = :dash, marker = :circle, ms = 3, color = RGB(0.89, 0.44, 0.49))
+    hline!(p, [Tu], ls = :dot, color = :black)
+    h == 70 &amp;&amp; ylims!(p, (-250, 250))
+    push!(bilder, p)
+    println(@sprintf(&quot;h = %d: T_1 ... T_4 = &quot;, h), join([@sprintf(&quot;%.2f&quot;, v) for v in T[2:5]], &quot;  &quot;))
+end
+display(plot(bilder..., layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 3.22: Euler&#x27;s method with too large a step size (book, Section 3.4, Eq. 3.27)</span>
+<span class="k">% T_{n+1} - 5 = (1 - k h)(T_n - 5): for h = 40 the factor is -0.2 (damped oscillation), for h = 70 it is -1.1 (growing oscillation)</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+k = 0.03; Tu = 5; T0 = 80;
+tt = linspace(0, 700, 400); hs = [40 70];
+for i = 1:2
+    h = hs(i);
+    N = ceil(700 / h);
+    t = h * (0:N); T = zeros(1, N + 1); T(1) = T0;
+    for n = 1:N
+        T(n + 1) = T(n) + h * k * (Tu - T(n));
+    end
+    subplot(1, 2, i);
+    plot(tt, Tu + (T0 - Tu) * exp(-k * tt), &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2); hold on
+    plot(t, T, &#x27;--o&#x27;, &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;MarkerSize&#x27;, 5);
+    plot([0 700], [Tu Tu], &#x27;k:&#x27;); hold off
+    title(sprintf(&#x27;h = %d: factor 1 - kh = %.1f&#x27;, h, 1 - k * h)); xlabel(&#x27;t (min)&#x27;);
+    if h == 70, ylim([-250 250]); end
+    fprintf(&#x27;h = %d: T_1 ... T_4 = %s\n&#x27;, h, sprintf(&#x27;%.2f  &#x27;, T(2:5)));
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 3.22: Euler&#x27;s method with too large a step size (book, Section 3.4, Eq. 3.27)</span>
+<span class="k"># T_{n+1} - 5 = (1 - k h)(T_n - 5): for h = 40 the factor is -0.2 (damped oscillation), for h = 70 it is -1.1 (growing oscillation)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+k, Tu, T0 = 0.03, 5, 80
+tt = np.linspace(0, 700, 400)
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+for ax, h in zip(axs, [40, 70]):
+    N = int(np.ceil(700 / h))
+    t = h * np.arange(N + 1); T = np.zeros(N + 1); T[0] = T0
+    for n in range(N):
+        T[n + 1] = T[n] + h * k * (Tu - T[n])
+    ax.plot(tt, Tu + (T0 - Tu) * np.exp(-k * tt), color=(0.43, 0.04, 0.12), lw=2)
+    ax.plot(t, T, &quot;--o&quot;, color=(0.89, 0.44, 0.49), ms=5, lw=1)
+    ax.axhline(Tu, color=&quot;k&quot;, ls=&quot;:&quot;, lw=1)
+    ax.set_title(f&quot;h = {h}: factor 1 - kh = {1 - k * h:.1f}&quot;); ax.set_xlabel(&quot;t (min)&quot;)
+    print(f&quot;h = {h}: T_1 ... T_4 =&quot;, &quot;  &quot;.join(f&quot;{x:.2f}&quot; for x in T[1:5]))
+axs[1].set_ylim(-250, 250)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 3.22: Euler&#x27;s method with too large a step size (book, Section 3.4, Eq. 3.27)</span>
+<span class="k"># T_{n+1} - 5 = (1 - k h)(T_n - 5): for h = 40 the factor is -0.2 (damped oscillation), for h = 70 it is -1.1 (growing oscillation)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+k &lt;- 0.03; Tu &lt;- 5; T0 &lt;- 80
+tt &lt;- seq(0, 700, length.out = 400)
+par(mfrow = c(1, 2))
+for (h in c(40, 70)) {
+  N &lt;- ceiling(700 / h)
+  t &lt;- h * (0:N); T &lt;- numeric(N + 1); T[1] &lt;- T0
+  for (n in 1:N) T[n + 1] &lt;- T[n] + h * k * (Tu - T[n])
+  plot(tt, Tu + (T0 - Tu) * exp(-k * tt), type = &quot;l&quot;, col = rgb(0.43, 0.04, 0.12), lwd = 2,
+       ylim = if (h == 70) c(-250, 250) else range(T), xlab = &quot;t (min)&quot;, ylab = &quot;&quot;, main = sprintf(&quot;h = %d: factor 1 - kh = %.1f&quot;, h, 1 - k * h))
+  lines(t, T, type = &quot;o&quot;, lty = 2, pch = 16, cex = 0.7, col = rgb(0.89, 0.44, 0.49))
+  abline(h = Tu, lty = 3)
+  cat(sprintf(&quot;h = %d: T_1 ... T_4 =&quot;, h), sprintf(&quot;%.2f&quot;, T[2:5]), &quot;\n&quot;)
+}</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>h = 40: T_1 ... T_4 = -10.00  8.00  4.40  5.12
+h = 70: T_1 ... T_4 = -77.50  95.75  -94.83  114.81</code></pre></details>
+    </div>
+  </div>
+</section>
+  <section class="apps" id="app-euler">
+  <div class="fig-head"><p class="eyebrow">Try it in the browser · no installation</p><h2>Euler's method for cooling</h2><p class="lead">dT/dt = 0.03 (5 − T), T(0) = 80. Increase the step size h: from h = 33.3 the approximation oscillates, from h = 66.7 it builds up, although the exact solution (dark red) decays smoothly.</p></div>
+  <div class="app" data-app="euler">
+    <canvas width="720" height="560" aria-label="Euler&#x27;s method for cooling"></canvas>
+    <div class="regler"><label><span>Step size h</span> <output data-o="h"></output><input type="range" data-r="h" min="1" max="80" step="1" value="20" aria-label="Step size h"></label><p class="zustand"></p><pre class="werte"></pre></div>
+  </div>
+</section>
+  <section class="matlab-apps"><h3>MATLAB apps from the course</h3><p>Download, put into a folder, and type the name without extension in MATLAB, e.g. <code>euler_app</code>. The apps use the graphical user interface of MATLAB and do not run in GNU Octave. Their user interface is in German.</p><ul><li><a href="apps/euler_app.m" download>euler_app.m</a><span>Euler's method with adjustable step size</span></li></ul></section>
+  <nav class="weiter" aria-label="Page navigation"><a href="abschnitt-3-3.html"><small>Previous</small>3.3 Steady States and Stability</a><a href="abschnitt-3-5.html"><small>Next</small>3.5 In Depth: Excitability of Heart Cells</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Companion website to the book “Dynamical Systems in the Life Sciences” by Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programs under the <a href="../LICENSE.txt">MIT License</a> · <a href="../../impressum.html" hreflang="de">Legal notice (German)</a> · <a href="../../datenschutz.html" hreflang="de">Privacy policy (German)</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

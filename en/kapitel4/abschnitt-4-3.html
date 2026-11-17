@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>4.3 Michaelis–Menten Kinetics – Dynamical Systems in the Life Sciences</title>
+<meta name="description" content="Programs in Julia, MATLAB, Python, and R for Section 4.3 of the book Dynamical Systems in the Life Sciences">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamical Systems in the Life Sciences</a>
+  <nav aria-label="Chapters"><a href="../index.html">Home</a> <a href="../kapitel1/index.html">Chapter 1</a> <a href="../kapitel2/index.html">Chapter 2</a> <a href="../kapitel3/index.html">Chapter 3</a> <a href="../kapitel4/index.html" aria-current="page">Chapter 4</a> <a href="../../kapitel4/abschnitt-4-3.html" lang="de" hreflang="de">Deutsch</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Sections"><h2><a href="index.html">Chapter 4</a></h2><ol><li><a href="abschnitt-4-1.html"><span class="nr">4.1</span><span>Systems of Differential Equations</span></a></li><li><a href="abschnitt-4-2.html"><span class="nr">4.2</span><span>Linear Systems</span></a></li><li><a href="abschnitt-4-3.html" aria-current="page"><span class="nr">4.3</span><span>Michaelis–Menten Kinetics</span></a></li><li><a href="abschnitt-4-4.html"><span class="nr">4.4</span><span>Steady States and Stability</span></a></li><li><a href="abschnitt-4-5.html"><span class="nr">4.5</span><span>In Depth: Excitability in the Phase Plane</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Chapter 4 · Continuous Dynamical Systems with Several Variables</p>
+      <h1><span class="num">4.3</span>Michaelis–Menten Kinetics</h1>
+      <p>An enzyme E binds a substrate S to form a complex SE, which decays into product P and free enzyme. The law of mass action gives a system for four concentrations. If little enzyme is present, the complex quickly settles at a quasi-steady value, and one obtains the Michaelis–Menten rate.</p>
+      <p>For each figure of the section you will find the program that produces it. Change parameters and initial values and observe what happens. Figure and equation numbers refer to the book.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programming language</legend>
+  <div class="seg" role="radiogroup" aria-label="Programming language">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Applies to all pages. MATLAB programs also run in the free GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>On this page</b><ul><li><a href="#mm-voll"><span class="abb">Fig. 4.13</span>The full system</a></li><li><a href="#mm-rate"><span class="abb">Fig. 4.14</span>Michaelis–Menten rate</a></li><li><a href="#mm-phase"><span class="abb">Fig. 4.15</span>The ([S], [SE]) plane</a></li><li><a href="#mm-vergleich"><span class="abb">Fig. 4.16</span>Full system and quasi-steady-state approximation</a></li></ul></div>
+  
+<section class="fig" id="mm-voll">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 4.13</p>
+    <h2>The full system</h2>
+    <p class="formel">d[S]/dt = −k<sub>1</sub> [S][E] + k<sub>2</sub> [SE],&ensp; d[SE]/dt = k<sub>1</sub> [S][E] − (k<sub>2</sub> + k<sub>3</sub>) [SE], …</p>
+    <p class="lead">Substrate is converted into product, while the amount of enzyme [E] + [SE] is conserved.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/mm_voll.png" alt="Output of the program mm_voll.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="mm_voll.jl" data-m="mm_voll.m" data-py="mm_voll.py" data-r="mm_voll.R">mm_voll.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/mm_voll.py" data-jl="code/mm_voll.jl" data-m="code/mm_voll.m" data-py="code/mm_voll.py" data-r="code/mm_voll.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 4.13: Michaelis-Menten system with all four concentrations (book, Section 4.3, Eq. 4.12)</span>
+<span class="k"># k1 = 1, k2 = 1e-4, k3 = 0.1, [S]0 = 0.5 µM, [E]0 = 0.2 µM, [SE]0 = [P]0 = 0</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># package OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># solves dz/dt = f(t, z) and returns the solution at the times t (row i = component i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+idx(t, tt) = findfirst(t .&gt;= tt - 1e-9)    <span class="k"># first index with t &gt;= tt</span>
+k1 = 1.0; k2 = 1e-4; k3 = 0.1             <span class="k"># rates in 1/(µM s) and 1/s</span>
+S0 = 0.5                                 <span class="k"># µM</span>
+k50 = (k2 + k3) / k1
+function mm(t, z)
+    S, E, C, P = z                       <span class="k"># substrate, enzyme, complex SE, product</span>
+    r1 = k1 * S * E; r2 = k2 * C; r3 = k3 * C
+    return [-r1 + r2, -r1 + r2 + r3, r1 - r2 - r3, r3]
+end
+
+E0 = 0.2
+t = range(0, 60, length = 3001)
+z = loese(mm, [S0, E0, 0, 0], t, abstol = 1e-13); S, E, C, P = eachrow(z)
+println(&quot;conservation [E] + [SE] = E0 up to rounding errors (&lt; 1e-12): &quot;, maximum(abs.(E .+ C .- E0)) &lt; 1e-12 ? &quot;yes&quot; : &quot;no&quot;)
+for tt in (5, 20, 60)
+    i = idx(t, tt)
+    @printf(&quot;t = %2d s: [S] = %.4f, [E] = %.4f, [SE] = %.4f, [P] = %.4f\n&quot;, tt, S[i], E[i], C[i], P[i])
+end
+farben = [R1, R2, R3, RGB(0.95, 0.70, 0.73)]
+p = plot(xlabel = &quot;t (s)&quot;, ylabel = &quot;Concentration (µM)&quot;, legend_columns = 2)
+for (y, name, fa, m) in zip([S, E, C, P], [&quot;Substrate [S]&quot;, &quot;Enzyme [E]&quot;, &quot;Complex [SE]&quot;, &quot;Product [P]&quot;], farben, [:circle, :rect, :diamond, :utriangle])
+    plot!(p, t, y, color = fa, lw = 2, label = name)
+    scatter!(p, t[1:250:end], y[1:250:end], color = fa, marker = m, label = &quot;&quot;)
+end
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 4.13: Michaelis-Menten system with all four concentrations (book, Section 4.3, Eq. 4.12)</span>
+<span class="k">% k1 = 1, k2 = 1e-4, k3 = 0.1, [S]0 = 0.5 µM, [E]0 = 0.2 µM, [SE]0 = [P]0 = 0</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+k1 = 1; k2 = 1e-4; k3 = 0.1;               <span class="k">% rates in 1/(µM s) and 1/s</span>
+S0 = 0.5;                                   <span class="k">% µM</span>
+k50 = (k2 + k3) / k1;
+<span class="k">% z = ([S], [E], [SE], [P]): substrate, enzyme, complex, product</span>
+mm = @(t, z) [-k1 * z(1) * z(2) + k2 * z(3); -k1 * z(1) * z(2) + (k2 + k3) * z(3); k1 * z(1) * z(2) - (k2 + k3) * z(3); k3 * z(3)];
+opt = odeset(&#x27;RelTol&#x27;, 1e-10, &#x27;AbsTol&#x27;, 1e-13);
+E0 = 0.2;
+[t, z] = ode45(mm, linspace(0, 60, 3001), [S0; E0; 0; 0], opt);
+if max(abs(z(:, 2) + z(:, 3) - E0)) &lt; 1e-12, ok = &#x27;yes&#x27;; else, ok = &#x27;no&#x27;; end
+fprintf(&#x27;conservation [E] + [SE] = E0 up to rounding errors (&lt; 1e-12): %s\n&#x27;, ok);
+for tt = [5 20 60]
+    i = find(t &gt;= tt - 1e-9, 1);
+    fprintf(&#x27;t = %2d s: [S] = %.4f, [E] = %.4f, [SE] = %.4f, [P] = %.4f\n&#x27;, tt, z(i, :));
+end
+farben = [0.43 0.04 0.12; 0.64 0.08 0.18; 0.89 0.44 0.49; 0.95 0.70 0.73]; marker = &#x27;osd^&#x27;;
+hold on
+for j = 1:4
+    plot(t, z(:, j), &#x27;Color&#x27;, farben(j, :), &#x27;LineWidth&#x27;, 2);
+    plot(t(1:250:end), z(1:250:end, j), marker(j), &#x27;Color&#x27;, farben(j, :), &#x27;MarkerFaceColor&#x27;, farben(j, :), &#x27;HandleVisibility&#x27;, &#x27;off&#x27;);
+end
+hold off
+xlabel(&#x27;t (s)&#x27;); ylabel(&#x27;Concentration (µM)&#x27;); legend(&#x27;Substrate [S]&#x27;, &#x27;Enzyme [E]&#x27;, &#x27;Complex [SE]&#x27;, &#x27;Product [P]&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 4.13: Michaelis-Menten system with all four concentrations (book, Section 4.3, Eq. 4.12)</span>
+<span class="k"># k1 = 1, k2 = 1e-4, k3 = 0.1, [S]0 = 0.5 µM, [E]0 = 0.2 µM, [SE]0 = [P]0 = 0</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+k1, k2, k3 = 1.0, 1e-4, 0.1                <span class="k"># rates in 1/(µM s) and 1/s</span>
+S0 = 0.5                                   <span class="k"># µM</span>
+k50 = (k2 + k3) / k1
+def mm(t, z):
+    S, E, C, P = z                         <span class="k"># substrate, enzyme, complex SE, product</span>
+    r1, r2, r3 = k1 * S * E, k2 * C, k3 * C
+    return [-r1 + r2, -r1 + r2 + r3, r1 - r2 - r3, r3]
+
+E0 = 0.2
+t = np.linspace(0, 60, 3001)
+s = solve_ivp(mm, [0, 60], [S0, E0, 0, 0], t_eval=t, method=&quot;LSODA&quot;, rtol=1e-10, atol=1e-13)
+S, E, C, P = s.y
+print(&quot;conservation [E] + [SE] = E0 up to rounding errors (&lt; 1e-12):&quot;, &quot;yes&quot; if np.max(abs(E + C - E0)) &lt; 1e-12 else &quot;no&quot;)
+for tt in [5, 20, 60]:
+    i = np.searchsorted(t, tt)
+    print(f&quot;t = {tt:2d} s: [S] = {S[i]:.4f}, [E] = {E[i]:.4f}, [SE] = {C[i]:.4f}, [P] = {P[i]:.4f}&quot;)
+farben = [(0.43, 0.04, 0.12), (0.64, 0.08, 0.18), (0.89, 0.44, 0.49), (0.95, 0.70, 0.73)]
+for y, name, fa, m in zip([S, E, C, P], [&quot;Substrate [S]&quot;, &quot;Enzyme [E]&quot;, &quot;Complex [SE]&quot;, &quot;Product [P]&quot;], farben, &quot;osD^&quot;):
+    plt.plot(t, y, &quot;-&quot; + m, color=fa, lw=2, markevery=250, label=name)
+plt.xlabel(&quot;t (s)&quot;); plt.ylabel(&quot;Concentration (µM)&quot;); plt.legend(ncol=2)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 4.13: Michaelis-Menten system with all four concentrations (book, Section 4.3, Eq. 4.12)</span>
+<span class="k"># k1 = 1, k2 = 1e-4, k3 = 0.1, [S]0 = 0.5 µM, [E]0 = 0.2 µM, [SE]0 = [P]0 = 0</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+library(deSolve)                         <span class="k"># package deSolve: install.packages(&quot;deSolve&quot;)</span>
+k1 &lt;- 1; k2 &lt;- 1e-4; k3 &lt;- 0.1                 <span class="k"># rates in 1/(µM s) and 1/s</span>
+S0 &lt;- 0.5                                      <span class="k"># µM</span>
+k50 &lt;- (k2 + k3) / k1
+<span class="k"># z = ([S], [E], [SE], [P]): substrate, enzyme, complex, product</span>
+mm &lt;- function(t, z) c(-k1 * z[1] * z[2] + k2 * z[3], -k1 * z[1] * z[2] + (k2 + k3) * z[3],
+                       k1 * z[1] * z[2] - (k2 + k3) * z[3], k3 * z[3])
+loese &lt;- function(f, z0, t) ode(z0, t, function(t, z, p) list(f(t, z)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-14)
+
+E0 &lt;- 0.2
+x &lt;- loese(mm, c(S0, E0, 0, 0), seq(0, 60, length.out = 3001))   <span class="k"># columns: time, [S], [E], [SE], [P]</span>
+cat(&quot;conservation [E] + [SE] = E0 up to rounding errors (&lt; 1e-12):&quot;, if (max(abs(x[, 3] + x[, 4] - E0)) &lt; 1e-12) &quot;yes&quot; else &quot;no&quot;, &quot;\n&quot;)
+for (tt in c(5, 20, 60)) {
+  i &lt;- which(x[, 1] &gt;= tt - 1e-9)[1]
+  cat(sprintf(&quot;t = %2d s: [S] = %.4f, [E] = %.4f, [SE] = %.4f, [P] = %.4f\n&quot;, tt, x[i, 2], x[i, 3], x[i, 4], x[i, 5]))
+}
+farben &lt;- c(rgb(0.43, 0.04, 0.12), rgb(0.64, 0.08, 0.18), rgb(0.89, 0.44, 0.49), rgb(0.95, 0.70, 0.73)); zeichen &lt;- c(16, 15, 18, 17)
+plot(NULL, xlim = c(0, 60), ylim = c(0, 0.55), xlab = &quot;t (s)&quot;, ylab = &quot;Concentration (µM)&quot;)
+for (j in 1:4) {
+  lines(x[, 1], x[, j + 1], col = farben[j], lwd = 2)
+  idx &lt;- seq(1, nrow(x), 250); points(x[idx, 1], x[idx, j + 1], pch = zeichen[j], col = farben[j])
+}
+legend(&quot;right&quot;, legend = c(&quot;Substrate [S]&quot;, &quot;Enzyme [E]&quot;, &quot;Complex [SE]&quot;, &quot;Product [P]&quot;), col = farben, pch = zeichen, lwd = 2)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>conservation [E] + [SE] = E0 up to rounding errors (&lt; 1e-12): yes
+t =  5 s: [S] = 0.3077, [E] = 0.0591, [SE] = 0.1409, [P] = 0.0514
+t = 20 s: [S] = 0.1205, [E] = 0.0780, [SE] = 0.1220, [P] = 0.2576
+t = 60 s: [S] = 0.0004, [E] = 0.1895, [SE] = 0.0105, [P] = 0.4891</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="mm-rate">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 4.14</p>
+    <h2>Michaelis–Menten rate</h2>
+    <p class="formel">K([S]) = k<sub>max</sub> [S]/(k<sub>50</sub> + [S])</p>
+    <p class="lead">For small substrate concentrations the rate rises linearly, for large ones it approaches k<sub>max</sub>. At [S] = k<sub>50</sub> half the maximum rate is reached.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/mm_rate.png" alt="Output of the program mm_rate.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="mm_rate.jl" data-m="mm_rate.m" data-py="mm_rate.py" data-r="mm_rate.R">mm_rate.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/mm_rate.py" data-jl="code/mm_rate.jl" data-m="code/mm_rate.m" data-py="code/mm_rate.py" data-r="code/mm_rate.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 4.14: Michaelis-Menten rate (book, Section 4.3, Eq. 4.14)</span>
+<span class="k"># K([S]) = kmax [S]/(k50 + [S]) with kmax = k3 [E]tot = 0.02 µM/s and k50 = (k2 + k3)/k1 ≈ 0.1 µM</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+
+k1 = 1.0; k2 = 1e-4; k3 = 0.1; Etot = 0.2
+kmax = k3 * Etot; k50 = (k2 + k3) / k1
+@printf(&quot;kmax = %g µM/s,  k50 = %.4f µM\n&quot;, kmax, k50)
+S = range(0, 1, length = 400)
+p = plot(S, kmax .* S ./ (k50 .+ S), color = BL, lw = 2.5, label = &quot;K([S]) = kmax [S]/(k50 + [S])&quot;, ylims = (0, 0.024),
+         legend = :bottomright, xlabel = &quot;Substrate [S] (µM)&quot;, ylabel = &quot;Rate (µM/s)&quot;)
+hline!(p, [kmax], color = :black, ls = :dash, label = &quot;&quot;)
+plot!(p, [k50, k50, 0], [0, kmax / 2, kmax / 2], color = :black, ls = :dot, label = &quot;&quot;)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 4.14: Michaelis-Menten rate (book, Section 4.3, Eq. 4.14)</span>
+<span class="k">% K([S]) = kmax [S]/(k50 + [S]) with kmax = k3 [E]tot = 0.02 µM/s and k50 = (k2 + k3)/k1 ≈ 0.1 µM</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+k1 = 1; k2 = 1e-4; k3 = 0.1; Etot = 0.2;
+kmax = k3 * Etot; k50 = (k2 + k3) / k1;
+fprintf(&#x27;kmax = %g µM/s,  k50 = %.4f µM\n&#x27;, kmax, k50);
+S = linspace(0, 1, 400);
+plot(S, kmax * S ./ (k50 + S), &#x27;Color&#x27;, [0 0.447 0.741], &#x27;LineWidth&#x27;, 2.5); hold on
+plot([0 1], [kmax kmax], &#x27;k--&#x27;); plot([k50 k50 0], [0 kmax / 2 kmax / 2], &#x27;k:&#x27;); hold off
+xlabel(&#x27;Substrate [S] (µM)&#x27;); ylabel(&#x27;Rate (µM/s)&#x27;); ylim([0 0.024]);
+legend(&#x27;K([S]) = k_{max} [S]/(k_{50} + [S])&#x27;, &#x27;Location&#x27;, &#x27;southeast&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 4.14: Michaelis-Menten rate (book, Section 4.3, Eq. 4.14)</span>
+<span class="k"># K([S]) = kmax [S]/(k50 + [S]) with kmax = k3 [E]tot = 0.02 µM/s and k50 = (k2 + k3)/k1 ≈ 0.1 µM</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+k1, k2, k3, Etot = 1.0, 1e-4, 0.1, 0.2
+kmax, k50 = k3 * Etot, (k2 + k3) / k1
+print(f&quot;kmax = {kmax:g} µM/s,  k50 = {k50:.4f} µM&quot;)
+S = np.linspace(0, 1, 400)
+plt.plot(S, kmax * S / (k50 + S), color=(0, 0.447, 0.741), lw=2.5, label=&quot;K([S]) = kmax [S]/(k50 + [S])&quot;)
+plt.axhline(kmax, color=&quot;k&quot;, ls=&quot;--&quot;, lw=1)
+plt.plot([k50, k50, 0], [0, kmax / 2, kmax / 2], &quot;k:&quot;)
+plt.xlabel(&quot;Substrate [S] (µM)&quot;); plt.ylabel(&quot;Rate (µM/s)&quot;); plt.ylim(0, 0.024); plt.legend(loc=&quot;lower right&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 4.14: Michaelis-Menten rate (book, Section 4.3, Eq. 4.14)</span>
+<span class="k"># K([S]) = kmax [S]/(k50 + [S]) with kmax = k3 [E]tot = 0.02 µM/s and k50 = (k2 + k3)/k1 ≈ 0.1 µM</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+k1 &lt;- 1; k2 &lt;- 1e-4; k3 &lt;- 0.1; Etot &lt;- 0.2
+kmax &lt;- k3 * Etot; k50 &lt;- (k2 + k3) / k1
+cat(sprintf(&quot;kmax = %g µM/s,  k50 = %.4f µM\n&quot;, kmax, k50))
+S &lt;- seq(0, 1, length.out = 400)
+plot(S, kmax * S / (k50 + S), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2.5, ylim = c(0, 0.024), xlab = &quot;Substrate [S] (µM)&quot;, ylab = &quot;Rate (µM/s)&quot;)
+abline(h = kmax, lty = 2); lines(c(k50, k50, 0), c(0, kmax / 2, kmax / 2), lty = 3)
+legend(&quot;bottomright&quot;, legend = &quot;K([S]) = kmax [S]/(k50 + [S])&quot;, col = rgb(0, 0.447, 0.741), lwd = 2.5)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>kmax = 0.02 µM/s,  k50 = 0.1001 µM</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="mm-phase">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 4.15</p>
+    <h2>The ([S], [SE]) plane</h2>
+    <p class="formel">d[SE]/dt = 0:&ensp; [SE] = [E]<sub>tot</sub> [S]/([S] + k<sub>50</sub>)</p>
+    <p class="lead">The solution quickly reaches the curve on which d[SE]/dt = 0 and then runs along it. With less enzyme (right) this happens even faster relative to the conversion time.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/mm_phase.png" alt="Output of the program mm_phase.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="mm_phase.jl" data-m="mm_phase.m" data-py="mm_phase.py" data-r="mm_phase.R">mm_phase.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/mm_phase.py" data-jl="code/mm_phase.jl" data-m="code/mm_phase.m" data-py="code/mm_phase.py" data-r="code/mm_phase.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 4.15: Michaelis-Menten system in the ([S], [SE]) plane (book, Section 4.3, Eq. 4.13)</span>
+<span class="k"># solution with time marks and the curve d[SE]/dt = 0, i.e. [SE] = [E]tot [S]/([S] + k50); left [E]tot = 0.2 µM, right 0.02 µM</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># package OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># solves dz/dt = f(t, z) and returns the solution at the times t (row i = component i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+idx(t, tt) = findfirst(t .&gt;= tt - 1e-9)    <span class="k"># first index with t &gt;= tt</span>
+k1 = 1.0; k2 = 1e-4; k3 = 0.1             <span class="k"># rates in 1/(µM s) and 1/s</span>
+S0 = 0.5                                 <span class="k"># µM</span>
+k50 = (k2 + k3) / k1
+function mm(t, z)
+    S, E, C, P = z                       <span class="k"># substrate, enzyme, complex SE, product</span>
+    r1 = k1 * S * E; r2 = k2 * C; r3 = k3 * C
+    return [-r1 + r2, -r1 + r2 + r3, r1 - r2 - r3, r3]
+end
+
+bilder = []
+for (E0, T, marken) in [(0.2, 60, [2, 10, 30]), (0.02, 600, [5, 100, 300])]
+    t = range(0, T, length = 4001)
+    z = loese(mm, [S0, E0, 0, 0], t, abstol = 1e-14); S = z[1, :]; C = z[3, :]
+    Sg = range(0, 0.52, length = 300)
+    p = plot(Sg, E0 .* Sg ./ (Sg .+ k50), color = BL, lw = 2, label = &quot;d[SE]/dt = 0&quot;, ylims = (0, E0), legend = :topleft,
+             title = @sprintf(&quot;[E]tot = %g µM&quot;, E0), xlabel = &quot;[S] (µM)&quot;, ylabel = &quot;[SE] (µM)&quot;)
+    plot!(p, S, C, color = R2, lw = 2, label = &quot;Solution&quot;)
+    for tm in marken
+        i = idx(t, tm)
+        scatter!(p, [S[i]], [C[i]], color = :black, label = &quot;&quot;); annotate!(p, S[i] + 0.01, C[i], text(&quot;$tm s&quot;, 9, :left))
+        @printf(&quot;[E]tot = %g: t = %3d s: [S] = %.4f, [SE] = %.5f\n&quot;, E0, tm, S[i], C[i])
+    end
+    push!(bilder, p)
+end
+display(plot(bilder..., layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 4.15: Michaelis-Menten system in the ([S], [SE]) plane (book, Section 4.3, Eq. 4.13)</span>
+<span class="k">% solution with time marks and the curve d[SE]/dt = 0, i.e. [SE] = [E]tot [S]/([S] + k50); left [E]tot = 0.2 µM, right 0.02 µM</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+k1 = 1; k2 = 1e-4; k3 = 0.1;               <span class="k">% rates in 1/(µM s) and 1/s</span>
+S0 = 0.5;                                   <span class="k">% µM</span>
+k50 = (k2 + k3) / k1;
+<span class="k">% z = ([S], [E], [SE], [P]): substrate, enzyme, complex, product</span>
+mm = @(t, z) [-k1 * z(1) * z(2) + k2 * z(3); -k1 * z(1) * z(2) + (k2 + k3) * z(3); k1 * z(1) * z(2) - (k2 + k3) * z(3); k3 * z(3)];
+opt = odeset(&#x27;RelTol&#x27;, 1e-10, &#x27;AbsTol&#x27;, 1e-13);
+opt = odeset(&#x27;RelTol&#x27;, 1e-10, &#x27;AbsTol&#x27;, 1e-14);
+E0s = [0.2 0.02]; Ts = [60 600]; marken = [2 10 30; 5 100 300];
+for j = 1:2
+    E0 = E0s(j);
+    [t, z] = ode45(mm, linspace(0, Ts(j), 4001), [S0; E0; 0; 0], opt);
+    S = z(:, 1); C = z(:, 3);
+    subplot(1, 2, j);
+    Sg = linspace(0, 0.52, 300);
+    plot(Sg, E0 * Sg ./ (Sg + k50), &#x27;Color&#x27;, [0 0.447 0.741], &#x27;LineWidth&#x27;, 2); hold on
+    plot(S, C, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2);
+    for tm = marken(j, :)
+        i = find(t &gt;= tm - 1e-9, 1);
+        plot(S(i), C(i), &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); text(S(i) + 0.01, C(i), sprintf(&#x27;%d s&#x27;, tm));
+        fprintf(&#x27;[E]tot = %g: t = %3d s: [S] = %.4f, [SE] = %.5f\n&#x27;, E0, tm, S(i), C(i));
+    end
+    hold off
+    xlabel(&#x27;[S] (µM)&#x27;); ylabel(&#x27;[SE] (µM)&#x27;); ylim([0 E0]); title(sprintf(&#x27;[E]tot = %g µM&#x27;, E0));
+    legend(&#x27;d[SE]/dt = 0&#x27;, &#x27;Solution&#x27;, &#x27;Location&#x27;, &#x27;northwest&#x27;);
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 4.15: Michaelis-Menten system in the ([S], [SE]) plane (book, Section 4.3, Eq. 4.13)</span>
+<span class="k"># solution with time marks and the curve d[SE]/dt = 0, i.e. [SE] = [E]tot [S]/([S] + k50); left [E]tot = 0.2 µM, right 0.02 µM</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+k1, k2, k3 = 1.0, 1e-4, 0.1                <span class="k"># rates in 1/(µM s) and 1/s</span>
+S0 = 0.5                                   <span class="k"># µM</span>
+k50 = (k2 + k3) / k1
+def mm(t, z):
+    S, E, C, P = z                         <span class="k"># substrate, enzyme, complex SE, product</span>
+    r1, r2, r3 = k1 * S * E, k2 * C, k3 * C
+    return [-r1 + r2, -r1 + r2 + r3, r1 - r2 - r3, r3]
+
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+for ax, E0, T, marken in [(axs[0], 0.2, 60, [2, 10, 30]), (axs[1], 0.02, 600, [5, 100, 300])]:
+    t = np.linspace(0, T, 4001)
+    s = solve_ivp(mm, [0, T], [S0, E0, 0, 0], t_eval=t, method=&quot;LSODA&quot;, rtol=1e-10, atol=1e-14)
+    S, C = s.y[0], s.y[2]
+    Sg = np.linspace(0, 0.52, 300)
+    ax.plot(Sg, E0 * Sg / (Sg + k50), color=(0, 0.447, 0.741), lw=2, label=&quot;d[SE]/dt = 0&quot;)
+    ax.plot(S, C, color=(0.64, 0.08, 0.18), lw=2, label=&quot;Solution&quot;)
+    for tm in marken:
+        i = np.searchsorted(t, tm)
+        ax.plot(S[i], C[i], &quot;ko&quot;); ax.text(S[i] + 0.01, C[i], f&quot;{tm} s&quot;)
+        print(f&quot;[E]tot = {E0:g}: t = {tm:3d} s: [S] = {S[i]:.4f}, [SE] = {C[i]:.5f}&quot;)
+    ax.set_xlabel(&quot;[S] (µM)&quot;); ax.set_ylabel(&quot;[SE] (µM)&quot;); ax.set_ylim(0, E0); ax.set_title(f&quot;[E]tot = {E0:g} µM&quot;); ax.legend(loc=&quot;upper left&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 4.15: Michaelis-Menten system in the ([S], [SE]) plane (book, Section 4.3, Eq. 4.13)</span>
+<span class="k"># solution with time marks and the curve d[SE]/dt = 0, i.e. [SE] = [E]tot [S]/([S] + k50); left [E]tot = 0.2 µM, right 0.02 µM</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+library(deSolve)                         <span class="k"># package deSolve: install.packages(&quot;deSolve&quot;)</span>
+k1 &lt;- 1; k2 &lt;- 1e-4; k3 &lt;- 0.1                 <span class="k"># rates in 1/(µM s) and 1/s</span>
+S0 &lt;- 0.5                                      <span class="k"># µM</span>
+k50 &lt;- (k2 + k3) / k1
+<span class="k"># z = ([S], [E], [SE], [P]): substrate, enzyme, complex, product</span>
+mm &lt;- function(t, z) c(-k1 * z[1] * z[2] + k2 * z[3], -k1 * z[1] * z[2] + (k2 + k3) * z[3],
+                       k1 * z[1] * z[2] - (k2 + k3) * z[3], k3 * z[3])
+loese &lt;- function(f, z0, t) ode(z0, t, function(t, z, p) list(f(t, z)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-14)
+
+par(mfrow = c(1, 2))
+for (fall in list(list(0.2, 60, c(2, 10, 30)), list(0.02, 600, c(5, 100, 300)))) {
+  E0 &lt;- fall[[1]]; T &lt;- fall[[2]]
+  x &lt;- loese(mm, c(S0, E0, 0, 0), seq(0, T, length.out = 4001))
+  Sg &lt;- seq(0, 0.52, length.out = 300)
+  plot(Sg, E0 * Sg / (Sg + k50), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2, ylim = c(0, E0),
+       xlab = &quot;[S] (µM)&quot;, ylab = &quot;[SE] (µM)&quot;, main = sprintf(&quot;[E]tot = %g µM&quot;, E0))
+  lines(x[, 2], x[, 4], col = rgb(0.64, 0.08, 0.18), lwd = 2)
+  for (tm in fall[[3]]) {
+    i &lt;- which(x[, 1] &gt;= tm - 1e-9)[1]
+    points(x[i, 2], x[i, 4], pch = 16); text(x[i, 2] + 0.01, x[i, 4], sprintf(&quot;%d s&quot;, tm), adj = 0)
+    cat(sprintf(&quot;[E]tot = %g: t = %3d s: [S] = %.4f, [SE] = %.5f\n&quot;, E0, tm, x[i, 2], x[i, 4]))
+  }
+  legend(&quot;topleft&quot;, legend = c(&quot;d[SE]/dt = 0&quot;, &quot;Solution&quot;), col = c(rgb(0, 0.447, 0.741), rgb(0.64, 0.08, 0.18)), lwd = 2)
+}</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>[E]tot = 0.2: t =   2 s: [S] = 0.3810, [SE] = 0.10593
+[E]tot = 0.2: t =  10 s: [S] = 0.2328, [SE] = 0.14355
+[E]tot = 0.2: t =  30 s: [S] = 0.0472, [SE] = 0.08900
+[E]tot = 0.02: t =   5 s: [S] = 0.4785, [SE] = 0.01573
+[E]tot = 0.02: t = 100 s: [S] = 0.3270, [SE] = 0.01535
+[E]tot = 0.02: t = 300 s: [S] = 0.0775, [SE] = 0.00902</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="mm-vergleich">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 4.16</p>
+    <h2>Full system and quasi-steady-state approximation</h2>
+    <p class="formel">d[S]/dt = −k<sub>max</sub> [S]/(k<sub>50</sub> + [S])</p>
+    <p class="lead">With [E]<sub>tot</sub> = 0.02 µM the approximation agrees much better than with 0.2 µM; the output gives the largest deviation.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/mm_vergleich.png" alt="Output of the program mm_vergleich.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="mm_vergleich.jl" data-m="mm_vergleich.m" data-py="mm_vergleich.py" data-r="mm_vergleich.R">mm_vergleich.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/mm_vergleich.py" data-jl="code/mm_vergleich.jl" data-m="code/mm_vergleich.m" data-py="code/mm_vergleich.py" data-r="code/mm_vergleich.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 4.16: Full system and quasi-steady-state approximation (book, Section 4.3, Eq. 4.12 and 4.14)</span>
+<span class="k"># d[S]/dt = -kmax [S]/(k50 + [S]) with kmax = k3 [E]tot; left [E]tot = 0.2 µM, right 0.02 µM</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+using OrdinaryDiffEq                     <span class="k"># package OrdinaryDiffEq: using Pkg; Pkg.add(&quot;OrdinaryDiffEq&quot;)</span>
+<span class="k"># solves dz/dt = f(t, z) and returns the solution at the times t (row i = component i)</span>
+loese(f, z0, t; alg = Tsit5(), kw...) = Array(solve(ODEProblem((z, p, s) -&gt; f(s, z), float.(z0), (t[1], t[end])), alg;
+                                                    reltol = 1e-10, abstol = 1e-12, saveat = t, kw...))
+R1 = RGB(0.43, 0.04, 0.12); R2 = RGB(0.64, 0.08, 0.18); R3 = RGB(0.89, 0.44, 0.49)
+BL = RGB(0, 0.447, 0.741); HB = RGB(0.45, 0.70, 0.90); GR = RGB(0.2, 0.6, 0.25)
+k1 = 1.0; k2 = 1e-4; k3 = 0.1             <span class="k"># rates in 1/(µM s) and 1/s</span>
+S0 = 0.5                                 <span class="k"># µM</span>
+k50 = (k2 + k3) / k1
+function mm(t, z)
+    S, E, C, P = z                       <span class="k"># substrate, enzyme, complex SE, product</span>
+    r1 = k1 * S * E; r2 = k2 * C; r3 = k3 * C
+    return [-r1 + r2, -r1 + r2 + r3, r1 - r2 - r3, r3]
+end
+
+bilder = []
+for (E0, T) in [(0.2, 60), (0.02, 600)]
+    t = range(0, T, length = 4001)
+    voll = loese(mm, [S0, E0, 0, 0], t, abstol = 1e-14)[1, :]
+    kmax = k3 * E0
+    qss = loese((t, S) -&gt; [-kmax * S[1] / (k50 + S[1])], [S0], t, abstol = 1e-13)[1, :]
+    @printf(&quot;[E]tot = %g: largest deviation %.4f µM\n&quot;, E0, maximum(abs.(voll .- qss)))
+    p = plot(t, voll, color = R1, lw = 2, label = &quot;full system&quot;, title = @sprintf(&quot;[E]tot = %g µM&quot;, E0),
+             xlabel = &quot;t (s)&quot;, ylabel = &quot;Substrate [S] (µM)&quot;)
+    plot!(p, t, qss, color = R3, lw = 2, label = &quot;quasi-steady state&quot;)
+    push!(bilder, p)
+end
+display(plot(bilder..., layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 4.16: Full system and quasi-steady-state approximation (book, Section 4.3, Eq. 4.12 and 4.14)</span>
+<span class="k">% d[S]/dt = -kmax [S]/(k50 + [S]) with kmax = k3 [E]tot; left [E]tot = 0.2 µM, right 0.02 µM</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+k1 = 1; k2 = 1e-4; k3 = 0.1;               <span class="k">% rates in 1/(µM s) and 1/s</span>
+S0 = 0.5;                                   <span class="k">% µM</span>
+k50 = (k2 + k3) / k1;
+<span class="k">% z = ([S], [E], [SE], [P]): substrate, enzyme, complex, product</span>
+mm = @(t, z) [-k1 * z(1) * z(2) + k2 * z(3); -k1 * z(1) * z(2) + (k2 + k3) * z(3); k1 * z(1) * z(2) - (k2 + k3) * z(3); k3 * z(3)];
+opt = odeset(&#x27;RelTol&#x27;, 1e-10, &#x27;AbsTol&#x27;, 1e-13);
+opt = odeset(&#x27;RelTol&#x27;, 1e-10, &#x27;AbsTol&#x27;, 1e-14);
+E0s = [0.2 0.02]; Ts = [60 600];
+for j = 1:2
+    E0 = E0s(j); T = Ts(j);
+    [t, z] = ode45(mm, linspace(0, T, 4001), [S0; E0; 0; 0], opt);
+    kmax = k3 * E0;
+    [t, q] = ode45(@(t, S) -kmax * S / (k50 + S), t, S0, odeset(&#x27;RelTol&#x27;, 1e-10, &#x27;AbsTol&#x27;, 1e-13));
+    fprintf(&#x27;[E]tot = %g: largest deviation %.4f µM\n&#x27;, E0, max(abs(z(:, 1) - q)));
+    subplot(1, 2, j);
+    plot(t, z(:, 1), &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2); hold on
+    plot(t, q, &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;LineWidth&#x27;, 2); hold off
+    xlabel(&#x27;t (s)&#x27;); ylabel(&#x27;Substrate [S] (µM)&#x27;); title(sprintf(&#x27;[E]tot = %g µM&#x27;, E0)); legend(&#x27;full system&#x27;, &#x27;quasi-steady state&#x27;);
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 4.16: Full system and quasi-steady-state approximation (book, Section 4.3, Eq. 4.12 and 4.14)</span>
+<span class="k"># d[S]/dt = -kmax [S]/(k50 + [S]) with kmax = k3 [E]tot; left [E]tot = 0.2 µM, right 0.02 µM</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+k1, k2, k3 = 1.0, 1e-4, 0.1                <span class="k"># rates in 1/(µM s) and 1/s</span>
+S0 = 0.5                                   <span class="k"># µM</span>
+k50 = (k2 + k3) / k1
+def mm(t, z):
+    S, E, C, P = z                         <span class="k"># substrate, enzyme, complex SE, product</span>
+    r1, r2, r3 = k1 * S * E, k2 * C, k3 * C
+    return [-r1 + r2, -r1 + r2 + r3, r1 - r2 - r3, r3]
+
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+for ax, E0, T in [(axs[0], 0.2, 60), (axs[1], 0.02, 600)]:
+    t = np.linspace(0, T, 4001)
+    voll = solve_ivp(mm, [0, T], [S0, E0, 0, 0], t_eval=t, method=&quot;LSODA&quot;, rtol=1e-10, atol=1e-14).y[0]
+    kmax = k3 * E0
+    qss = solve_ivp(lambda t, S: -kmax * S / (k50 + S), [0, T], [S0], t_eval=t, rtol=1e-10, atol=1e-13).y[0]
+    print(f&quot;[E]tot = {E0:g}: largest deviation {np.max(abs(voll - qss)):.4f} µM&quot;)
+    ax.plot(t, voll, color=(0.43, 0.04, 0.12), lw=2, label=&quot;full system&quot;)
+    ax.plot(t, qss, color=(0.89, 0.44, 0.49), lw=2, label=&quot;quasi-steady state&quot;)
+    ax.set_xlabel(&quot;t (s)&quot;); ax.set_ylabel(&quot;Substrate [S] (µM)&quot;); ax.set_title(f&quot;[E]tot = {E0:g} µM&quot;); ax.legend()
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 4.16: Full system and quasi-steady-state approximation (book, Section 4.3, Eq. 4.12 and 4.14)</span>
+<span class="k"># d[S]/dt = -kmax [S]/(k50 + [S]) with kmax = k3 [E]tot; left [E]tot = 0.2 µM, right 0.02 µM</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+library(deSolve)                         <span class="k"># package deSolve: install.packages(&quot;deSolve&quot;)</span>
+k1 &lt;- 1; k2 &lt;- 1e-4; k3 &lt;- 0.1                 <span class="k"># rates in 1/(µM s) and 1/s</span>
+S0 &lt;- 0.5                                      <span class="k"># µM</span>
+k50 &lt;- (k2 + k3) / k1
+<span class="k"># z = ([S], [E], [SE], [P]): substrate, enzyme, complex, product</span>
+mm &lt;- function(t, z) c(-k1 * z[1] * z[2] + k2 * z[3], -k1 * z[1] * z[2] + (k2 + k3) * z[3],
+                       k1 * z[1] * z[2] - (k2 + k3) * z[3], k3 * z[3])
+loese &lt;- function(f, z0, t) ode(z0, t, function(t, z, p) list(f(t, z)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-14)
+
+par(mfrow = c(1, 2))
+for (fall in list(c(0.2, 60), c(0.02, 600))) {
+  E0 &lt;- fall[1]; T &lt;- fall[2]
+  t &lt;- seq(0, T, length.out = 4001)
+  voll &lt;- loese(mm, c(S0, E0, 0, 0), t)[, 2]
+  kmax &lt;- k3 * E0
+  qss &lt;- ode(S0, t, function(t, S, p) list(-kmax * S / (k50 + S)), NULL, method = &quot;lsoda&quot;, rtol = 1e-10, atol = 1e-13)[, 2]
+  cat(sprintf(&quot;[E]tot = %g: largest deviation %.4f µM\n&quot;, E0, max(abs(voll - qss))))
+  plot(t, voll, type = &quot;l&quot;, col = rgb(0.43, 0.04, 0.12), lwd = 2, ylim = c(0, 0.5), xlab = &quot;t (s)&quot;, ylab = &quot;Substrate [S] (µM)&quot;,
+       main = sprintf(&quot;[E]tot = %g µM&quot;, E0))
+  lines(t, qss, col = rgb(0.89, 0.44, 0.49), lwd = 2)
+  legend(&quot;topright&quot;, legend = c(&quot;full system&quot;, &quot;quasi-steady state&quot;), col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)), lwd = 2)
+}</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>[E]tot = 0.2: largest deviation 0.1114 µM
+[E]tot = 0.02: largest deviation 0.0136 µM</code></pre></details>
+    </div>
+  </div>
+</section>
+  
+  <section class="matlab-apps"><h3>MATLAB apps from the course</h3><p>Download, put into a folder, and type the name without extension in MATLAB, e.g. <code>michaelis_menten_app</code>. The apps use the graphical user interface of MATLAB and do not run in GNU Octave. Their user interface is in German.</p><ul><li><a href="apps/michaelis_menten_app.m" download>michaelis_menten_app.m</a><span>Enzyme kinetics: full system and quasi-steady-state approximation</span></li></ul></section>
+  <nav class="weiter" aria-label="Page navigation"><a href="abschnitt-4-2.html"><small>Previous</small>4.2 Linear Systems</a><a href="abschnitt-4-4.html"><small>Next</small>4.4 Steady States and Stability</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Companion website to the book “Dynamical Systems in the Life Sciences” by Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programs under the <a href="../LICENSE.txt">MIT License</a> · <a href="../../impressum.html" hreflang="de">Legal notice (German)</a> · <a href="../../datenschutz.html" hreflang="de">Privacy policy (German)</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

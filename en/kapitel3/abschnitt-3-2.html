@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>3.2 Exponential and Logistic Growth – Dynamical Systems in the Life Sciences</title>
+<meta name="description" content="Programs in Julia, MATLAB, Python, and R for Section 3.2 of the book Dynamical Systems in the Life Sciences">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamical Systems in the Life Sciences</a>
+  <nav aria-label="Chapters"><a href="../index.html">Home</a> <a href="../kapitel1/index.html">Chapter 1</a> <a href="../kapitel2/index.html">Chapter 2</a> <a href="../kapitel3/index.html" aria-current="page">Chapter 3</a> <a href="../kapitel4/index.html">Chapter 4</a> <a href="../../kapitel3/abschnitt-3-2.html" lang="de" hreflang="de">Deutsch</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Sections"><h2><a href="index.html">Chapter 3</a></h2><ol><li><a href="abschnitt-3-1.html"><span class="nr">3.1</span><span>Differential Equations and Initial Value Problems</span></a></li><li><a href="abschnitt-3-2.html" aria-current="page"><span class="nr">3.2</span><span>Exponential and Logistic Growth</span></a></li><li><a href="abschnitt-3-3.html"><span class="nr">3.3</span><span>Steady States and Stability</span></a></li><li><a href="abschnitt-3-4.html"><span class="nr">3.4</span><span>Euler's Method</span></a></li><li><a href="abschnitt-3-5.html"><span class="nr">3.5</span><span>In Depth: Excitability of Heart Cells</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Chapter 3 · Continuous Dynamical Systems with One Variable</p>
+      <h1><span class="num">3.2</span>Exponential and Logistic Growth</h1>
+      <p>dx/dt = r x is the simplest growth model: the rate of change is proportional to the quantity itself, and the solution x(t) = x<sub>0</sub> e<sup>rt</sup> grows or decays exponentially. Limited resources lead to the logistic model dx/dt = r (1 − x/K) x, whose solutions approach the carrying capacity K.</p>
+      <p>For each figure of the section you will find the program that produces it. Change parameters and initial values and observe what happens. Figure and equation numbers refer to the book.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programming language</legend>
+  <div class="seg" role="radiogroup" aria-label="Programming language">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Applies to all pages. MATLAB programs also run in the free GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>On this page</b><ul><li><a href="#exp-wachstum"><span class="abb">Fig. 3.8</span>Exponential growth and decay</a></li><li><a href="#exp-diskret"><span class="abb">Fig. 3.9</span>Continuous and discrete</a></li><li><a href="#verdopplung"><span class="abb">Fig. 3.10</span>Growth of E. coli</a></li><li><a href="#hefe-logistisch"><span class="abb">Fig. 3.12</span>Logistic growth of yeast</a></li><li><a href="#logistik-vergleich"><span class="abb">Fig. 3.13</span>Continuous and discrete-time logistic model</a></li></ul></div>
+  
+<section class="fig" id="exp-wachstum">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 3.8</p>
+    <h2>Exponential growth and decay</h2>
+    <p class="formel">x(t) = e<sup>0.5t</sup> &emsp;or&emsp; x(t) = e<sup>−0.5t</sup></p>
+    <p class="lead">On a logarithmic scale both curves become straight lines. Doubling time and half-life are both ln(2)/0.5 ≈ 1.39.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/exp_wachstum.png" alt="Output of the program exp_wachstum.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="exp_wachstum.jl" data-m="exp_wachstum.m" data-py="exp_wachstum.py" data-r="exp_wachstum.R">exp_wachstum.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/exp_wachstum.py" data-jl="code/exp_wachstum.jl" data-m="code/exp_wachstum.m" data-py="code/exp_wachstum.py" data-r="code/exp_wachstum.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 3.8: Exponential growth and decay (book, Section 3.2, Eq. 3.15 and 3.16)</span>
+<span class="k"># x(t) = e^(0.5 t) and x(t) = e^(-0.5 t); left linear, right logarithmic axis (where both become straight lines)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+t = range(0, 6, length = 300)
+bilder = []
+for (achse, titel) in [(:identity, &quot;linear axis&quot;), (:log10, &quot;logarithmic axis: straight lines&quot;)]
+    p = plot(t, exp.(0.5 .* t), yscale = achse, color = RGB(0.43, 0.04, 0.12), lw = 2, label = &quot;e^(0.5t) (growth)&quot;, title = titel, xlabel = &quot;t&quot;)
+    plot!(p, t, exp.(-0.5 .* t), ls = :dash, color = RGB(0.89, 0.44, 0.49), lw = 2, label = &quot;e^(-0.5t) (decay)&quot;)
+    push!(bilder, p)
+end
+@printf(&quot;doubling time ln(2)/0.5 = %.4f,  half-life = %.4f\n&quot;, log(2) / 0.5, log(2) / 0.5)
+display(plot(bilder..., layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 3.8: Exponential growth and decay (book, Section 3.2, Eq. 3.15 and 3.16)</span>
+<span class="k">% x(t) = e^(0.5 t) and x(t) = e^(-0.5 t); left linear, right logarithmic axis (where both become straight lines)</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+t = linspace(0, 6, 300);
+for i = 1:2
+    subplot(1, 2, i);
+    if i == 1
+        plot(t, exp(0.5 * t), &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2); hold on
+        plot(t, exp(-0.5 * t), &#x27;--&#x27;, &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;LineWidth&#x27;, 2); hold off
+        title(&#x27;linear axis&#x27;); legend(&#x27;e^{0.5t} (growth)&#x27;, &#x27;e^{-0.5t} (decay)&#x27;, &#x27;Location&#x27;, &#x27;northwest&#x27;);
+    else
+        semilogy(t, exp(0.5 * t), &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2); hold on
+        semilogy(t, exp(-0.5 * t), &#x27;--&#x27;, &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;LineWidth&#x27;, 2); hold off
+        title(&#x27;logarithmic axis: straight lines&#x27;);
+    end
+    xlabel(&#x27;t&#x27;);
+end
+fprintf(&#x27;doubling time ln(2)/0.5 = %.4f,  half-life = %.4f\n&#x27;, log(2) / 0.5, log(2) / 0.5);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 3.8: Exponential growth and decay (book, Section 3.2, Eq. 3.15 and 3.16)</span>
+<span class="k"># x(t) = e^(0.5 t) and x(t) = e^(-0.5 t); left linear, right logarithmic axis (where both become straight lines)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+t = np.linspace(0, 6, 300)
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+for ax in axs:
+    ax.plot(t, np.exp(0.5 * t), color=(0.43, 0.04, 0.12), lw=2, label=&quot;e^(0.5t) (growth)&quot;)
+    ax.plot(t, np.exp(-0.5 * t), &quot;--&quot;, color=(0.89, 0.44, 0.49), lw=2, label=&quot;e^(-0.5t) (decay)&quot;)
+    ax.set_xlabel(&quot;t&quot;)
+axs[0].set_title(&quot;linear axis&quot;); axs[0].legend()
+axs[1].set_yscale(&quot;log&quot;); axs[1].set_title(&quot;logarithmic axis: straight lines&quot;)
+print(f&quot;doubling time ln(2)/0.5 = {np.log(2) / 0.5:.4f},  half-life = {np.log(2) / 0.5:.4f}&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 3.8: Exponential growth and decay (book, Section 3.2, Eq. 3.15 and 3.16)</span>
+<span class="k"># x(t) = e^(0.5 t) and x(t) = e^(-0.5 t); left linear, right logarithmic axis (where both become straight lines)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+t &lt;- seq(0, 6, length.out = 300)
+par(mfrow = c(1, 2))
+for (achse in c(&quot;&quot;, &quot;y&quot;)) {
+  plot(t, exp(0.5 * t), type = &quot;l&quot;, log = achse, col = rgb(0.43, 0.04, 0.12), lwd = 2, ylim = c(0.04, 21), xlab = &quot;t&quot;, ylab = &quot;&quot;,
+       main = if (achse == &quot;&quot;) &quot;linear axis&quot; else &quot;logarithmic axis: straight lines&quot;)
+  lines(t, exp(-0.5 * t), lty = 2, col = rgb(0.89, 0.44, 0.49), lwd = 2)
+  if (achse == &quot;&quot;) legend(&quot;topleft&quot;, legend = c(&quot;e^(0.5t) (growth)&quot;, &quot;e^(-0.5t) (decay)&quot;),
+                          col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)), lty = c(1, 2), lwd = 2)
+}
+cat(sprintf(&quot;doubling time ln(2)/0.5 = %.4f,  half-life = %.4f\n&quot;, log(2) / 0.5, log(2) / 0.5))</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>doubling time ln(2)/0.5 = 1.3863,  half-life = 1.3863</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="exp-diskret">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 3.9</p>
+    <h2>Continuous and discrete</h2>
+    <p class="formel">x(t) = e<sup>0.5t</sup>,&ensp; x<sub>n</sub> = a<sup>n</sup>,&ensp; a = e<sup>0.5</sup></p>
+    <p class="lead">Looking at the solution only at integer times gives a geometric sequence with the factor a = e<sup>r</sup>.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/exp_diskret.png" alt="Output of the program exp_diskret.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="exp_diskret.jl" data-m="exp_diskret.m" data-py="exp_diskret.py" data-r="exp_diskret.R">exp_diskret.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/exp_diskret.py" data-jl="code/exp_diskret.jl" data-m="code/exp_diskret.m" data-py="code/exp_diskret.py" data-r="code/exp_diskret.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 3.9: Continuous and discrete exponential growth (book, Section 3.2, Eq. 3.17)</span>
+<span class="k"># x(t) = e^(0.5 t) and x_n = a^n with a = e^0.5: at the times t = n both agree</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+t = range(0, 6, length = 300); n = 0:6
+a = exp(0.5)
+p = plot(t, exp.(0.5 .* t), color = RGB(0.43, 0.04, 0.12), lw = 2, label = &quot;x(t) = e^(0.5t)&quot;, xlabel = &quot;t or n&quot;, ylabel = &quot;x&quot;)
+scatter!(p, n, a .^ n, color = RGB(0.89, 0.44, 0.49), ms = 6, label = @sprintf(&quot;x_n = a^n, a = %.4f&quot;, a))
+@printf(&quot;a = e^0.5 = %.4f;  a^6 = %.4f,  e^3 = %.4f\n&quot;, a, a^6, exp(3))
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 3.9: Continuous and discrete exponential growth (book, Section 3.2, Eq. 3.17)</span>
+<span class="k">% x(t) = e^(0.5 t) and x_n = a^n with a = e^0.5: at the times t = n both agree</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+t = linspace(0, 6, 300); n = 0:6;
+a = exp(0.5);
+plot(t, exp(0.5 * t), &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2); hold on
+plot(n, a.^n, &#x27;o&#x27;, &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;MarkerFaceColor&#x27;, [0.89 0.44 0.49], &#x27;MarkerSize&#x27;, 9); hold off
+fprintf(&#x27;a = e^0.5 = %.4f;  a^6 = %.4f,  e^3 = %.4f\n&#x27;, a, a^6, exp(3));
+xlabel(&#x27;t or n&#x27;); ylabel(&#x27;x&#x27;); legend(&#x27;x(t) = e^{0.5t}&#x27;, sprintf(&#x27;x_n = a^n, a = %.4f&#x27;, a), &#x27;Location&#x27;, &#x27;northwest&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 3.9: Continuous and discrete exponential growth (book, Section 3.2, Eq. 3.17)</span>
+<span class="k"># x(t) = e^(0.5 t) and x_n = a^n with a = e^0.5: at the times t = n both agree</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+t = np.linspace(0, 6, 300); n = np.arange(7)
+a = np.exp(0.5)
+plt.plot(t, np.exp(0.5 * t), color=(0.43, 0.04, 0.12), lw=2, label=&quot;x(t) = e^(0.5t)&quot;)
+plt.plot(n, a**n, &quot;o&quot;, color=(0.89, 0.44, 0.49), ms=9, label=f&quot;x_n = a^n, a = {a:.4f}&quot;)
+print(f&quot;a = e^0.5 = {a:.4f};  a^6 = {a**6:.4f},  e^3 = {np.exp(3):.4f}&quot;)
+plt.xlabel(&quot;t or n&quot;); plt.ylabel(&quot;x&quot;); plt.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 3.9: Continuous and discrete exponential growth (book, Section 3.2, Eq. 3.17)</span>
+<span class="k"># x(t) = e^(0.5 t) and x_n = a^n with a = e^0.5: at the times t = n both agree</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+t &lt;- seq(0, 6, length.out = 300); n &lt;- 0:6
+a &lt;- exp(0.5)
+plot(t, exp(0.5 * t), type = &quot;l&quot;, col = rgb(0.43, 0.04, 0.12), lwd = 2, xlab = &quot;t or n&quot;, ylab = &quot;x&quot;)
+points(n, a^n, pch = 16, cex = 1.5, col = rgb(0.89, 0.44, 0.49))
+cat(sprintf(&quot;a = e^0.5 = %.4f;  a^6 = %.4f,  e^3 = %.4f\n&quot;, a, a^6, exp(3)))
+legend(&quot;topleft&quot;, legend = c(&quot;x(t) = e^(0.5t)&quot;, sprintf(&quot;x_n = a^n, a = %.4f&quot;, a)), col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)),
+       lwd = c(2, NA), pch = c(NA, 16))</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>a = e^0.5 = 1.6487;  a^6 = 20.0855,  e^3 = 20.0855</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="verdopplung">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 3.10</p>
+    <h2>Growth of E. coli</h2>
+    <p class="formel">x(t) = 1000 · 2<sup>t/20</sup> = 1000 e<sup>rt</sup>,&ensp; r = ln(2)/20</p>
+    <p class="lead">The doubling time t<sub>V</sub> = 20 minutes gives the growth rate r = ln(2)/t<sub>V</sub>. After two hours, 1000 cells have become 64,000.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/verdopplung.png" alt="Output of the program verdopplung.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="verdopplung.jl" data-m="verdopplung.m" data-py="verdopplung.py" data-r="verdopplung.R">verdopplung.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/verdopplung.py" data-jl="code/verdopplung.jl" data-m="code/verdopplung.m" data-py="code/verdopplung.py" data-r="code/verdopplung.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 3.10: Growth of E. coli with a doubling time of 20 minutes (book, Section 3.2, Eq. 3.18)</span>
+<span class="k"># x(t) = 1000 · 2^(t/20) = 1000 e^(r t) with r = ln(2)/20 per minute</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+tV = 20; x0 = 1000
+r = log(2) / tV
+t = range(0, 120, length = 300)
+p = plot(t, x0 .* exp.(r .* t), color = RGB(0.64, 0.08, 0.18), lw = 2.5, legend = false, xticks = 0:20:120, xlabel = &quot;t (min)&quot;, ylabel = &quot;cells&quot;)
+for k in 1:6
+    plot!(p, [tV * k, tV * k], [0, x0 * 2^k], ls = :dot, color = :gray); scatter!(p, [tV * k], [x0 * 2^k], color = :black)
+end
+@printf(&quot;r = ln(2)/20 = %.5f per minute;  x(120) = %.0f cells\n&quot;, r, x0 * exp(r * 120))
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 3.10: Growth of E. coli with a doubling time of 20 minutes (book, Section 3.2, Eq. 3.18)</span>
+<span class="k">% x(t) = 1000 · 2^(t/20) = 1000 e^(r t) with r = ln(2)/20 per minute</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+tV = 20; x0 = 1000;
+r = log(2) / tV;
+t = linspace(0, 120, 300);
+plot(t, x0 * exp(r * t), &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2.5); hold on
+for k = 1:6
+    plot([tV * k tV * k], [0 x0 * 2^k], &#x27;:&#x27;, &#x27;Color&#x27;, [0.5 0.5 0.5]); plot(tV * k, x0 * 2^k, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;);
+end
+hold off
+fprintf(&#x27;r = ln(2)/20 = %.5f per minute;  x(120) = %.0f cells\n&#x27;, r, x0 * exp(r * 120));
+xlabel(&#x27;t (min)&#x27;); ylabel(&#x27;cells&#x27;); set(gca, &#x27;XTick&#x27;, 0:20:120);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 3.10: Growth of E. coli with a doubling time of 20 minutes (book, Section 3.2, Eq. 3.18)</span>
+<span class="k"># x(t) = 1000 · 2^(t/20) = 1000 e^(r t) with r = ln(2)/20 per minute</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+tV, x0 = 20, 1000
+r = np.log(2) / tV
+t = np.linspace(0, 120, 300)
+plt.plot(t, x0 * np.exp(r * t), color=(0.64, 0.08, 0.18), lw=2.5)
+for k in range(1, 7):
+    plt.plot([tV * k, tV * k], [0, x0 * 2**k], &quot;:&quot;, color=&quot;0.5&quot;); plt.plot(tV * k, x0 * 2**k, &quot;ko&quot;)
+print(f&quot;r = ln(2)/20 = {r:.5f} per minute;  x(120) = {x0 * np.exp(r * 120):.0f} cells&quot;)
+plt.xlabel(&quot;t (min)&quot;); plt.ylabel(&quot;cells&quot;); plt.xticks(range(0, 121, 20))
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 3.10: Growth of E. coli with a doubling time of 20 minutes (book, Section 3.2, Eq. 3.18)</span>
+<span class="k"># x(t) = 1000 · 2^(t/20) = 1000 e^(r t) with r = ln(2)/20 per minute</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+tV &lt;- 20; x0 &lt;- 1000
+r &lt;- log(2) / tV
+t &lt;- seq(0, 120, length.out = 300)
+plot(t, x0 * exp(r * t), type = &quot;l&quot;, col = rgb(0.64, 0.08, 0.18), lwd = 2.5, xaxt = &quot;n&quot;, xlab = &quot;t (min)&quot;, ylab = &quot;cells&quot;)
+axis(1, at = seq(0, 120, 20))
+for (k in 1:6) { lines(c(tV * k, tV * k), c(0, x0 * 2^k), lty = 3, col = &quot;grey50&quot;); points(tV * k, x0 * 2^k, pch = 16) }
+cat(sprintf(&quot;r = ln(2)/20 = %.5f per minute;  x(120) = %.0f cells\n&quot;, r, x0 * exp(r * 120)))</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>r = ln(2)/20 = 0.03466 per minute;  x(120) = 64000 cells</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="hefe-logistisch">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 3.12</p>
+    <h2>Logistic growth of yeast</h2>
+    <p class="formel">dx/dt = r (1 − x/K) x,&ensp; r = 0.55,&ensp; K = 210</p>
+    <p class="lead">Small initial values grow in an S shape, initial values above K decrease. All solutions approach the carrying capacity K.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/hefe_logistisch.png" alt="Output of the program hefe_logistisch.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="hefe_logistisch.jl" data-m="hefe_logistisch.m" data-py="hefe_logistisch.py" data-r="hefe_logistisch.R">hefe_logistisch.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/hefe_logistisch.py" data-jl="code/hefe_logistisch.jl" data-m="code/hefe_logistisch.m" data-py="code/hefe_logistisch.py" data-r="code/hefe_logistisch.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 3.12: Logistic growth of yeast (book, Section 3.2, Eq. 3.19 and 3.20)</span>
+<span class="k"># dx/dt = r (1 - x/K) x with r = 0.55 per hour, K = 210 (million cells per ml); solution x(t) = x0 K / (x0 + (K - x0) e^(-rt))</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+r = 0.55; K = 210
+x(t, x0) = x0 * K / (x0 + (K - x0) * exp(-r * t))
+t = range(0, 20, length = 300)
+rot = [RGB(0.43, 0.04, 0.12), RGB(0.64, 0.08, 0.18), RGB(0.89, 0.44, 0.49)]
+p = plot(xlabel = &quot;t (h)&quot;, ylabel = &quot;x(t)&quot;, legend = :bottomright)
+for (i, x0) in enumerate([5, 50, 300])
+    plot!(p, t, x.(t, x0), ls = [:solid, :dash, :dashdot][i], color = rot[i], lw = 2, label = &quot;x0 = $x0&quot;)
+    @printf(&quot;x0 = %3d: x(5) = %6.2f,  x(20) = %6.2f\n&quot;, x0, x(5, x0), x(20, x0))
+end
+hline!(p, [K], ls = :dash, color = :black, label = &quot;&quot;)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 3.12: Logistic growth of yeast (book, Section 3.2, Eq. 3.19 and 3.20)</span>
+<span class="k">% dx/dt = r (1 - x/K) x with r = 0.55 per hour, K = 210 (million cells per ml); solution x(t) = x0 K / (x0 + (K - x0) e^(-rt))</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+r = 0.55; K = 210;
+x = @(t, x0) x0 * K ./ (x0 + (K - x0) * exp(-r * t));
+t = linspace(0, 20, 300);
+rot = [0.43 0.04 0.12; 0.64 0.08 0.18; 0.89 0.44 0.49]; stil = {&#x27;-&#x27;, &#x27;--&#x27;, &#x27;-.&#x27;}; x0s = [5 50 300];
+hold on
+for i = 1:3
+    plot(t, x(t, x0s(i)), stil{i}, &#x27;Color&#x27;, rot(i, :), &#x27;LineWidth&#x27;, 2, &#x27;DisplayName&#x27;, sprintf(&#x27;x0 = %d&#x27;, x0s(i)));
+    fprintf(&#x27;x0 = %3d: x(5) = %6.2f,  x(20) = %6.2f\n&#x27;, x0s(i), x(5, x0s(i)), x(20, x0s(i)));
+end
+plot([0 20], [K K], &#x27;k--&#x27;, &#x27;HandleVisibility&#x27;, &#x27;off&#x27;); hold off
+xlabel(&#x27;t (h)&#x27;); ylabel(&#x27;x(t)&#x27;); legend(&#x27;show&#x27;, &#x27;Location&#x27;, &#x27;southeast&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 3.12: Logistic growth of yeast (book, Section 3.2, Eq. 3.19 and 3.20)</span>
+<span class="k"># dx/dt = r (1 - x/K) x with r = 0.55 per hour, K = 210 (million cells per ml); solution x(t) = x0 K / (x0 + (K - x0) e^(-rt))</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+r, K = 0.55, 210
+x = lambda t, x0: x0 * K / (x0 + (K - x0) * np.exp(-r * t))
+t = np.linspace(0, 20, 300)
+rot = [(0.43, 0.04, 0.12), (0.64, 0.08, 0.18), (0.89, 0.44, 0.49)]
+for i, x0 in enumerate([5, 50, 300]):
+    plt.plot(t, x(t, x0), [&quot;-&quot;, &quot;--&quot;, &quot;-.&quot;][i], color=rot[i], lw=2, label=f&quot;x0 = {x0}&quot;)
+    print(f&quot;x0 = {x0:3d}: x(5) = {x(5, x0):6.2f},  x(20) = {x(20, x0):6.2f}&quot;)
+plt.axhline(K, color=&quot;k&quot;, ls=&quot;--&quot;, lw=1)
+plt.xlabel(&quot;t (h)&quot;); plt.ylabel(&quot;x(t)&quot;); plt.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 3.12: Logistic growth of yeast (book, Section 3.2, Eq. 3.19 and 3.20)</span>
+<span class="k"># dx/dt = r (1 - x/K) x with r = 0.55 per hour, K = 210 (million cells per ml); solution x(t) = x0 K / (x0 + (K - x0) e^(-rt))</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+r &lt;- 0.55; K &lt;- 210
+x &lt;- function(t, x0) x0 * K / (x0 + (K - x0) * exp(-r * t))
+t &lt;- seq(0, 20, length.out = 300)
+rot &lt;- c(rgb(0.43, 0.04, 0.12), rgb(0.64, 0.08, 0.18), rgb(0.89, 0.44, 0.49))
+x0s &lt;- c(5, 50, 300)
+plot(NULL, xlim = c(0, 20), ylim = c(0, 310), xlab = &quot;t (h)&quot;, ylab = &quot;x(t)&quot;)
+for (i in 1:3) {
+  lines(t, x(t, x0s[i]), lty = i, col = rot[i], lwd = 2)
+  cat(sprintf(&quot;x0 = %3d: x(5) = %6.2f,  x(20) = %6.2f\n&quot;, x0s[i], x(5, x0s[i]), x(20, x0s[i])))
+}
+abline(h = K, lty = 2)
+legend(&quot;bottomright&quot;, legend = sprintf(&quot;x0 = %d&quot;, x0s), col = rot, lty = 1:3, lwd = 2)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>x0 =   5: x(5) =  57.99,  x(20) = 209.86
+x0 =  50: x(5) = 174.34,  x(20) = 209.99
+x0 = 300: x(5) = 214.11,  x(20) = 210.00</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="logistik-vergleich">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 3.13</p>
+    <h2>Continuous and discrete-time logistic model</h2>
+    <p class="formel">x<sub>n+1</sub> = x<sub>n</sub> + r x<sub>n</sub> (1 − x<sub>n</sub>/K)</p>
+    <p class="lead">For small r both models behave similarly. For larger r, cycles and chaos arise in the discrete-time model, whereas the continuous solution always tends to K monotonically.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/logistik_vergleich.png" alt="Output of the program logistik_vergleich.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="logistik_vergleich.jl" data-m="logistik_vergleich.m" data-py="logistik_vergleich.py" data-r="logistik_vergleich.R">logistik_vergleich.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/logistik_vergleich.py" data-jl="code/logistik_vergleich.jl" data-m="code/logistik_vergleich.m" data-py="code/logistik_vergleich.py" data-r="code/logistik_vergleich.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 3.13: Continuous and discrete-time logistic model (book, Section 3.2, Eq. 3.20)</span>
+<span class="k"># line: solution of dx/dt = r (1 - x/K) x;  points: x_{n+1} = x_n + r x_n (1 - x_n/K);  K = 210, x0 = 0.2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+K = 210; x0 = 0.2
+t = range(0, 30, length = 400)
+bilder = []
+for r in (0.55, 2.1, 2.6, 3.0)
+    p = plot(t, x0 .* K ./ (x0 .+ (K - x0) .* exp.(-r .* t)), color = RGB(0.43, 0.04, 0.12), lw = 2, legend = false,
+             ylims = (-10, 300), title = &quot;r = $r&quot;, xlabel = &quot;t or n&quot;)
+    x = zeros(31); x[1] = x0
+    for n in 1:30
+        x[n + 1] = x[n] + r * x[n] * (1 - x[n] / K)
+    end
+    plot!(p, 0:30, x, ls = :dash, marker = :circle, ms = 3, color = RGB(0.89, 0.44, 0.49))
+    push!(bilder, p)
+    println(@sprintf(&quot;r = %g: x_27 ... x_30 = &quot;, r), join([@sprintf(&quot;%.1f&quot;, v) for v in x[28:31]], &quot;  &quot;))
+end
+display(plot(bilder..., layout = (2, 2), size = (900, 650)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 3.13: Continuous and discrete-time logistic model (book, Section 3.2, Eq. 3.20)</span>
+<span class="k">% line: solution of dx/dt = r (1 - x/K) x;  points: x_{n+1} = x_n + r x_n (1 - x_n/K);  K = 210, x0 = 0.2</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+K = 210; x0 = 0.2;
+t = linspace(0, 30, 400); rs = [0.55 2.1 2.6 3.0];
+for i = 1:4
+    r = rs(i);
+    subplot(2, 2, i);
+    plot(t, x0 * K ./ (x0 + (K - x0) * exp(-r * t)), &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2); hold on
+    x = zeros(1, 31); x(1) = x0;
+    for n = 1:30
+        x(n + 1) = x(n) + r * x(n) * (1 - x(n) / K);
+    end
+    plot(0:30, x, &#x27;--o&#x27;, &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;MarkerSize&#x27;, 4); hold off
+    title(sprintf(&#x27;r = %g&#x27;, r)); ylim([-10 300]);
+    if i &gt; 2, xlabel(&#x27;t or n&#x27;); end
+    fprintf(&#x27;r = %g: x_27 ... x_30 = %s\n&#x27;, r, sprintf(&#x27;%.1f  &#x27;, x(28:31)));
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 3.13: Continuous and discrete-time logistic model (book, Section 3.2, Eq. 3.20)</span>
+<span class="k"># line: solution of dx/dt = r (1 - x/K) x;  points: x_{n+1} = x_n + r x_n (1 - x_n/K);  K = 210, x0 = 0.2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+K, x0 = 210, 0.2
+fig, axs = plt.subplots(2, 2, figsize=(11, 7), sharex=True)
+t = np.linspace(0, 30, 400)
+for ax, r in zip(axs.flat, [0.55, 2.1, 2.6, 3.0]):
+    ax.plot(t, x0 * K / (x0 + (K - x0) * np.exp(-r * t)), color=(0.43, 0.04, 0.12), lw=2)
+    x = [x0]
+    for n in range(30):
+        x.append(x[n] + r * x[n] * (1 - x[n] / K))
+    ax.plot(range(31), x, &quot;--o&quot;, color=(0.89, 0.44, 0.49), ms=4, lw=1)
+    ax.set_title(f&quot;r = {r:g}&quot;); ax.set_ylim(-10, 300)
+    print(f&quot;r = {r:g}: x_27 ... x_30 =&quot;, &quot;  &quot;.join(f&quot;{v:.1f}&quot; for v in x[27:]))
+for ax in axs[1]: ax.set_xlabel(&quot;t or n&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 3.13: Continuous and discrete-time logistic model (book, Section 3.2, Eq. 3.20)</span>
+<span class="k"># line: solution of dx/dt = r (1 - x/K) x;  points: x_{n+1} = x_n + r x_n (1 - x_n/K);  K = 210, x0 = 0.2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+K &lt;- 210; x0 &lt;- 0.2
+t &lt;- seq(0, 30, length.out = 400)
+par(mfrow = c(2, 2), mar = c(4, 4, 2, 1))
+for (r in c(0.55, 2.1, 2.6, 3.0)) {
+  plot(t, x0 * K / (x0 + (K - x0) * exp(-r * t)), type = &quot;l&quot;, col = rgb(0.43, 0.04, 0.12), lwd = 2, ylim = c(-10, 300),
+       xlab = &quot;t or n&quot;, ylab = &quot;&quot;, main = sprintf(&quot;r = %g&quot;, r))
+  x &lt;- numeric(31); x[1] &lt;- x0
+  for (n in 1:30) x[n + 1] &lt;- x[n] + r * x[n] * (1 - x[n] / K)
+  lines(0:30, x, type = &quot;o&quot;, lty = 2, pch = 16, cex = 0.6, col = rgb(0.89, 0.44, 0.49))
+  cat(sprintf(&quot;r = %g: x_27 ... x_30 =&quot;, r), sprintf(&quot;%.1f&quot;, x[28:31]), &quot;\n&quot;)
+}</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>r = 0.55: x_27 ... x_30 = 210.0  210.0  210.0  210.0
+r = 2.1: x_27 ... x_30 = 237.0  173.0  237.0  173.0
+r = 2.6: x_27 ... x_30 = 121.3  254.5  114.3  249.7
+r = 3: x_27 ... x_30 = 237.7  143.8  279.8  0.8</code></pre></details>
+    </div>
+  </div>
+</section>
+  
+  
+  <nav class="weiter" aria-label="Page navigation"><a href="abschnitt-3-1.html"><small>Previous</small>3.1 Differential Equations and Initial Value Problems</a><a href="abschnitt-3-3.html"><small>Next</small>3.3 Steady States and Stability</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Companion website to the book “Dynamical Systems in the Life Sciences” by Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programs under the <a href="../LICENSE.txt">MIT License</a> · <a href="../../impressum.html" hreflang="de">Legal notice (German)</a> · <a href="../../datenschutz.html" hreflang="de">Privacy policy (German)</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

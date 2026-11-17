@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>3.1 Differential Equations and Initial Value Problems – Dynamical Systems in the Life Sciences</title>
+<meta name="description" content="Programs in Julia, MATLAB, Python, and R for Section 3.1 of the book Dynamical Systems in the Life Sciences">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamical Systems in the Life Sciences</a>
+  <nav aria-label="Chapters"><a href="../index.html">Home</a> <a href="../kapitel1/index.html">Chapter 1</a> <a href="../kapitel2/index.html">Chapter 2</a> <a href="../kapitel3/index.html" aria-current="page">Chapter 3</a> <a href="../kapitel4/index.html">Chapter 4</a> <a href="../../kapitel3/abschnitt-3-1.html" lang="de" hreflang="de">Deutsch</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Sections"><h2><a href="index.html">Chapter 3</a></h2><ol><li><a href="abschnitt-3-1.html" aria-current="page"><span class="nr">3.1</span><span>Differential Equations and Initial Value Problems</span></a></li><li><a href="abschnitt-3-2.html"><span class="nr">3.2</span><span>Exponential and Logistic Growth</span></a></li><li><a href="abschnitt-3-3.html"><span class="nr">3.3</span><span>Steady States and Stability</span></a></li><li><a href="abschnitt-3-4.html"><span class="nr">3.4</span><span>Euler's Method</span></a></li><li><a href="abschnitt-3-5.html"><span class="nr">3.5</span><span>In Depth: Excitability of Heart Cells</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Chapter 3 · Continuous Dynamical Systems with One Variable</p>
+      <h1><span class="num">3.1</span>Differential Equations and Initial Value Problems</h1>
+      <p>Letting the time step of a difference equation tend to zero gives a differential equation: it describes the instantaneous rate of change dx/dt of a quantity. Together with an initial value it forms an initial value problem. Its solution is a function x(t) whose graph follows the slope of the direction field at every point.</p>
+      <p>For each figure of the section you will find the program that produces it. Change parameters and initial values and observe what happens. Figure and equation numbers refer to the book.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programming language</legend>
+  <div class="seg" role="radiogroup" aria-label="Programming language">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Applies to all pages. MATLAB programs also run in the free GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>On this page</b><ul><li><a href="#grenzuebergang"><span class="abb">Fig. 3.1</span>From discrete-time to continuous growth</a></li><li><a href="#loesungsschar"><span class="abb">Fig. 3.3</span>Family of solutions of a linear differential equation</a></li><li><a href="#abkuehlung"><span class="abb">Fig. 3.4</span>Cooling in the refrigerator</a></li><li><a href="#richtungsfeld"><span class="abb">Fig. 3.5</span>Direction field with solutions</a></li><li><a href="#awp-probleme"><span class="abb">Fig. 3.6</span>Limits of existence and uniqueness</a></li></ul></div>
+  
+<section class="fig" id="grenzuebergang">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 3.1</p>
+    <h2>From discrete-time to continuous growth</h2>
+    <p class="formel">x(t + Δt) = (1 + r Δt) x(t) &emsp;→&emsp; dx/dt = r x</p>
+    <p class="lead">The smaller the time step Δt, the closer the values of the difference equation are to the exponential function e<sup>rt</sup>. The output compares x(4) for Δt = 1, 0.5, and 0.1 with e<sup>2</sup> ≈ 7.389.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/grenzuebergang.png" alt="Output of the program grenzuebergang.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="grenzuebergang.jl" data-m="grenzuebergang.m" data-py="grenzuebergang.py" data-r="grenzuebergang.R">grenzuebergang.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/grenzuebergang.py" data-jl="code/grenzuebergang.jl" data-m="code/grenzuebergang.m" data-py="code/grenzuebergang.py" data-r="code/grenzuebergang.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 3.1: From discrete-time to continuous growth (book, Section 3.1, Eq. 3.1 and 3.2)</span>
+<span class="k"># x(t + dt) = (1 + r dt) x(t) with r = 0.5, x(0) = 1 for dt = 1, 0.5, 0.1; for dt -&gt; 0 one obtains x(t) = e^(r t)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+r = 0.5
+rot = [RGB(0.43, 0.04, 0.12), RGB(0.64, 0.08, 0.18), RGB(0.89, 0.44, 0.49)]; zeichen = [:circle, :rect, :utriangle]
+p = plot(xlabel = &quot;t&quot;, ylabel = &quot;x&quot;, legend = :topleft)
+for (i, dt) in enumerate([1, 0.5, 0.1])
+    n = 0:round(Int, 4 / dt)
+    x = (1 + r * dt) .^ n                <span class="k"># solution of the difference equation</span>
+    scatter!(p, n .* dt, x, marker = zeichen[i], ms = [7, 5, 3][i], color = rot[i], label = &quot;Δt = $dt&quot;)
+    @printf(&quot;dt = %g: x(4) = %.4f\n&quot;, dt, x[end])
+end
+t = range(0, 4, length = 300)
+plot!(p, t, exp.(r .* t), color = rot[1], lw = 2, label = &quot;x(t) = e^(rt)&quot;)
+@printf(&quot;e^(0.5*4) = %.4f\n&quot;, exp(2))
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 3.1: From discrete-time to continuous growth (book, Section 3.1, Eq. 3.1 and 3.2)</span>
+<span class="k">% x(t + dt) = (1 + r dt) x(t) with r = 0.5, x(0) = 1 for dt = 1, 0.5, 0.1; for dt -&gt; 0 one obtains x(t) = e^(r t)</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+r = 0.5;
+rot = [0.43 0.04 0.12; 0.64 0.08 0.18; 0.89 0.44 0.49]; marker = &#x27;os^&#x27;; dts = [1 0.5 0.1];
+hold on
+for i = 1:3
+    dt = dts(i);
+    n = 0:round(4 / dt);
+    x = (1 + r * dt).^n;                                 <span class="k">% solution of the difference equation</span>
+    plot(n * dt, x, marker(i), &#x27;Color&#x27;, rot(i, :), &#x27;MarkerFaceColor&#x27;, rot(i, :), &#x27;DisplayName&#x27;, sprintf(&#x27;\\Delta t = %g&#x27;, dt));
+    fprintf(&#x27;dt = %g: x(4) = %.4f\n&#x27;, dt, x(end));
+end
+t = linspace(0, 4, 300);
+plot(t, exp(r * t), &#x27;Color&#x27;, rot(1, :), &#x27;LineWidth&#x27;, 2, &#x27;DisplayName&#x27;, &#x27;x(t) = e^{rt}&#x27;); hold off
+fprintf(&#x27;e^(0.5*4) = %.4f\n&#x27;, exp(2));
+xlabel(&#x27;t&#x27;); ylabel(&#x27;x&#x27;); legend(&#x27;show&#x27;, &#x27;Location&#x27;, &#x27;northwest&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 3.1: From discrete-time to continuous growth (book, Section 3.1, Eq. 3.1 and 3.2)</span>
+<span class="k"># x(t + dt) = (1 + r dt) x(t) with r = 0.5, x(0) = 1 for dt = 1, 0.5, 0.1; for dt -&gt; 0 one obtains x(t) = e^(r t)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+r = 0.5
+rot = [(0.43, 0.04, 0.12), (0.64, 0.08, 0.18), (0.89, 0.44, 0.49)]
+for i, dt in enumerate([1, 0.5, 0.1]):
+    n = np.arange(int(round(4 / dt)) + 1)
+    x = (1 + r * dt)**n                                  <span class="k"># solution of the difference equation</span>
+    plt.plot(n * dt, x, &quot;os^&quot;[i], color=rot[i], ms=[9, 7, 5][i], label=f&quot;Δt = {dt}&quot;)
+    print(f&quot;dt = {dt}: x(4) = {x[-1]:.4f}&quot;)
+t = np.linspace(0, 4, 300)
+plt.plot(t, np.exp(r * t), color=rot[0], lw=2, label=&quot;x(t) = e^(rt)&quot;)
+print(f&quot;e^(0.5*4) = {np.exp(2):.4f}&quot;)
+plt.xlabel(&quot;t&quot;); plt.ylabel(&quot;x&quot;); plt.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 3.1: From discrete-time to continuous growth (book, Section 3.1, Eq. 3.1 and 3.2)</span>
+<span class="k"># x(t + dt) = (1 + r dt) x(t) with r = 0.5, x(0) = 1 for dt = 1, 0.5, 0.1; for dt -&gt; 0 one obtains x(t) = e^(r t)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+r &lt;- 0.5
+rot &lt;- c(rgb(0.43, 0.04, 0.12), rgb(0.64, 0.08, 0.18), rgb(0.89, 0.44, 0.49)); zeichen &lt;- c(16, 15, 17)
+plot(NULL, xlim = c(0, 4), ylim = c(1, 7.5), xlab = &quot;t&quot;, ylab = &quot;x&quot;)
+dts &lt;- c(1, 0.5, 0.1)
+for (i in 1:3) {
+  dt &lt;- dts[i]
+  n &lt;- 0:round(4 / dt)
+  x &lt;- (1 + r * dt)^n                    <span class="k"># solution of the difference equation</span>
+  points(n * dt, x, pch = zeichen[i], col = rot[i], cex = c(1.4, 1.1, 0.7)[i])
+  cat(sprintf(&quot;dt = %g: x(4) = %.4f\n&quot;, dt, x[length(x)]))
+}
+t &lt;- seq(0, 4, length.out = 300)
+lines(t, exp(r * t), col = rot[1], lwd = 2)
+cat(sprintf(&quot;e^(0.5*4) = %.4f\n&quot;, exp(2)))
+legend(&quot;topleft&quot;, legend = c(sprintf(&quot;Delta t = %g&quot;, dts), &quot;x(t) = e^(rt)&quot;), col = c(rot, rot[1]), pch = c(zeichen, NA), lwd = c(NA, NA, NA, 2))</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>dt = 1: x(4) = 5.0625
+dt = 0.5: x(4) = 5.9605
+dt = 0.1: x(4) = 7.0400
+e^(0.5*4) = 7.3891</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="loesungsschar">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 3.3</p>
+    <h2>Family of solutions of a linear differential equation</h2>
+    <p class="formel">dx/dt = a x + b,&ensp; x(t) = C e<sup>at</sup> − b/a</p>
+    <p class="lead">Each value of the constant C gives a solution. For a = −0.5 &lt; 0 all of them tend to the constant solution x* = −b/a = 2.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/loesungsschar.png" alt="Output of the program loesungsschar.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="loesungsschar.jl" data-m="loesungsschar.m" data-py="loesungsschar.py" data-r="loesungsschar.R">loesungsschar.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/loesungsschar.py" data-jl="code/loesungsschar.jl" data-m="code/loesungsschar.m" data-py="code/loesungsschar.py" data-r="code/loesungsschar.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 3.3: Family of solutions of a linear differential equation (book, Section 3.1, Eq. 3.6 and 3.7)</span>
+<span class="k"># dx/dt = a x + b with a = -0.5, b = 1; solutions x(t) = C e^(at) - b/a for different initial values, x* = -b/a = 2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+a = -0.5; b = 1
+xs = -b / a                              <span class="k"># constant solution</span>
+t = range(0, 8, length = 400)
+rot = [RGB(0.43, 0.04, 0.12), RGB(0.64, 0.08, 0.18), RGB(0.89, 0.44, 0.49)]
+p = plot(legend = false, xlabel = &quot;t&quot;, ylabel = &quot;x(t)&quot;, title = &quot;black: x* = -b/a = 2&quot;)
+for (i, x0) in enumerate([5, 3.5, 2.5, 1, 0])
+    C = x0 - xs
+    plot!(p, t, C .* exp.(a .* t) .+ xs, color = rot[(i - 1) % 3 + 1], lw = 2)
+    @printf(&quot;x(0) = %g: C = %4.1f, x(8) = %.4f\n&quot;, x0, C, C * exp(8a) + xs)
+end
+hline!(p, [xs], color = :black, lw = 1.5)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 3.3: Family of solutions of a linear differential equation (book, Section 3.1, Eq. 3.6 and 3.7)</span>
+<span class="k">% dx/dt = a x + b with a = -0.5, b = 1; solutions x(t) = C e^(at) - b/a for different initial values, x* = -b/a = 2</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+a = -0.5; b = 1;
+xs = -b / a;                                             <span class="k">% constant solution</span>
+t = linspace(0, 8, 400);
+rot = [0.43 0.04 0.12; 0.64 0.08 0.18; 0.89 0.44 0.49];
+x0s = [5 3.5 2.5 1 0];
+hold on
+for i = 1:5
+    C = x0s(i) - xs;
+    plot(t, C * exp(a * t) + xs, &#x27;Color&#x27;, rot(mod(i - 1, 3) + 1, :), &#x27;LineWidth&#x27;, 2);
+    fprintf(&#x27;x(0) = %g: C = %4.1f, x(8) = %.4f\n&#x27;, x0s(i), C, C * exp(8 * a) + xs);
+end
+plot([0 8], [xs xs], &#x27;k&#x27;, &#x27;LineWidth&#x27;, 1.5); hold off
+xlabel(&#x27;t&#x27;); ylabel(&#x27;x(t)&#x27;); title(&#x27;black: x* = -b/a = 2&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 3.3: Family of solutions of a linear differential equation (book, Section 3.1, Eq. 3.6 and 3.7)</span>
+<span class="k"># dx/dt = a x + b with a = -0.5, b = 1; solutions x(t) = C e^(at) - b/a for different initial values, x* = -b/a = 2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+a, b = -0.5, 1
+xs = -b / a                                              <span class="k"># constant solution</span>
+t = np.linspace(0, 8, 400)
+rot = [(0.43, 0.04, 0.12), (0.64, 0.08, 0.18), (0.89, 0.44, 0.49)]
+for i, x0 in enumerate([5, 3.5, 2.5, 1, 0]):
+    C = x0 - xs
+    plt.plot(t, C * np.exp(a * t) + xs, color=rot[i % 3], lw=2)
+    print(f&quot;x(0) = {x0}: C = {C:4.1f}, x(8) = {C * np.exp(8 * a) + xs:.4f}&quot;)
+plt.axhline(xs, color=&quot;k&quot;, lw=1.5)
+plt.xlabel(&quot;t&quot;); plt.ylabel(&quot;x(t)&quot;); plt.title(&quot;black: x* = -b/a = 2&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 3.3: Family of solutions of a linear differential equation (book, Section 3.1, Eq. 3.6 and 3.7)</span>
+<span class="k"># dx/dt = a x + b with a = -0.5, b = 1; solutions x(t) = C e^(at) - b/a for different initial values, x* = -b/a = 2</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+a &lt;- -0.5; b &lt;- 1
+xs &lt;- -b / a                             <span class="k"># constant solution</span>
+t &lt;- seq(0, 8, length.out = 400)
+rot &lt;- c(rgb(0.43, 0.04, 0.12), rgb(0.64, 0.08, 0.18), rgb(0.89, 0.44, 0.49))
+plot(NULL, xlim = c(0, 8), ylim = c(-0.25, 5.25), xlab = &quot;t&quot;, ylab = &quot;x(t)&quot;, main = &quot;black: x* = -b/a = 2&quot;)
+x0s &lt;- c(5, 3.5, 2.5, 1, 0)
+for (i in seq_along(x0s)) {
+  C &lt;- x0s[i] - xs
+  lines(t, C * exp(a * t) + xs, col = rot[(i - 1) %% 3 + 1], lwd = 2)
+  cat(sprintf(&quot;x(0) = %g: C = %4.1f, x(8) = %.4f\n&quot;, x0s[i], C, C * exp(8 * a) + xs))
+}
+abline(h = xs, lwd = 1.5)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>x(0) = 5: C =  3.0, x(8) = 2.0549
+x(0) = 3.5: C =  1.5, x(8) = 2.0275
+x(0) = 2.5: C =  0.5, x(8) = 2.0092
+x(0) = 1: C = -1.0, x(8) = 1.9817
+x(0) = 0: C = -2.0, x(8) = 1.9634</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="abkuehlung">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 3.4</p>
+    <h2>Cooling in the refrigerator</h2>
+    <p class="formel">dT/dt = k (T<sup>u</sup> − T),&ensp; T(t) = 75 e<sup>−0.03t</sup> + 5</p>
+    <p class="lead">Newton's law of cooling in continuous time. The program computes when the dish reaches 10 °C: after t = ln(15)/k ≈ 90 minutes.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/abkuehlung.png" alt="Output of the program abkuehlung.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="abkuehlung.jl" data-m="abkuehlung.m" data-py="abkuehlung.py" data-r="abkuehlung.R">abkuehlung.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/abkuehlung.py" data-jl="code/abkuehlung.jl" data-m="code/abkuehlung.m" data-py="code/abkuehlung.py" data-r="code/abkuehlung.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 3.4: Cooling of a dish in the refrigerator (book, Section 3.1, Eq. 3.3 and 3.12)</span>
+<span class="k"># dT/dt = k (T^u - T) with k = 0.03 per minute, T^u = 5 °C, T(0) = 80 °C:  T(t) = 75 e^(-0.03 t) + 5</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+k = 0.03; Tu = 5; T0 = 80
+t = range(0, 180, length = 400)
+T = Tu .+ (T0 - Tu) .* exp.(-k .* t)
+ts = log((T0 - Tu) / (10 - Tu)) / k      <span class="k"># time at which T = 10 °C is reached</span>
+@printf(&quot;T = 10 °C after t = ln(15)/k = %.1f min\n&quot;, ts)
+p = plot(t, T, color = RGB(0.64, 0.08, 0.18), lw = 2.5, label = &quot;T(t)&quot;, xlabel = &quot;t (min)&quot;, ylabel = &quot;T (°C)&quot;)
+hline!(p, [Tu], ls = :dash, color = :black, label = &quot;&quot;)
+plot!(p, [ts, ts], [0, 10], ls = :dot, color = :gray, label = &quot;&quot;); scatter!(p, [ts], [10], color = :black, label = &quot;&quot;)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 3.4: Cooling of a dish in the refrigerator (book, Section 3.1, Eq. 3.3 and 3.12)</span>
+<span class="k">% dT/dt = k (T^u - T) with k = 0.03 per minute, T^u = 5 °C, T(0) = 80 °C:  T(t) = 75 e^(-0.03 t) + 5</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+k = 0.03; Tu = 5; T0 = 80;
+t = linspace(0, 180, 400);
+T = Tu + (T0 - Tu) * exp(-k * t);
+ts = log((T0 - Tu) / (10 - Tu)) / k;                     <span class="k">% time at which T = 10 °C is reached</span>
+fprintf(&#x27;T = 10 °C after t = ln(15)/k = %.1f min\n&#x27;, ts);
+plot(t, T, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2.5); hold on
+plot([0 180], [Tu Tu], &#x27;k--&#x27;);
+plot([ts ts], [0 10], &#x27;:&#x27;, &#x27;Color&#x27;, [0.5 0.5 0.5]); plot(ts, 10, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+xlabel(&#x27;t (min)&#x27;); ylabel(&#x27;T (°C)&#x27;); legend(&#x27;T(t)&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 3.4: Cooling of a dish in the refrigerator (book, Section 3.1, Eq. 3.3 and 3.12)</span>
+<span class="k"># dT/dt = k (T^u - T) with k = 0.03 per minute, T^u = 5 °C, T(0) = 80 °C:  T(t) = 75 e^(-0.03 t) + 5</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+k, Tu, T0 = 0.03, 5, 80
+t = np.linspace(0, 180, 400)
+T = Tu + (T0 - Tu) * np.exp(-k * t)
+ts = np.log((T0 - Tu) / (10 - Tu)) / k                   <span class="k"># time at which T = 10 °C is reached</span>
+print(f&quot;T = 10 °C after t = ln(15)/k = {ts:.1f} min&quot;)
+plt.plot(t, T, color=(0.64, 0.08, 0.18), lw=2.5, label=&quot;T(t)&quot;)
+plt.axhline(Tu, color=&quot;k&quot;, ls=&quot;--&quot;, lw=1)
+plt.plot([ts, ts], [0, 10], &quot;:&quot;, color=&quot;0.5&quot;); plt.plot(ts, 10, &quot;ko&quot;)
+plt.xlabel(&quot;t (min)&quot;); plt.ylabel(&quot;T (°C)&quot;); plt.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 3.4: Cooling of a dish in the refrigerator (book, Section 3.1, Eq. 3.3 and 3.12)</span>
+<span class="k"># dT/dt = k (T^u - T) with k = 0.03 per minute, T^u = 5 °C, T(0) = 80 °C:  T(t) = 75 e^(-0.03 t) + 5</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+k &lt;- 0.03; Tu &lt;- 5; T0 &lt;- 80
+t &lt;- seq(0, 180, length.out = 400)
+T &lt;- Tu + (T0 - Tu) * exp(-k * t)
+ts &lt;- log((T0 - Tu) / (10 - Tu)) / k     <span class="k"># time at which T = 10 °C is reached</span>
+cat(sprintf(&quot;T = 10 °C after t = ln(15)/k = %.1f min\n&quot;, ts))
+plot(t, T, type = &quot;l&quot;, col = rgb(0.64, 0.08, 0.18), lwd = 2.5, xlab = &quot;t (min)&quot;, ylab = &quot;T (°C)&quot;)
+abline(h = Tu, lty = 2)
+lines(c(ts, ts), c(0, 10), lty = 3, col = &quot;grey50&quot;); points(ts, 10, pch = 16)
+legend(&quot;topright&quot;, legend = &quot;T(t)&quot;, col = rgb(0.64, 0.08, 0.18), lwd = 2.5)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>T = 10 °C after t = ln(15)/k = 90.3 min</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="richtungsfeld">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 3.5</p>
+    <h2>Direction field with solutions</h2>
+    <p class="formel">slope at the point (t, T): 0.03 (5 − T)</p>
+    <p class="lead">The short dashes show the slope that a solution through this point has. The direction field can be drawn without solving the equation.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/richtungsfeld.png" alt="Output of the program richtungsfeld.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="richtungsfeld.jl" data-m="richtungsfeld.m" data-py="richtungsfeld.py" data-r="richtungsfeld.R">richtungsfeld.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/richtungsfeld.py" data-jl="code/richtungsfeld.jl" data-m="code/richtungsfeld.m" data-py="code/richtungsfeld.py" data-r="code/richtungsfeld.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 3.5: Direction field of cooling with some solutions (book, Section 3.1, Eq. 3.3)</span>
+<span class="k"># At each point (t, T) a short dash shows the slope dT/dt = 0.03 (5 - T); the solutions follow these slopes</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+k = 0.03; Tu = 5
+p = plot(legend = false, xlims = (0, 184), ylims = (-3, 92), xlabel = &quot;t (min)&quot;, ylabel = &quot;T (°C)&quot;)
+for t in range(5, 175, length = 18), T in range(2, 88, length = 12)
+    S = k * (Tu - T)                     <span class="k"># slope dT/dt at the point (t, T)</span>
+    dt = 4 / sqrt(1 + (S * 180 / 90)^2)  <span class="k"># dashes of equal length in the plot</span>
+    plot!(p, [t - dt, t + dt], [T - S * dt, T + S * dt], color = RGB(0.2, 0.6, 0.25))
+end
+tt = range(0, 180, length = 300)
+rot = [RGB(0.43, 0.04, 0.12), RGB(0.64, 0.08, 0.18), RGB(0.89, 0.44, 0.49)]
+for (i, T0) in enumerate([80, 40, 0])
+    plot!(p, tt, Tu .+ (T0 - Tu) .* exp.(-k .* tt), color = rot[i], lw = 2)
+    @printf(&quot;T(0) = %2d: T(60) = %.2f\n&quot;, T0, Tu + (T0 - Tu) * exp(-60k))
+end
+hline!(p, [Tu], ls = :dash, color = :black)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 3.5: Direction field of cooling with some solutions (book, Section 3.1, Eq. 3.3)</span>
+<span class="k">% At each point (t, T) a short dash shows the slope dT/dt = 0.03 (5 - T); the solutions follow these slopes</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+k = 0.03; Tu = 5;
+[t, T] = meshgrid(linspace(5, 175, 18), linspace(2, 88, 12));
+S = k * (Tu - T);                                        <span class="k">% slope dT/dt at each point</span>
+dt = 4 ./ sqrt(1 + (S * 180 / 90).^2);                   <span class="k">% dashes of equal length in the plot</span>
+plot([t(:) - dt(:) t(:) + dt(:)]&#x27;, [T(:) - S(:) .* dt(:) T(:) + S(:) .* dt(:)]&#x27;, &#x27;Color&#x27;, [0.2 0.6 0.25]); hold on
+tt = linspace(0, 180, 300);
+rot = [0.43 0.04 0.12; 0.64 0.08 0.18; 0.89 0.44 0.49]; T0s = [80 40 0];
+for i = 1:3
+    plot(tt, Tu + (T0s(i) - Tu) * exp(-k * tt), &#x27;Color&#x27;, rot(i, :), &#x27;LineWidth&#x27;, 2);
+    fprintf(&#x27;T(0) = %2d: T(60) = %.2f\n&#x27;, T0s(i), Tu + (T0s(i) - Tu) * exp(-60 * k));
+end
+plot([0 184], [Tu Tu], &#x27;k--&#x27;); hold off
+xlabel(&#x27;t (min)&#x27;); ylabel(&#x27;T (°C)&#x27;); xlim([0 184]); ylim([-3 92]);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 3.5: Direction field of cooling with some solutions (book, Section 3.1, Eq. 3.3)</span>
+<span class="k"># At each point (t, T) a short dash shows the slope dT/dt = 0.03 (5 - T); the solutions follow these slopes</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+k, Tu = 0.03, 5
+f = lambda t, T: k * (Tu - T)
+t, T = np.meshgrid(np.linspace(5, 175, 18), np.linspace(2, 88, 12))
+S = f(t, T)
+dt = 1 / np.sqrt(1 + (S * 180 / 90)**2) * 4             <span class="k"># dashes of equal length in the plot (axes 180 min and 90 °C)</span>
+plt.quiver(t, T, dt, S * dt, color=(0.2, 0.6, 0.25), angles=&quot;xy&quot;, scale_units=&quot;xy&quot;, scale=1, headwidth=0, headlength=0, headaxislength=0, pivot=&quot;mid&quot;, width=0.003)
+tt = np.linspace(0, 180, 300)
+rot = [(0.43, 0.04, 0.12), (0.64, 0.08, 0.18), (0.89, 0.44, 0.49)]
+for i, T0 in enumerate([80, 40, 0]):
+    plt.plot(tt, Tu + (T0 - Tu) * np.exp(-k * tt), color=rot[i], lw=2)
+    print(f&quot;T(0) = {T0:2d}: T(60) = {Tu + (T0 - Tu) * np.exp(-60 * k):.2f}&quot;)
+plt.axhline(Tu, color=&quot;k&quot;, ls=&quot;--&quot;, lw=1)
+plt.xlabel(&quot;t (min)&quot;); plt.ylabel(&quot;T (°C)&quot;); plt.xlim(0, 184); plt.ylim(-3, 92)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 3.5: Direction field of cooling with some solutions (book, Section 3.1, Eq. 3.3)</span>
+<span class="k"># At each point (t, T) a short dash shows the slope dT/dt = 0.03 (5 - T); the solutions follow these slopes</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+k &lt;- 0.03; Tu &lt;- 5
+g &lt;- expand.grid(t = seq(5, 175, length.out = 18), T = seq(2, 88, length.out = 12))
+S &lt;- k * (Tu - g$T)                      <span class="k"># slope dT/dt at each point</span>
+dt &lt;- 4 / sqrt(1 + (S * 180 / 90)^2)     <span class="k"># dashes of equal length in the plot</span>
+plot(NULL, xlim = c(0, 184), ylim = c(-3, 92), xlab = &quot;t (min)&quot;, ylab = &quot;T (°C)&quot;)
+segments(g$t - dt, g$T - S * dt, g$t + dt, g$T + S * dt, col = rgb(0.2, 0.6, 0.25))
+tt &lt;- seq(0, 180, length.out = 300)
+rot &lt;- c(rgb(0.43, 0.04, 0.12), rgb(0.64, 0.08, 0.18), rgb(0.89, 0.44, 0.49))
+T0s &lt;- c(80, 40, 0)
+for (i in 1:3) {
+  lines(tt, Tu + (T0s[i] - Tu) * exp(-k * tt), col = rot[i], lwd = 2)
+  cat(sprintf(&quot;T(0) = %2d: T(60) = %.2f\n&quot;, T0s[i], Tu + (T0s[i] - Tu) * exp(-60 * k)))
+}
+abline(h = Tu, lty = 2)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>T(0) = 80: T(60) = 17.40
+T(0) = 40: T(60) = 10.79
+T(0) =  0: T(60) = 4.17</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="awp-probleme">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 3.6</p>
+    <h2>Limits of existence and uniqueness</h2>
+    <p class="formel">dx/dt = t/x,&ensp; x(0) = 0 &emsp;or&emsp; dx/dt = x<sup>2</sup>,&ensp; x(0) = 1</p>
+    <p class="lead">On the left the initial value problem has two solutions; on the right the solution 1/(1 − t) grows beyond all bounds in finite time.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/awp_probleme.png" alt="Output of the program awp_probleme.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="awp_probleme.jl" data-m="awp_probleme.m" data-py="awp_probleme.py" data-r="awp_probleme.R">awp_probleme.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/awp_probleme.py" data-jl="code/awp_probleme.jl" data-m="code/awp_probleme.m" data-py="code/awp_probleme.py" data-r="code/awp_probleme.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 3.6: Initial value problems without a unique or without a global solution (book, Section 3.1)</span>
+<span class="k"># left dx/dt = t/x, x(0) = 0: x(t) = t and x(t) = -t both solve it;  right dx/dt = x^2, x(0) = 1: x(t) = 1/(1 - t) only for t &lt; 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+t = range(0, 2, length = 100)
+p1 = plot(t, t, color = RGB(0.43, 0.04, 0.12), lw = 2, label = &quot;x₁(t) = t&quot;, title = &quot;dx/dt = t/x, x(0) = 0&quot;, xlabel = &quot;t&quot;)
+plot!(p1, t, -t, ls = :dash, color = RGB(0.89, 0.44, 0.49), lw = 2, label = &quot;x₂(t) = -t&quot;); scatter!(p1, [0], [0], color = :black, label = &quot;&quot;)
+t = range(0, 0.95, length = 200)
+p2 = plot(t, 1 ./ (1 .- t), color = RGB(0.64, 0.08, 0.18), lw = 2, legend = false, xlims = (0, 1.2), ylims = (0, 20),
+          title = &quot;dx/dt = x², x(0) = 1&quot;, xlabel = &quot;t&quot;)
+vline!(p2, [1], ls = :dash, color = :black); scatter!(p2, [0], [1], color = :black)
+for tt in (0.5, 0.9, 0.99)
+    @printf(&quot;x(%g) = 1/(1 - %g) = %.0f\n&quot;, tt, tt, 1 / (1 - tt))
+end
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 3.6: Initial value problems without a unique or without a global solution (book, Section 3.1)</span>
+<span class="k">% left dx/dt = t/x, x(0) = 0: x(t) = t and x(t) = -t both solve it;  right dx/dt = x^2, x(0) = 1: x(t) = 1/(1 - t) only for t &lt; 1</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+subplot(1, 2, 1);
+t = linspace(0, 2, 100);
+plot(t, t, &#x27;Color&#x27;, [0.43 0.04 0.12], &#x27;LineWidth&#x27;, 2); hold on
+plot(t, -t, &#x27;--&#x27;, &#x27;Color&#x27;, [0.89 0.44 0.49], &#x27;LineWidth&#x27;, 2); plot(0, 0, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+title(&#x27;dx/dt = t/x, x(0) = 0&#x27;); legend(&#x27;x_1(t) = t&#x27;, &#x27;x_2(t) = -t&#x27;); xlabel(&#x27;t&#x27;);
+subplot(1, 2, 2);
+t = linspace(0, 0.95, 200);
+plot(t, 1 ./ (1 - t), &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 2); hold on
+plot([1 1], [0 20], &#x27;k--&#x27;); plot(0, 1, &#x27;ko&#x27;, &#x27;MarkerFaceColor&#x27;, &#x27;k&#x27;); hold off
+ylim([0 20]); xlim([0 1.2]); title(&#x27;dx/dt = x^2, x(0) = 1&#x27;); xlabel(&#x27;t&#x27;);
+for tt = [0.5 0.9 0.99]
+    fprintf(&#x27;x(%g) = 1/(1 - %g) = %.0f\n&#x27;, tt, tt, 1 / (1 - tt));
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 3.6: Initial value problems without a unique or without a global solution (book, Section 3.1)</span>
+<span class="k"># left dx/dt = t/x, x(0) = 0: x(t) = t and x(t) = -t both solve it;  right dx/dt = x^2, x(0) = 1: x(t) = 1/(1 - t) only for t &lt; 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+t = np.linspace(0, 2, 100)
+axs[0].plot(t, t, color=(0.43, 0.04, 0.12), lw=2, label=&quot;x₁(t) = t&quot;)
+axs[0].plot(t, -t, &quot;--&quot;, color=(0.89, 0.44, 0.49), lw=2, label=&quot;x₂(t) = −t&quot;)
+axs[0].plot(0, 0, &quot;ko&quot;); axs[0].set_title(&quot;dx/dt = t/x, x(0) = 0&quot;); axs[0].legend(); axs[0].set_xlabel(&quot;t&quot;)
+t = np.linspace(0, 0.95, 200)
+axs[1].plot(t, 1 / (1 - t), color=(0.64, 0.08, 0.18), lw=2); axs[1].axvline(1, color=&quot;k&quot;, ls=&quot;--&quot;, lw=1)
+axs[1].plot(0, 1, &quot;ko&quot;); axs[1].set_ylim(0, 20); axs[1].set_xlim(0, 1.2)
+axs[1].set_title(&quot;dx/dt = x², x(0) = 1&quot;); axs[1].set_xlabel(&quot;t&quot;)
+for tt in [0.5, 0.9, 0.99]:
+    print(f&quot;x({tt}) = 1/(1 - {tt}) = {1 / (1 - tt):.0f}&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 3.6: Initial value problems without a unique or without a global solution (book, Section 3.1)</span>
+<span class="k"># left dx/dt = t/x, x(0) = 0: x(t) = t and x(t) = -t both solve it;  right dx/dt = x^2, x(0) = 1: x(t) = 1/(1 - t) only for t &lt; 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+par(mfrow = c(1, 2))
+t &lt;- seq(0, 2, length.out = 100)
+plot(t, t, type = &quot;l&quot;, col = rgb(0.43, 0.04, 0.12), lwd = 2, ylim = c(-2, 2), xlab = &quot;t&quot;, ylab = &quot;&quot;, main = &quot;dx/dt = t/x, x(0) = 0&quot;)
+lines(t, -t, lty = 2, col = rgb(0.89, 0.44, 0.49), lwd = 2); points(0, 0, pch = 16)
+legend(&quot;topleft&quot;, legend = c(&quot;x_1(t) = t&quot;, &quot;x_2(t) = -t&quot;), col = c(rgb(0.43, 0.04, 0.12), rgb(0.89, 0.44, 0.49)), lty = c(1, 2), lwd = 2)
+t &lt;- seq(0, 0.95, length.out = 200)
+plot(t, 1 / (1 - t), type = &quot;l&quot;, col = rgb(0.64, 0.08, 0.18), lwd = 2, xlim = c(0, 1.2), ylim = c(0, 20), xlab = &quot;t&quot;, ylab = &quot;&quot;,
+     main = &quot;dx/dt = x^2, x(0) = 1&quot;)
+abline(v = 1, lty = 2); points(0, 1, pch = 16)
+for (tt in c(0.5, 0.9, 0.99)) cat(sprintf(&quot;x(%g) = 1/(1 - %g) = %.0f\n&quot;, tt, tt, 1 / (1 - tt)))</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>x(0.5) = 1/(1 - 0.5) = 2
+x(0.9) = 1/(1 - 0.9) = 10
+x(0.99) = 1/(1 - 0.99) = 100</code></pre></details>
+    </div>
+  </div>
+</section>
+  
+  <section class="matlab-apps"><h3>MATLAB apps from the course</h3><p>Download, put into a folder, and type the name without extension in MATLAB, e.g. <code>richtungsfeld_app</code>. The apps use the graphical user interface of MATLAB and do not run in GNU Octave. Their user interface is in German.</p><ul><li><a href="apps/richtungsfeld_app.m" download>richtungsfeld_app.m</a><span>Direction field and solutions of initial value problems</span></li></ul></section>
+  <nav class="weiter" aria-label="Page navigation"><a href="abschnitt-3-2.html"><small>Next</small>3.2 Exponential and Logistic Growth</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Companion website to the book “Dynamical Systems in the Life Sciences” by Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programs under the <a href="../LICENSE.txt">MIT License</a> · <a href="../../impressum.html" hreflang="de">Legal notice (German)</a> · <a href="../../datenschutz.html" hreflang="de">Privacy policy (German)</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

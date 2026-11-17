@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chapter 4: Continuous Dynamical Systems with Several Variables – Dynamical Systems in the Life Sciences</title>
+<meta name="description" content="Programs and apps for Chapter 4 of the book Dynamical Systems in the Life Sciences">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamical Systems in the Life Sciences</a>
+  <nav aria-label="Chapters"><a href="../index.html">Home</a> <a href="../kapitel1/index.html">Chapter 1</a> <a href="../kapitel2/index.html">Chapter 2</a> <a href="../kapitel3/index.html">Chapter 3</a> <a href="../kapitel4/index.html" aria-current="page">Chapter 4</a> <a href="../../kapitel4/index.html" lang="de" hreflang="de">Deutsch</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Sections"><h2><a href="index.html">Chapter 4</a></h2><ol><li><a href="abschnitt-4-1.html"><span class="nr">4.1</span><span>Systems of Differential Equations</span></a></li><li><a href="abschnitt-4-2.html"><span class="nr">4.2</span><span>Linear Systems</span></a></li><li><a href="abschnitt-4-3.html"><span class="nr">4.3</span><span>Michaelis–Menten Kinetics</span></a></li><li><a href="abschnitt-4-4.html"><span class="nr">4.4</span><span>Steady States and Stability</span></a></li><li><a href="abschnitt-4-5.html"><span class="nr">4.5</span><span>In Depth: Excitability in the Phase Plane</span></a></li></ol></aside>
+<main>
+  <div class="intro"><div><p class="eyebrow">Chapter 4</p><h1>Continuous Dynamical Systems with Several Variables</h1><p>Systems of differential equations, phase plane, linear systems, Michaelis–Menten kinetics, stability, and limit cycles. For each section there are the programs for all computed figures, apps to try in the browser, and the MATLAB apps of the course.</p>
+  <p><a href="kapitel4_programme.zip" download>Download all programs for Chapter 4 (ZIP)</a></p></div><fieldset class="lang">
+  <legend>Programming language</legend>
+  <div class="seg" role="radiogroup" aria-label="Programming language">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Applies to all pages. MATLAB programs also run in the free GNU Octave.</small>
+</fieldset></div>
+  <ul class="abschnitte"><li><a href="abschnitt-4-1.html"><span class="nr">4.1</span><span class="t">Systems of Differential Equations<small>Several quantities that influence each other lead to a system of differential equations. Its solution is viewed as time courses or as an orbit in the phase plane, where the direction field determines the motion. The programs solve the systems with <code>solve_ivp</code> (Python) or <code>ode45</code> (MATLAB), or with Euler's method.</small></span><span class="zahl">6 figs. · Apps</span></a></li><li><a href="abschnitt-4-2.html"><span class="nr">4.2</span><span class="t">Linear Systems<small>For linear systems dx/dt = A x, the eigenvalues of A yield the solutions. With two variables, trace and determinant decide whether the origin is a node, a spiral, a center, or a saddle and whether it is stable. An example from pharmacology is the uptake of a drug from the stomach into the blood.</small></span><span class="zahl">4 figs. · Apps</span></a></li><li><a href="abschnitt-4-3.html"><span class="nr">4.3</span><span class="t">Michaelis–Menten Kinetics<small>An enzyme E binds a substrate S to form a complex SE, which decays into product P and free enzyme. The law of mass action gives a system for four concentrations. If little enzyme is present, the complex quickly settles at a quasi-steady value, and one obtains the Michaelis–Menten rate.</small></span><span class="zahl">4 figs. · Apps</span></a></li><li><a href="abschnitt-4-4.html"><span class="nr">4.4</span><span class="t">Steady States and Stability<small>Steady states lie at the intersections of the nullclines. Their stability follows from the eigenvalues of the Jacobian matrix, that is, from the linearization. Examples are predator and prey, competing yeasts, the bioreactor with the washout of the biomass, and limit cycles in gene regulation and in the pacemaker tissue of the heart.</small></span><span class="zahl">6 figs. · Apps</span></a></li><li><a href="abschnitt-4-5.html"><span class="nr">4.5</span><span class="t">In Depth: Excitability in the Phase Plane<small>With h as the second variable, the Mitchell–Schaeffer model from Section 3.5 becomes a system in the phase plane. Nullclines and direction field explain threshold, action potential, and recovery. A constant inward current J<sub>0</sub> makes the resting state disappear: a limit cycle arises, the model of a pacemaker cell.</small></span><span class="zahl">2 figs. · Apps</span></a></li></ul>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Companion website to the book “Dynamical Systems in the Life Sciences” by Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programs under the <a href="../LICENSE.txt">MIT License</a> · <a href="../../impressum.html" hreflang="de">Legal notice (German)</a> · <a href="../../datenschutz.html" hreflang="de">Privacy policy (German)</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

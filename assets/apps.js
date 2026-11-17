@@ -221,6 +221,10 @@
       for (var k = 0; k < N; k++) { u.push((1 + r) * u[k] - r * u[k] * u[k] - g * u[k] * v[k]); v.push(g * u[k] * v[k]); }
       var hi = Math.min(3, Math.max(1.2, Math.max.apply(null, u.concat(v).filter(isFinite)) * 1.08));
       var us = 1 / g, vs = r * (1 - 1 / g) / g;
+      // Stabilitaet ueber die Jacobi-Matrix im stationaeren Zustand: Spur 2 - r/g, Determinante 1 + r - 2r/g
+      var sp = 2 - r / g, de = 1 + r - 2 * r / g, di = sp * sp / 4 - de;
+      var rho = di < 0 ? Math.sqrt(de) : Math.max(Math.abs(sp / 2 + Math.sqrt(di)), Math.abs(sp / 2 - Math.sqrt(di)));
+      var stabil = rho < 1;
       if (wahl.value === 'zeit') {
         var A = achsen(ctx, cv.width, cv.height, [-0.5, N + 0.5], [Math.min(0, -0.02 * hi), hi], 'n', 'uₙ, vₙ', teilung(0, N), teilung(0, hi));
         reihen(el, A, [u, v], [rot(0), rot(1)]); legende(el, A, ['Beute uₙ', 'Räuber vₙ'], [rot(0), rot(1)]);
@@ -228,10 +232,11 @@
         var B = achsen(ctx, cv.width, cv.height, [0, hi], [0, hi], 'Beute uₙ', 'Räuber vₙ', teilung(0, hi), teilung(0, hi));
         linie(ctx, B, u, v, farbe('--rule'), 1);
         u.forEach(function (x, i) { var s = i / N; punkt(ctx, B, x, v[i], 'rgb(' + Math.round(250 - 140 * s) + ',' + Math.round(190 - 180 * s) + ',' + Math.round(195 - 165 * s) + ')', 5); });
-        if (vs > 0) { punkt(ctx, B, us, vs, '#000', 7, true); }
+        if (vs > 0) { punkt(ctx, B, us, vs, '#000', 7, !stabil); }
       }
       var z = g <= 1 ? 'Für γ ≤ 1 gibt es keinen stationären Zustand mit Räubern: die Räuber sterben aus.'
-        : 'Stationärer Zustand mit Räubern: <b>(1/γ, r(1 − 1/γ)/γ) = (' + fmt(us, 3) + ', ' + fmt(vs, 3) + ')</b>.';
+        : 'Stationärer Zustand mit Räubern: <b>(1/γ, r(1 − 1/γ)/γ) = (' + fmt(us, 3) + ', ' + fmt(vs, 3) + ')</b>, '
+          + (stabil ? 'stabil (gefüllter Kreis)' : 'instabil (offener Kreis)') + '.';
       if (!u.every(isFinite) || u.some(function (x) { return x < 0; })) z += ' Achtung: negative Werte – das Modell verlässt seinen sinnvollen Bereich.';
       el.querySelector('.zustand').innerHTML = z;
       el.querySelector('.werte').textContent = u.slice(-4).map(function (x, i) { var n = N - 3 + i; return 'n = ' + n + ':  u = ' + fmt(x, 4) + ',  v = ' + fmt(v[n], 4); }).join('\n');

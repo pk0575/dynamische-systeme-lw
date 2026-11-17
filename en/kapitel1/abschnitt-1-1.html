@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>1.1 Sequences and Difference Equations – Dynamical Systems in the Life Sciences</title>
+<meta name="description" content="Programs in Julia, MATLAB, Python, and R for Section 1.1 of the book Dynamical Systems in the Life Sciences">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamical Systems in the Life Sciences</a>
+  <nav aria-label="Chapters"><a href="../index.html">Home</a> <a href="../kapitel1/index.html" aria-current="page">Chapter 1</a> <a href="../kapitel2/index.html">Chapter 2</a> <a href="../kapitel3/index.html">Chapter 3</a> <a href="../kapitel4/index.html">Chapter 4</a> <a href="../../kapitel1/abschnitt-1-1.html" lang="de" hreflang="de">Deutsch</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Sections"><h2><a href="index.html">Chapter 1</a></h2><ol><li><a href="abschnitt-1-1.html" aria-current="page"><span class="nr">1.1</span><span>Sequences and Difference Equations</span></a></li><li><a href="abschnitt-1-2.html"><span class="nr">1.2</span><span>Linear Difference Equations</span></a></li><li><a href="abschnitt-1-3.html"><span class="nr">1.3</span><span>Logistic Growth Model</span></a></li><li><a href="abschnitt-1-4.html"><span class="nr">1.4</span><span>Steady States and Stability</span></a></li><li><a href="abschnitt-1-5.html"><span class="nr">1.5</span><span>Newton's Method</span></a></li><li><a href="abschnitt-1-6.html"><span class="nr">1.6</span><span>In Depth: Heart Models</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Chapter 1 · Discrete Dynamical Systems with One Variable</p>
+      <h1><span class="num">1.1</span>Sequences and Difference Equations</h1>
+      <p>Sequences describe quantities observed at fixed time steps: the length of a fish year by year, the number of malaria parasites day by day, pairs of rabbits month by month. A sequence can be given by a formula for the <i>n</i>-th term or by a recursion rule that computes each term from its predecessor.</p>
+      <p>For each figure of the section you will find the program that produces it. Change parameters and initial values and observe what happens. Figure and equation numbers refer to the book.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programming language</legend>
+  <div class="seg" role="radiogroup" aria-label="Programming language">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Applies to all pages. MATLAB programs also run in the free GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>On this page</b><ul><li><a href="#fisch"><span class="abb">Fig. 1.1</span>Fish length after n years</a></li><li><a href="#malaria"><span class="abb">Fig. 1.3</span>Malaria parasites after n days</a></li><li><a href="#fibonacci"><span class="abb">Fig. 1.4</span>Fibonacci sequence</a></li><li><a href="#heron-funktion"><span class="abb">Fig. 1.7</span>Update function of Heron's method</a></li><li><a href="#heron-treppe"><span class="abb">Fig. 1.8</span>Staircase diagram of Heron's method</a></li><li><a href="#app-treppe-heron"><span class="abb">App</span>try it in the browser</a></li></ul></div>
+  
+<section class="fig" id="fisch">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 1.1</p>
+    <h2>Fish length after <i>n</i> years</h2>
+    <p class="formel">x<sub>n</sub> = 60<i>n</i> / (<i>n</i> + 2)</p>
+    <p class="lead">An explicitly given sequence: the program evaluates the formula for <i>n</i> = 0, …, 10. The dashed lines only serve as a visual aid; terms of the sequence exist only for integers <i>n</i>.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/fisch.png" alt="Output of the program fisch.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="fisch.jl" data-m="fisch.m" data-py="fisch.py" data-r="fisch.R">fisch.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/fisch.py" data-jl="code/fisch.jl" data-m="code/fisch.m" data-py="code/fisch.py" data-r="code/fisch.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 1.1: Fish length after n years (book, Section 1.1, Eq. 1.1)</span>
+<span class="k"># explicit sequence x_n = 60 n / (n + 2)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+n = 0:10                           <span class="k"># n = 0, 1, ..., 10</span>
+x = 60 .* n ./ (n .+ 2)            <span class="k"># formula for the n-th term (elementwise with dot)</span>
+
+println(join([@sprintf(&quot;%.1f&quot;, v) for v in x], &quot;  &quot;))   <span class="k"># 0.0  20.0  30.0  36.0 ...</span>
+
+rot = RGB(0.64, 0.08, 0.18)
+p = plot(n, x, ls = :dash, marker = :circle, color = rot, legend = false, ylims = (-3, 60),
+         xlabel = &quot;n (years)&quot;, ylabel = &quot;Fish length x_n (cm)&quot;)
+annotate!(p, [(n[k], x[k] + 2.5, text(@sprintf(&quot;%.1f&quot;, x[k]), 8, rot)) for k in eachindex(n)])
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 1.1: Fish length after n years (book, Section 1.1, Eq. 1.1)</span>
+<span class="k">% explicit sequence x_n = 60 n / (n + 2)</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+n = 0:10;                       <span class="k">% n = 0, 1, ..., 10</span>
+x = 60 * n ./ (n + 2);          <span class="k">% formula for the n-th term (elementwise ./)</span>
+
+fprintf(&#x27;%.1f  &#x27;, x); fprintf(&#x27;\n&#x27;)   <span class="k">% 0.0  20.0  30.0  36.0  40.0  42.9  45.0 ...</span>
+
+rot = [0.64 0.08 0.18];
+plot(n, x, &#x27;o--&#x27;, &#x27;Color&#x27;, rot, &#x27;MarkerFaceColor&#x27;, rot); hold on
+for k = 1:numel(n)
+    text(n(k), x(k) + 1.5, sprintf(&#x27;%.1f&#x27;, x(k)), &#x27;HorizontalAlignment&#x27;, &#x27;center&#x27;, &#x27;Color&#x27;, rot)
+end
+hold off
+xlabel(&#x27;n (years)&#x27;); ylabel(&#x27;Fish length x_n (cm)&#x27;); ylim([-3 60])</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 1.1: Fish length after n years (book, Section 1.1, Eq. 1.1)</span>
+<span class="k"># explicit sequence x_n = 60 n / (n + 2)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+n = np.arange(0, 11)            <span class="k"># n = 0, 1, ..., 10</span>
+x = 60 * n / (n + 2)            <span class="k"># formula for the n-th term</span>
+
+print(&quot;  &quot;.join(f&quot;{v:.1f}&quot; for v in x))   <span class="k"># 0.0  20.0  30.0  36.0  40.0  42.9  45.0 ...</span>
+
+plt.plot(n, x, &quot;o--&quot;, color=(0.64, 0.08, 0.18))
+for k in n:
+    plt.text(k, x[k] + 1.5, f&quot;{x[k]:.1f}&quot;, ha=&quot;center&quot;, color=(0.64, 0.08, 0.18))
+plt.xlabel(&quot;n (years)&quot;)
+plt.ylabel(&quot;Fish length $x_n$ (cm)&quot;)
+plt.ylim(-3, 60)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 1.1: Fish length after n years (book, Section 1.1, Eq. 1.1)</span>
+<span class="k"># explicit sequence x_n = 60 n / (n + 2)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+n &lt;- 0:10                          <span class="k"># n = 0, 1, ..., 10</span>
+x &lt;- 60 * n / (n + 2)              <span class="k"># formula for the n-th term (elementwise)</span>
+
+cat(sprintf(&quot;%.1f&quot;, x), &quot;\n&quot;)      <span class="k"># 0.0 20.0 30.0 36.0 40.0 42.9 45.0 ...</span>
+
+rot &lt;- rgb(0.64, 0.08, 0.18)
+plot(n, x, type = &quot;o&quot;, lty = 2, pch = 16, col = rot, ylim = c(-3, 60),
+     xlab = &quot;n (years)&quot;, ylab = &quot;Fish length x_n (cm)&quot;)
+text(n, x + 2.5, sprintf(&quot;%.1f&quot;, x), col = rot, cex = 0.8)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>0.0  20.0  30.0  36.0  40.0  42.9  45.0  46.7  48.0  49.1  50.0</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="malaria">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 1.3</p>
+    <h2>Malaria parasites after <i>n</i> days</h2>
+    <p class="formel">x<sub>n+1</sub> = 8 x<sub>n</sub>,&ensp; x<sub>0</sub> = 1</p>
+    <p class="lead">The loop applies the recursion rule four times. The solution formula x<sub>n</sub> = 8<sup>n</sup> x<sub>0</sub> gives the same numbers without intermediate steps.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/malaria.png" alt="Output of the program malaria.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="malaria.jl" data-m="malaria.m" data-py="malaria.py" data-r="malaria.R">malaria.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/malaria.py" data-jl="code/malaria.jl" data-m="code/malaria.m" data-py="code/malaria.py" data-r="code/malaria.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 1.3: Malaria parasites after n days (book, Section 1.1, Eq. 1.2 and 1.3)</span>
+<span class="k"># recursion rule x_{n+1} = 8 x_n, x_0 = 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Plots
+
+N = 4                              <span class="k"># number of days</span>
+x = zeros(Int, N + 1)
+x[1] = 1                           <span class="k"># initial value x_0 = 1 (Julia counts from 1: x[1] is x_0)</span>
+for k in 1:N
+    x[k + 1] = 8 * x[k]            <span class="k"># recursion rule</span>
+end
+
+n = 0:N
+println(x)                         <span class="k"># [1, 8, 64, 512, 4096]</span>
+println(8 .^ n .* x[1])            <span class="k"># solution formula x_n = 8^n x_0 gives the same</span>
+
+rot = RGB(0.64, 0.08, 0.18)
+p = plot(n, x, ls = :dash, marker = :circle, color = rot, legend = false, xticks = n,
+         xlabel = &quot;n (days)&quot;, ylabel = &quot;Number of parasites x_n&quot;)
+annotate!(p, [(n[k], x[k] + 250, text(string(x[k]), 8, rot)) for k in eachindex(n)])
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 1.3: Malaria parasites after n days (book, Section 1.1, Eq. 1.2 and 1.3)</span>
+<span class="k">% recursion rule x_{n+1} = 8 x_n, x_0 = 1</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+N = 4;                          <span class="k">% number of days</span>
+x = zeros(1, N + 1);
+x(1) = 1;                       <span class="k">% initial value x_0 = 1 (MATLAB counts from 1: x(1) is x_0)</span>
+for k = 1:N
+    x(k + 1) = 8 * x(k);        <span class="k">% recursion rule</span>
+end
+
+n = 0:N;
+disp(x)                         <span class="k">% 1  8  64  512  4096</span>
+disp(8.^n * x(1))               <span class="k">% solution formula x_n = 8^n x_0 gives the same</span>
+
+rot = [0.64 0.08 0.18];
+plot(n, x, &#x27;o--&#x27;, &#x27;Color&#x27;, rot, &#x27;MarkerFaceColor&#x27;, rot); hold on
+for k = 1:numel(n)
+    text(n(k), x(k) + 100, sprintf(&#x27;%d&#x27;, x(k)), &#x27;HorizontalAlignment&#x27;, &#x27;center&#x27;, &#x27;Color&#x27;, rot)
+end
+hold off
+xlabel(&#x27;n (days)&#x27;); ylabel(&#x27;Number of parasites x_n&#x27;); xticks(n)</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 1.3: Malaria parasites after n days (book, Section 1.1, Eq. 1.2 and 1.3)</span>
+<span class="k"># recursion rule x_{n+1} = 8 x_n, x_0 = 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+N = 4                           <span class="k"># number of days</span>
+x = np.zeros(N + 1)
+x[0] = 1                        <span class="k"># initial value: one parasite</span>
+for n in range(N):
+    x[n + 1] = 8 * x[n]         <span class="k"># recursion rule</span>
+
+n = np.arange(N + 1)
+print(x.astype(int))            <span class="k"># [1 8 64 512 4096]</span>
+print((8**n * x[0]).astype(int))  <span class="k"># solution formula x_n = 8^n x_0 gives the same</span>
+
+plt.plot(n, x, &quot;o--&quot;, color=(0.64, 0.08, 0.18))
+for k in n:
+    plt.text(k, x[k] + 100, f&quot;{x[k]:.0f}&quot;, ha=&quot;center&quot;, color=(0.64, 0.08, 0.18))
+plt.xlabel(&quot;n (days)&quot;)
+plt.ylabel(&quot;Number of parasites $x_n$&quot;)
+plt.xticks(n)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 1.3: Malaria parasites after n days (book, Section 1.1, Eq. 1.2 and 1.3)</span>
+<span class="k"># recursion rule x_{n+1} = 8 x_n, x_0 = 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+N &lt;- 4                             <span class="k"># number of days</span>
+x &lt;- numeric(N + 1)
+x[1] &lt;- 1                          <span class="k"># initial value x_0 = 1 (R counts from 1: x[1] is x_0)</span>
+for (k in 1:N) {
+  x[k + 1] &lt;- 8 * x[k]             <span class="k"># recursion rule</span>
+}
+
+n &lt;- 0:N
+cat(x, &quot;\n&quot;)                         <span class="k"># 1 8 64 512 4096</span>
+cat(8^n * x[1], &quot;\n&quot;)                <span class="k"># solution formula x_n = 8^n x_0 gives the same</span>
+
+rot &lt;- rgb(0.64, 0.08, 0.18)
+plot(n, x, type = &quot;o&quot;, lty = 2, pch = 16, col = rot, xaxt = &quot;n&quot;, ylim = c(0, 4500),
+     xlab = &quot;n (days)&quot;, ylab = &quot;Number of parasites x_n&quot;)
+axis(1, at = n)
+text(n, x + 250, x, col = rot, cex = 0.8)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>[   1    8   64  512 4096]
+[   1    8   64  512 4096]</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="fibonacci">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 1.4</p>
+    <h2>Fibonacci sequence</h2>
+    <p class="formel">x<sub>n+1</sub> = x<sub>n</sub> + x<sub>n−1</sub>,&ensp; x<sub>0</sub> = x<sub>1</sub> = 1</p>
+    <p class="lead">A second-order difference equation with two initial values. The program compares the recursively computed numbers with the solution formula (1.6).</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/fibonacci.png" alt="Output of the program fibonacci.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="fibonacci.jl" data-m="fibonacci.m" data-py="fibonacci.py" data-r="fibonacci.R">fibonacci.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/fibonacci.py" data-jl="code/fibonacci.jl" data-m="code/fibonacci.m" data-py="code/fibonacci.py" data-r="code/fibonacci.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 1.4: Fibonacci sequence (book, Section 1.1, Eq. 1.5 and 1.6)</span>
+<span class="k"># x_{n+1} = x_n + x_{n-1}, x_0 = x_1 = 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Plots
+
+N = 10                             <span class="k"># number of months</span>
+x = zeros(Int, N + 1)
+x[1] = 1; x[2] = 1                 <span class="k"># two initial values x_0 and x_1 (Julia counts from 1)</span>
+for k in 2:N
+    x[k + 1] = x[k] + x[k - 1]     <span class="k"># recursion rule</span>
+end
+
+n = 0:N
+phi = (1 + sqrt(5)) / 2; psi = (1 - sqrt(5)) / 2
+formel = (phi .^ (n .+ 1) .- psi .^ (n .+ 1)) ./ sqrt(5)   <span class="k"># solution formula (Eq. 1.6)</span>
+println(x)                         <span class="k"># [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]</span>
+println(round.(Int, formel))       <span class="k"># the solution formula gives the same numbers</span>
+
+rot = RGB(0.64, 0.08, 0.18)
+p = plot(n, x, ls = :dash, marker = :circle, color = rot, legend = false, xticks = n,
+         xlabel = &quot;n (months)&quot;, ylabel = &quot;Rabbit pairs x_n&quot;)
+annotate!(p, [(n[k], x[k] + 4, text(string(x[k]), 8, rot)) for k in eachindex(n)])
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 1.4: Fibonacci sequence (book, Section 1.1, Eq. 1.5 and 1.6)</span>
+<span class="k">% x_{n+1} = x_n + x_{n-1}, x_0 = x_1 = 1</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+N = 10;                         <span class="k">% number of months</span>
+x = zeros(1, N + 1);
+x(1) = 1; x(2) = 1;             <span class="k">% two initial values x_0 and x_1 (MATLAB counts from 1)</span>
+for k = 2:N
+    x(k + 1) = x(k) + x(k - 1); <span class="k">% recursion rule</span>
+end
+
+n = 0:N;
+phi = (1 + sqrt(5)) / 2; psi = (1 - sqrt(5)) / 2;
+formel = (phi.^(n + 1) - psi.^(n + 1)) / sqrt(5);   <span class="k">% solution formula (Eq. 1.6)</span>
+disp(x)                         <span class="k">% 1 1 2 3 5 8 13 21 34 55 89</span>
+disp(round(formel))             <span class="k">% the solution formula gives the same numbers</span>
+
+rot = [0.64 0.08 0.18];
+plot(n, x, &#x27;o--&#x27;, &#x27;Color&#x27;, rot, &#x27;MarkerFaceColor&#x27;, rot); hold on
+for k = 1:numel(n)
+    text(n(k), x(k) + 3, sprintf(&#x27;%d&#x27;, x(k)), &#x27;HorizontalAlignment&#x27;, &#x27;center&#x27;, &#x27;Color&#x27;, rot)
+end
+hold off
+xlabel(&#x27;n (months)&#x27;); ylabel(&#x27;Rabbit pairs x_n&#x27;); xticks(n)</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 1.4: Fibonacci sequence (book, Section 1.1, Eq. 1.5 and 1.6)</span>
+<span class="k"># x_{n+1} = x_n + x_{n-1}, x_0 = x_1 = 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+N = 10                          <span class="k"># number of months</span>
+x = np.zeros(N + 1)
+x[0], x[1] = 1, 1               <span class="k"># two initial values (second-order difference equation)</span>
+for n in range(1, N):
+    x[n + 1] = x[n] + x[n - 1]  <span class="k"># recursion rule</span>
+
+n = np.arange(N + 1)
+phi, psi = (1 + np.sqrt(5)) / 2, (1 - np.sqrt(5)) / 2
+formel = (phi**(n + 1) - psi**(n + 1)) / np.sqrt(5)   <span class="k"># solution formula (Eq. 1.6)</span>
+print(x.astype(int))            <span class="k"># [1 1 2 3 5 8 13 21 34 55 89]</span>
+print(np.round(formel).astype(int))  <span class="k"># the solution formula gives the same numbers</span>
+
+plt.plot(n, x, &quot;o--&quot;, color=(0.64, 0.08, 0.18))
+for k in n:
+    plt.text(k, x[k] + 3, f&quot;{x[k]:.0f}&quot;, ha=&quot;center&quot;, color=(0.64, 0.08, 0.18))
+plt.xlabel(&quot;n (months)&quot;)
+plt.ylabel(&quot;Rabbit pairs $x_n$&quot;)
+plt.xticks(n)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 1.4: Fibonacci sequence (book, Section 1.1, Eq. 1.5 and 1.6)</span>
+<span class="k"># x_{n+1} = x_n + x_{n-1}, x_0 = x_1 = 1</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+N &lt;- 10                            <span class="k"># number of months</span>
+x &lt;- numeric(N + 1)
+x[1] &lt;- 1; x[2] &lt;- 1               <span class="k"># two initial values x_0 and x_1 (R counts from 1)</span>
+for (k in 2:N) {
+  x[k + 1] &lt;- x[k] + x[k - 1]      <span class="k"># recursion rule</span>
+}
+
+n &lt;- 0:N
+phi &lt;- (1 + sqrt(5)) / 2; psi &lt;- (1 - sqrt(5)) / 2
+formel &lt;- (phi^(n + 1) - psi^(n + 1)) / sqrt(5)   <span class="k"># solution formula (Eq. 1.6)</span>
+cat(x, &quot;\n&quot;)                         <span class="k"># 1 1 2 3 5 8 13 21 34 55 89</span>
+cat(round(formel), &quot;\n&quot;)             <span class="k"># the solution formula gives the same numbers</span>
+
+rot &lt;- rgb(0.64, 0.08, 0.18)
+plot(n, x, type = &quot;o&quot;, lty = 2, pch = 16, col = rot, xaxt = &quot;n&quot;, ylim = c(0, 95),
+     xlab = &quot;n (months)&quot;, ylab = &quot;Rabbit pairs x_n&quot;)
+axis(1, at = n)
+text(n, x + 4, x, col = rot, cex = 0.8)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>[ 1  1  2  3  5  8 13 21 34 55 89]
+[ 1  1  2  3  5  8 13 21 34 55 89]</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="heron-funktion">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 1.7</p>
+    <h2>Update function of Heron's method</h2>
+    <p class="formel">f(x) = ½ (x + 2/x)</p>
+    <p class="lead">The graph of the update function shows how the next value x<sub>1</sub> = f(x<sub>0</sub>) = 2.25 arises from x<sub>0</sub> = 0.5.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/heron_funktion.png" alt="Output of the program heron_funktion.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="heron_funktion.jl" data-m="heron_funktion.m" data-py="heron_funktion.py" data-r="heron_funktion.R">heron_funktion.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/heron_funktion.py" data-jl="code/heron_funktion.jl" data-m="code/heron_funktion.m" data-py="code/heron_funktion.py" data-r="code/heron_funktion.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 1.7: Update function of Heron&#x27;s method (book, Section 1.1, Eq. 1.4)</span>
+<span class="k"># f(x) = (x + 2/x)/2 and first step x_0 = 0.5 -&gt; x_1 = f(x_0)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+f(x) = 0.5 * (x + 2 / x)
+x0 = 0.5
+x1 = f(x0)
+@printf(&quot;x_0 = %g,  x_1 = f(x_0) = %g\n&quot;, x0, x1)       <span class="k"># x_1 = 2.25</span>
+
+rot = RGB(0.64, 0.08, 0.18); blau = RGB(0, 0.447, 0.741)
+x = range(0.16, 4.3, length = 400)
+p = plot(x, f.(x), color = blau, lw = 2, label = &quot;f(x) = (x + 2/x)/2&quot;, xlims = (0, 4.3), ylims = (0, 6.5),
+         xlabel = &quot;x&quot;, ylabel = &quot;f(x)&quot;)
+plot!(p, [x0, x0, 0], [0, x1, x1], ls = :dash, color = rot, label = &quot;&quot;)   <span class="k"># up to the curve, then to the y-axis</span>
+scatter!(p, [x0, 0], [0, x1], color = rot, label = &quot;&quot;)
+display(p)</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 1.7: Update function of Heron&#x27;s method (book, Section 1.1, Eq. 1.4)</span>
+<span class="k">% f(x) = (x + 2/x)/2 and first step x_0 = 0.5 -&gt; x_1 = f(x_0)</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+f = @(x) 0.5 * (x + 2 ./ x);
+x0 = 0.5;
+x1 = f(x0);
+fprintf(&#x27;x_0 = %g,  x_1 = f(x_0) = %g\n&#x27;, x0, x1);    <span class="k">% x_1 = 2.25</span>
+
+rot = [0.64 0.08 0.18]; blau = [0 0.447 0.741];
+x = linspace(0.16, 4.3, 400);
+plot(x, f(x), &#x27;Color&#x27;, blau); hold on
+plot([x0 x0 0], [0 x1 x1], &#x27;--&#x27;, &#x27;Color&#x27;, rot);      <span class="k">% up to the curve, then to the y-axis</span>
+plot([x0 0], [0 x1], &#x27;o&#x27;, &#x27;Color&#x27;, rot, &#x27;MarkerFaceColor&#x27;, rot);
+hold off
+xlim([0 4.3]); ylim([0 6.5]);
+xlabel(&#x27;x&#x27;); ylabel(&#x27;f(x)&#x27;); legend(&#x27;f(x) = (x + 2/x)/2&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 1.7: Update function of Heron&#x27;s method (book, Section 1.1, Eq. 1.4)</span>
+<span class="k"># f(x) = (x + 2/x)/2 and first step x_0 = 0.5 -&gt; x_1 = f(x_0)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+f = lambda x: 0.5 * (x + 2 / x)
+x0 = 0.5
+x1 = f(x0)
+print(f&quot;x_0 = {x0},  x_1 = f(x_0) = {x1}&quot;)       <span class="k"># x_1 = 2.25</span>
+
+x = np.linspace(0.16, 4.3, 400)
+plt.plot(x, f(x), color=(0, 0.447, 0.741), label=&quot;f(x) = (x + 2/x)/2&quot;)
+plt.plot([x0, x0, 0], [0, x1, x1], &quot;--&quot;, color=(0.64, 0.08, 0.18))   <span class="k"># up to the curve, then to the y-axis</span>
+plt.plot([x0, 0], [0, x1], &quot;o&quot;, color=(0.64, 0.08, 0.18))
+plt.xlim(0, 4.3); plt.ylim(0, 6.5)
+plt.xlabel(&quot;x&quot;); plt.ylabel(&quot;f(x)&quot;); plt.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 1.7: Update function of Heron&#x27;s method (book, Section 1.1, Eq. 1.4)</span>
+<span class="k"># f(x) = (x + 2/x)/2 and first step x_0 = 0.5 -&gt; x_1 = f(x_0)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+f &lt;- function(x) 0.5 * (x + 2 / x)
+x0 &lt;- 0.5
+x1 &lt;- f(x0)
+cat(sprintf(&quot;x_0 = %g,  x_1 = f(x_0) = %g\n&quot;, x0, x1))   <span class="k"># x_1 = 2.25</span>
+
+rot &lt;- rgb(0.64, 0.08, 0.18); blau &lt;- rgb(0, 0.447, 0.741)
+x &lt;- seq(0.16, 4.3, length.out = 400)
+plot(x, f(x), type = &quot;l&quot;, col = blau, lwd = 2, xlim = c(0, 4.3), ylim = c(0, 6.5), xlab = &quot;x&quot;, ylab = &quot;f(x)&quot;)
+lines(c(x0, x0, 0), c(0, x1, x1), lty = 2, col = rot)      <span class="k"># up to the curve, then to the y-axis</span>
+points(c(x0, 0), c(0, x1), pch = 16, col = rot)
+legend(&quot;topright&quot;, legend = &quot;f(x) = (x + 2/x)/2&quot;, col = blau, lwd = 2)</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>x_0 = 0.5,  x_1 = f(x_0) = 2.25</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="heron-treppe">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 1.8</p>
+    <h2>Staircase diagram of Heron's method</h2>
+    <p class="formel">x<sub>n+1</sub> = ½ (x<sub>n</sub> + 2/x<sub>n</sub>),&ensp; x<sub>0</sub> = 0.5</p>
+    <p class="lead">Via the diagonal y = x, each new value becomes the starting point of the next step. The staircase runs into the intersection at √2; already x<sub>4</sub> is correct to four decimal places.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/heron_treppe.png" alt="Output of the program heron_treppe.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="heron_treppe.jl" data-m="heron_treppe.m" data-py="heron_treppe.py" data-r="heron_treppe.R">heron_treppe.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/heron_treppe.py" data-jl="code/heron_treppe.jl" data-m="code/heron_treppe.m" data-py="code/heron_treppe.py" data-r="code/heron_treppe.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 1.8: Staircase diagram of Heron&#x27;s method (book, Section 1.1, Eq. 1.4)</span>
+<span class="k"># x_{n+1} = (x_n + 2/x_n)/2 with x_0 = 0.5; the staircase runs into the intersection with y = x at sqrt(2)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+
+f(x) = 0.5 * (x + 2 / x)
+x0 = 0.5; N = 4
+
+x = zeros(N + 1)
+x[1] = x0                                <span class="k"># Julia counts from 1: x[1] is x_0</span>
+for k in 1:N
+    x[k + 1] = f(x[k])
+end
+for k in 1:N + 1
+    @printf(&quot;x_%d = %.6f\n&quot;, k - 1, x[k])
+end
+@printf(&quot;sqrt(2) = %.6f\n&quot;, sqrt(2))
+
+rot = RGB(0.64, 0.08, 0.18); blau = RGB(0, 0.447, 0.741)
+xx = range(0.3, 3, length = 400)
+bilder = []
+for s in (1, N)
+    p = plot(xx, f.(xx), color = blau, lw = 2, legend = false, xlims = (0, 3), ylims = (0, 3),
+             xlabel = &quot;x&quot;, ylabel = &quot;f(x)&quot;, title = &quot;$s step(s)&quot;)
+    plot!(p, [0, 3], [0, 3], color = :black)
+    px = [x[1]]; py = [0.0]              <span class="k"># staircase: vertically to the graph, horizontally to the diagonal</span>
+    for k in 1:s
+        append!(px, [x[k], x[k + 1]]); append!(py, [x[k + 1], x[k + 1]])
+    end
+    push!(px, x[s + 1]); push!(py, 0.0)  <span class="k"># value back to the x-axis</span>
+    plot!(p, px, py, color = rot)
+    push!(bilder, p)
+end
+display(plot(bilder..., layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 1.8: Staircase diagram of Heron&#x27;s method (book, Section 1.1, Eq. 1.4)</span>
+<span class="k">% x_{n+1} = (x_n + 2/x_n)/2 with x_0 = 0.5; the staircase runs into the intersection with y = x at sqrt(2)</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+f = @(x) 0.5 * (x + 2 ./ x);
+x0 = 0.5; N = 4;
+
+x = zeros(1, N + 1);
+x(1) = x0;                               <span class="k">% MATLAB counts from 1: x(1) is x_0</span>
+for k = 1:N
+    x(k + 1) = f(x(k));
+end
+for k = 1:N + 1
+    fprintf(&#x27;x_%d = %.6f\n&#x27;, k - 1, x(k));
+end
+fprintf(&#x27;sqrt(2) = %.6f\n&#x27;, sqrt(2));
+
+rot = [0.64 0.08 0.18]; blau = [0 0.447 0.741];
+xx = linspace(0.3, 3, 400);
+schrittzahl = [1 N];
+for p = 1:2
+    subplot(1, 2, p);
+    plot(xx, f(xx), &#x27;Color&#x27;, blau); hold on
+    plot([0 3], [0 3], &#x27;k-&#x27;);
+    s = schrittzahl(p);
+    px = x(1); py = 0;                   <span class="k">% staircase: vertically to the graph, horizontally to the diagonal</span>
+    for k = 1:s
+        px = [px x(k) x(k + 1)]; py = [py x(k + 1) x(k + 1)];
+    end
+    px = [px x(s + 1)]; py = [py 0];     <span class="k">% value back to the x-axis</span>
+    plot(px, py, &#x27;Color&#x27;, rot);
+    hold off
+    axis([0 3 0 3]); xlabel(&#x27;x&#x27;); ylabel(&#x27;f(x)&#x27;);
+    title(sprintf(&#x27;%d step(s)&#x27;, s));
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 1.8: Staircase diagram of Heron&#x27;s method (book, Section 1.1, Eq. 1.4)</span>
+<span class="k"># x_{n+1} = (x_n + 2/x_n)/2 with x_0 = 0.5; the staircase runs into the intersection with y = x at sqrt(2)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+
+f = lambda x: 0.5 * (x + 2 / x)
+x0, N = 0.5, 4
+
+x = [x0]
+for n in range(N):
+    x.append(f(x[-1]))
+for n, v in enumerate(x):
+    print(f&quot;x_{n} = {v:.6f}&quot;)
+print(f&quot;sqrt(2) = {np.sqrt(2):.6f}&quot;)
+
+xx = np.linspace(0.3, 3, 400)
+fig, axs = plt.subplots(1, 2, figsize=(10, 4.5))
+for ax, schritte in zip(axs, (1, N)):
+    ax.plot(xx, f(xx), color=(0, 0.447, 0.741), label=&quot;f(x)&quot;)
+    ax.plot([0, 3], [0, 3], &quot;k&quot;, lw=0.8, label=&quot;y = x&quot;)
+    px, py = [x[0]], [0]                       <span class="k"># staircase: vertically to the graph, horizontally to the diagonal</span>
+    for k in range(schritte):
+        px += [x[k], x[k + 1]]
+        py += [x[k + 1], x[k + 1]]
+    px.append(x[schritte]); py.append(0)       <span class="k"># value back to the x-axis</span>
+    ax.plot(px, py, color=(0.64, 0.08, 0.18))
+    ax.set_xlim(0, 3); ax.set_ylim(0, 3)
+    ax.set_xlabel(&quot;x&quot;); ax.set_ylabel(&quot;f(x)&quot;)
+    ax.set_title(f&quot;{schritte} step&quot; + (&quot;e&quot; if schritte &gt; 1 else &quot;&quot;))
+axs[0].legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 1.8: Staircase diagram of Heron&#x27;s method (book, Section 1.1, Eq. 1.4)</span>
+<span class="k"># x_{n+1} = (x_n + 2/x_n)/2 with x_0 = 0.5; the staircase runs into the intersection with y = x at sqrt(2)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+f &lt;- function(x) 0.5 * (x + 2 / x)
+x0 &lt;- 0.5; N &lt;- 4
+
+x &lt;- numeric(N + 1)
+x[1] &lt;- x0                               <span class="k"># R counts from 1: x[1] is x_0</span>
+for (k in 1:N) x[k + 1] &lt;- f(x[k])
+for (k in 1:(N + 1)) cat(sprintf(&quot;x_%d = %.6f\n&quot;, k - 1, x[k]))
+cat(sprintf(&quot;sqrt(2) = %.6f\n&quot;, sqrt(2)))
+
+rot &lt;- rgb(0.64, 0.08, 0.18); blau &lt;- rgb(0, 0.447, 0.741)
+xx &lt;- seq(0.3, 3, length.out = 400)
+par(mfrow = c(1, 2))
+for (s in c(1, N)) {
+  plot(xx, f(xx), type = &quot;l&quot;, col = blau, lwd = 2, xlim = c(0, 3), ylim = c(0, 3),
+       xlab = &quot;x&quot;, ylab = &quot;f(x)&quot;, main = sprintf(&quot;%d step(s)&quot;, s))
+  abline(0, 1)
+  px &lt;- x[1]; py &lt;- 0                    <span class="k"># staircase: vertically to the graph, horizontally to the diagonal</span>
+  for (k in 1:s) { px &lt;- c(px, x[k], x[k + 1]); py &lt;- c(py, x[k + 1], x[k + 1]) }
+  px &lt;- c(px, x[s + 1]); py &lt;- c(py, 0)  <span class="k"># value back to the x-axis</span>
+  lines(px, py, col = rot)
+}</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>x_0 = 0.500000
+x_1 = 2.250000
+x_2 = 1.569444
+x_3 = 1.421890
+x_4 = 1.414234
+sqrt(2) = 1.414214</code></pre></details>
+    </div>
+  </div>
+</section>
+  <section class="apps" id="app-treppe-heron">
+  <div class="fig-head"><p class="eyebrow">Try it in the browser · no installation</p><h2>Staircase diagram of Heron's method</h2><p class="lead">Choose the initial value x<sub>0</sub> and the number c whose square root is sought. The staircase always runs toward √c, no matter where it starts (for x<sub>0</sub> &gt; 0).</p></div>
+  <div class="app" data-app="treppe" data-familie="heron">
+    <canvas width="720" height="560" aria-label="Staircase diagram of Heron&#x27;s method"></canvas>
+    <div class="regler"><div data-zeile="p"><label><span><span data-pname>Parameter</span></span> <output data-o="p"></output><input type="range" data-r="p" min="0" max="1" step="0.01" value="0.5" aria-label="Parameter"></label></div><label><span>Initial value x<sub>0</sub></span> <output data-o="x0"></output><input type="range" data-r="x0" min="0" max="1" step="0.01" value="0.1" aria-label="Initial value x0"></label><label><span>Steps</span> <output data-o="n"></output><input type="range" data-r="n" min="1" max="300" step="1" value="12" aria-label="Steps"></label><p class="zustand"></p><pre class="werte"></pre></div>
+  </div>
+</section>
+  <section class="matlab-apps"><h3>MATLAB apps from the course</h3><p>Download, put into a folder, and type the name without extension in MATLAB, e.g. <code>fisch_app</code>. The apps use the graphical user interface of MATLAB and do not run in GNU Octave. Their user interface is in German.</p><ul><li><a href="apps/fisch_app.m" download>fisch_app.m</a><span>Growth of a fish</span></li><li><a href="apps/malaria_app.m" download>malaria_app.m</a><span>Malaria parasites</span></li><li><a href="apps/fibonacci_app.m" download>fibonacci_app.m</a><span>Fibonacci sequence with rabbit picture (with 6 image files in the same folder: <a href="apps/fibonacci_hasen_0.png" download>fibonacci_hasen_0.png</a>, <a href="apps/fibonacci_hasen_1.png" download>fibonacci_hasen_1.png</a>, <a href="apps/fibonacci_hasen_2.png" download>fibonacci_hasen_2.png</a>, <a href="apps/fibonacci_hasen_3.png" download>fibonacci_hasen_3.png</a>, <a href="apps/fibonacci_hasen_4.png" download>fibonacci_hasen_4.png</a>, <a href="apps/fibonacci_hasen_5.png" download>fibonacci_hasen_5.png</a>)</span></li><li><a href="apps/aktualisierung_app.m" download>aktualisierung_app.m</a><span>Update function and one iteration step</span></li></ul></section>
+  <nav class="weiter" aria-label="Page navigation"><a href="abschnitt-1-2.html"><small>Next</small>1.2 Linear Difference Equations</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Companion website to the book “Dynamical Systems in the Life Sciences” by Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programs under the <a href="../LICENSE.txt">MIT License</a> · <a href="../../impressum.html" hreflang="de">Legal notice (German)</a> · <a href="../../datenschutz.html" hreflang="de">Privacy policy (German)</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>
