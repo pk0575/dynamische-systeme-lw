@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chapter 5: Outlook: Propagation of Excitation in Cardiac Tissue – Dynamical Systems in the Life Sciences</title>
+<meta name="description" content="Programs and apps for Chapter 5 of the book Dynamical Systems in the Life Sciences">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamical Systems in the Life Sciences</a>
+  <nav aria-label="Chapters"><a href="../index.html">Home</a> <a href="../kapitel1/index.html">Chapter 1</a> <a href="../kapitel2/index.html">Chapter 2</a> <a href="../kapitel3/index.html">Chapter 3</a> <a href="../kapitel4/index.html">Chapter 4</a> <a href="../kapitel5/index.html" aria-current="page">Chapter 5</a> <a href="../../kapitel5/index.html" lang="de" hreflang="de">Deutsch</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Sections"><h2><a href="index.html">Chapter 5</a></h2><ol><li><a href="abschnitt-5-1.html"><span class="nr">5.1</span><span>From Coupled Cells to the Cable Equation</span></a></li><li><a href="abschnitt-5-2.html"><span class="nr">5.2</span><span>Traveling Waves</span></a></li><li><a href="abschnitt-5-3.html"><span class="nr">5.3</span><span>Circulating Excitation</span></a></li><li><a href="abschnitt-5-4.html"><span class="nr">5.4</span><span>Spiral Waves in the Plane</span></a></li><li><a href="abschnitt-5-5.html"><span class="nr">5.5</span><span>From Tissue to the Whole Heart</span></a></li></ol></aside>
+<main>
+  <div class="intro"><div><p class="eyebrow">Chapter 5</p><h1>Outlook: Propagation of Excitation in Cardiac Tissue</h1><p>Cable equation, traveling waves, circulating excitation, spiral waves, and heart models in three dimensions. For each section there are the programs for all computed figures, apps to try in the browser, and the MATLAB apps of the course.</p>
+  <p><a href="kapitel5_programme.zip" download>Download all programs for Chapter 5 (ZIP)</a></p></div><fieldset class="lang">
+  <legend>Programming language</legend>
+  <div class="seg" role="radiogroup" aria-label="Programming language">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Applies to all pages. MATLAB programs also run in the free GNU Octave.</small>
+</fieldset></div>
+  <ul class="abschnitte"><li><a href="abschnitt-5-1.html"><span class="nr">5.1</span><span class="t">From Coupled Cells to the Cable Equation<small>Neighboring heart muscle cells are coupled by gap junctions. If the distance Δx between the cells tends to zero, the system of ordinary differential equations becomes the cable equation ∂v/∂t = D ∂<sup>2</sup>v/∂x<sup>2</sup> + … , a partial differential equation. Numerically it is solved again on a grid with Euler's method; this requires Δt &lt; Δx<sup>2</sup>/(2D). The programs for Sections 5.2 to 5.4 show how this is done.</small></span><span class="zahl">0 figs.</span></a></li><li><a href="abschnitt-5-2.html"><span class="nr">5.2</span><span class="t">Traveling Waves<small>On a fiber the excitation travels as a pulse with fixed shape and speed. For the front, the speed c = √(D/(2τ<sub>in</sub>)) (1 − 3v<sub>s</sub>*) can be given exactly; it grows with the square root of the coupling D. The programs use D = 0.1 mm<sup>2</sup>/ms, Δx = 0.1 mm, and Δt = 0.01 ms.</small></span><span class="zahl">2 figs. · Apps</span></a></li><li><a href="abschnitt-5-3.html"><span class="nr">5.3</span><span class="t">Circulating Excitation<small>On a ring the wave travels in one direction and, after one round trip, meets the tissue it excited itself. If the ring is shorter than about the wavelength, this tissue is still refractory and the excitation dies out.</small></span><span class="zahl">1 figs.</span></a></li><li><a href="abschnitt-5-4.html"><span class="nr">5.4</span><span class="t">Spiral Waves in the Plane<small>In a layer of tissue the second derivative is replaced by the Laplace operator Δv. A second stimulus in partially refractory tissue creates a spiral wave that excites the tissue again and again without further stimuli – a model of ventricular tachycardia.</small></span><span class="zahl">2 figs. · Apps</span></a></li><li><a href="abschnitt-5-5.html"><span class="nr">5.5</span><span class="t">From Tissue to the Whole Heart<small>In the heart, excitation spreads in three dimensions, faster along the fibers, whose direction rotates through the heart wall. Current heart models combine detailed cell models, the bidomain model, and patient-specific geometries; the simulation in Figure 5.7 of the book was computed with the freely available software <a href="https://opencarp.org">openCARP</a> on a laptop.</small></span><span class="zahl">0 figs.</span></a></li></ul>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Companion website to the book “Dynamical Systems in the Life Sciences” by Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programs under the <a href="../LICENSE.txt">MIT License</a> · <a href="../../impressum.html" hreflang="de">Legal notice (German)</a> · <a href="../../datenschutz.html" hreflang="de">Privacy policy (German)</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

@@ -448,8 +448,225 @@
     male(); return male;
   }
 
+  // ------------------------------------------------------------ helpers for Chapter 5 (Mitchell-Schaeffer with diffusion)
+  var MS = { tin: 0.3, tout: 6, topen: 100, tclose: 115, vg: 0.13 };
+  // color scale as in the book: white (rest) -> light red -> red -> dark red (excited)
+  var SKALA = [[0, 255, 255, 255], [0.25, 250, 204, 204], [0.5, 226, 112, 124], [0.75, 163, 20, 46], [1, 110, 10, 30]];
+  var PAL = (function () { var p = new Uint8ClampedArray(256 * 3);
+    for (var i = 0; i < 256; i++) { var s = i / 255, k = 0; while (k < SKALA.length - 2 && s > SKALA[k + 1][0]) k++;
+      var a = SKALA[k], b = SKALA[k + 1], w = (s - a[0]) / (b[0] - a[0]);
+      for (var c = 0; c < 3; c++) p[3 * i + c] = a[c + 1] + w * (b[c + 1] - a[c + 1]); } return p; })();
+  function sichtbar(el, an) {   // animate only while the app is visible
+    var vis = true; if ('IntersectionObserver' in window) new IntersectionObserver(function (e) { vis = e[0].isIntersecting; if (vis) an(); }).observe(el);
+    return function () { return vis; };
+  }
+  function knopf(el, name) { return el.querySelector('[data-k="' + name + '"]'); }
+
+  // ------------------------------------------------------------ wave on a fiber and a ring (Sections 5.2 and 5.3)
+  function welle(el) {
+    var cv = el.querySelector('canvas'), ctx = cv.getContext('2d'), sel = el.querySelector('select');
+    var dx = 0.25, dt = 0.02, N, v, h, J, ring, t, akt, letzte, bild, zeile, laeuft = true, quelle = {};
+    var ZT = 1500, ZB = 300;      // space-time picture: 1500 ms in 300 rows
+    var bildCv = document.createElement('canvas'), bildCtx = bildCv.getContext('2d');
+    function schritt(D) {
+      var a = D * dt / (dx * dx), n = N, vn = new Float32Array(n);
+      for (var i = 0; i < n; i++) {
+        var l = i > 0 ? v[i - 1] : (ring ? v[n - 1] : v[i]), r = i < n - 1 ? v[i + 1] : (ring ? v[0] : v[i]), vi = v[i], hi = h[i];
+        vn[i] = vi + dt * (hi * vi * vi * (1 - vi) / MS.tin - vi / MS.tout + J[i]) + a * (l - 2 * vi + r);
+        h[i] = hi + dt * (vi < MS.vg ? (1 - hi) / MS.topen : -hi / MS.tclose);
+      }
+      v = vn;
+    }
+    function faserStart(D) {   // stimulate a long fiber at the left until the front is at 200 mm (initial state for the ring)
+      if (quelle[D]) return quelle[D];
+      var spN = N, spv = v, sph = h, spJ = J, spr = ring;
+      N = Math.round(250 / dx) + 1; v = new Float32Array(N); h = new Float32Array(N).fill(1); J = new Float32Array(N); ring = false;
+      var n = 0, front = 0;
+      while (front < 200 && n < 2e6) {
+        for (var i = 0; i * dx <= 1; i++) J[i] = n * dt < 2 ? 0.2 : 0;
+        schritt(D); n++;
+        if (n % 50 === 0) { front = 0; for (var k = N - 1; k >= 0; k--) if (v[k] > 0.5) { front = k * dx; break; } }
+      }
+      var iF = Math.round(front / dx); quelle[D] = { v: v, h: h, iF: iF };
+      N = spN; v = spv; h = sph; J = spJ; ring = spr; return quelle[D];
+    }
+    function neu() {
+      var D = wert(el, 'D'), L = wert(el, 'L'); ring = sel.value === 'ring';
+      if (!ring) L = 150;
+      if (ring) { var q = faserStart(D); N = Math.round(L / dx); v = q.v.slice(q.iF - N + 1, q.iF + 1); h = q.h.slice(q.iF - N + 1, q.iF + 1); }
+      else { N = Math.round(L / dx) + 1; v = new Float32Array(N); h = new Float32Array(N).fill(1); }
+      J = new Float32Array(N); t = 0; akt = { a: [], b: [], oben: [false, false], c: NaN }; letzte = null;
+      bildCv.width = N; bildCv.height = ZB; bild = bildCtx.createImageData(N, ZB); zeile = 0;
+      bild.data.fill(255);
+      if (!ring) reiz();
+    }
+    var reizBis = -1;
+    function reiz() { reizBis = t + 2; }
+    function rechne(ms) {
+      var D = wert(el, 'D'), n = Math.round(ms / dt), pa = Math.round(N * 0.25), pb = Math.round(N * 0.75);
+      for (var k = 0; k < n; k++) {
+        for (var i = 0; i * dx <= 1 && i < N; i++) J[i] = t < reizBis ? 0.2 : 0;
+        schritt(D); t += dt;
+        [[pa, 'a', 0], [pb, 'b', 1]].forEach(function (p) {
+          if (v[p[0]] > 0.5 && !akt.oben[p[2]]) { akt[p[1]].push(t); akt.oben[p[2]] = true;
+            if (p[1] === 'b' && akt.a.length && t - akt.a[akt.a.length - 1] > 1) akt.c = 0.5 * N * dx / (t - akt.a[akt.a.length - 1]); }
+          if (v[p[0]] < 0.1) akt.oben[p[2]] = false; });
+        if (Math.floor(t / (ZT / ZB)) > Math.floor((t - dt) / (ZT / ZB))) zeileSchreiben();
+      }
+    }
+    function zeileSchreiben() {
+      if (zeile >= ZB) { bild.data.copyWithin(0, 4 * N, 4 * N * ZB); zeile = ZB - 1; }
+      var o = 4 * N * zeile;   // row 0 = oldest time (drawn at the bottom)
+      for (var i = 0; i < N; i++) { var c = Math.max(0, Math.min(255, Math.round(v[i] * 255))); bild.data[o + 4 * i] = PAL[3 * c]; bild.data[o + 4 * i + 1] = PAL[3 * c + 1]; bild.data[o + 4 * i + 2] = PAL[3 * c + 2]; bild.data[o + 4 * i + 3] = 255; }
+      zeile++;
+    }
+    function male() {
+      var D = wert(el, 'D'), L = ring ? wert(el, 'L') : 150, W = cv.width, H = cv.height;
+      zeige(el, 'D', fmt(D, 3) + ' mm²/ms'); zeige(el, 'L', fmt(wert(el, 'L'), 0) + ' mm');
+      ctx.fillStyle = farbe('--surface'); ctx.fillRect(0, 0, W, H);
+      var A = achsen(ctx, W, 250, [0, L], [-0.05, 1.05], '', 'v, h', teilung(0, L), [0, 0.5, 1]);
+      var xs = []; for (var i = 0; i < N; i++) xs.push(i * dx);
+      linie(ctx, A, xs, Array.from(h), farbe('--blau'), 2, true);
+      linie(ctx, A, xs, Array.from(v), rot(2), 3);
+      ctx.font = '20px "IBM Plex Sans", sans-serif'; ctx.textAlign = 'right'; ctx.fillStyle = farbe('--ink');
+      ctx.fillStyle = farbe('--blau'); ctx.fillText('h (dashed)', W - 26, 42);
+      // space-time picture (time upward as in Figure 5.4)
+      bildCtx.putImageData(bild, 0, 0);
+      var x0 = A.X(0), x1 = A.X(L), y0 = 270, y1 = H - 62;
+      ctx.save(); ctx.imageSmoothingEnabled = false; ctx.translate(0, y0 + y1); ctx.scale(1, -1);   // time upward
+      ctx.drawImage(bildCv, 0, 0, N, ZB, x0, y0, x1 - x0, y1 - y0);
+      ctx.restore();
+      ctx.strokeStyle = farbe('--rule'); ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
+      ctx.fillStyle = farbe('--muted'); ctx.textAlign = 'center'; ctx.font = '20px "IBM Plex Sans", sans-serif';
+      ctx.fillText((ring ? 'position on the ring' : 'position x') + ' (mm)', (x0 + x1) / 2, H - 6);
+      teilung(0, L).forEach(function (q) { ctx.fillText(String(q), A.X(q), y1 + 26); });
+      ctx.save(); ctx.translate(22, (y0 + y1) / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('time (last 1.5 s)', 0, 0); ctx.restore();
+      // Auswertung
+      var c = akt.c, per = NaN;   // c from the travel time between 25 % and 75 % of the length
+      if (akt.b.length > 2) per = akt.b[akt.b.length - 1] - akt.b[akt.b.length - 2];   // the first round trip is transient
+      var cf = Math.sqrt(D / (2 * MS.tin)) * (1 - 3 * (1 - Math.sqrt(0.8)) / 2);
+      var erregt = false; for (i = 0; i < N; i++) if (v[i] > 0.5) { erregt = true; break; }
+      var txt;
+      if (ring) txt = erregt ? (isFinite(per) ? 'The excitation <b>circulates</b> with a round-trip time of <b>' + fmt(per, 0) + ' ms</b>.' : 'The wave travels around the ring …')
+        : 'The excitation has <b>died out</b>: the front ran into refractory tissue. With L ≥ 69 mm (for D = 0.1) it circulates.';
+      else txt = erregt ? 'A pulse travels to the right.' : 'The fiber is at rest. “Stimulus” triggers a new pulse at the left end.';
+      el.querySelector('.zustand').innerHTML = txt;
+      el.querySelector('.werte').textContent = 't = ' + fmt(t, 0) + ' ms\nformula (5.5): c = ' + fmt(cf, 3) + ' mm/ms\n' +
+        'measured:      c = ' + (isFinite(c) ? fmt(c, 3) + ' mm/ms' : '–') + (ring && isFinite(per) ? '\nround trip:    ' + fmt(per, 0) + ' ms' : '');
+    }
+    var sicht = sichtbar(el, function () { if (laeuft) requestAnimationFrame(takt); });
+    var aktiv = false;
+    function takt() { if (aktiv) return; aktiv = true; requestAnimationFrame(function f() {
+      if (!laeuft || !sicht()) { aktiv = false; return; }
+      rechne(4); male(); requestAnimationFrame(f); }); }
+    sel.addEventListener('change', function () { neu(); male(); takt(); });
+    regler(el, 'D').addEventListener('input', function () { neu(); male(); takt(); });
+    regler(el, 'L').addEventListener('input', function () { if (ring) neu(); male(); takt(); });
+    knopf(el, 'reiz').addEventListener('click', function () { if (ring) neu(); else reiz(); laeuft = true; takt(); });
+    knopf(el, 'pause').addEventListener('click', function () { laeuft = !laeuft; this.textContent = laeuft ? 'Pause' : 'Resume'; if (laeuft) takt(); });
+    neu(); male(); takt();
+    return male;
+  }
+
+  // ------------------------------------------------------------ spiral wave in the plane (Section 5.4)
+  function spirale(el) {
+    var cv = el.querySelector('canvas'), ctx = cv.getContext('2d'), sel = el.querySelector('select');
+    var Lq = 100, dx = 0.5, dt = 0.05, N = Math.round(Lq / dx), NN = N * N, D = 0.1;
+    var v, h, J, narbe, t, laeuft = true, plan = [], spur = [], oben = false, akt = [];
+    var bildCv = document.createElement('canvas'); bildCv.width = N; bildCv.height = N;
+    var bildCtx = bildCv.getContext('2d'), bild = bildCtx.createImageData(N, N);
+    var P = Math.round(25 / dx) * N + Math.round(25 / dx);   // probe (25, 25) mm; index i*N + j with i = x, j = y
+    function neu(mitNarbe) {
+      v = new Float32Array(NN); h = new Float32Array(NN).fill(1); J = new Float32Array(NN);
+      if (!mitNarbe || !narbe) narbe = new Uint8Array(NN);
+      t = 0; plan = []; akt = []; oben = false;
+    }
+    function reizGebiet(test, t0) { plan.push({ t0: t0, test: test }); }
+    function s1s2() {
+      neu(false);
+      reizGebiet(function (x, y) { return x <= 1; }, 0);
+      reizGebiet(function (x, y) { return y <= Lq / 2; }, 380);
+    }
+    function schritt() {
+      var a = D * dt / (dx * dx), vn = new Float32Array(NN);
+      for (var i = 0; i < N; i++) for (var j = 0; j < N; j++) {
+        var k = i * N + j; if (narbe[k]) { vn[k] = 0; continue; }
+        var vi = v[k], s = 0;
+        s += (i > 0 && !narbe[k - N]) ? v[k - N] - vi : 0;
+        s += (i < N - 1 && !narbe[k + N]) ? v[k + N] - vi : 0;
+        s += (j > 0 && !narbe[k - 1]) ? v[k - 1] - vi : 0;
+        s += (j < N - 1 && !narbe[k + 1]) ? v[k + 1] - vi : 0;
+        var hi = h[k];
+        vn[k] = vi + dt * (hi * vi * vi * (1 - vi) / MS.tin - vi / MS.tout + J[k]) + a * s;
+        h[k] = hi + dt * (vi < MS.vg ? (1 - hi) / MS.topen : -hi / MS.tclose);
+      }
+      v = vn; t += dt;
+    }
+    function rechne(ms) {
+      var n = Math.round(ms / dt);
+      for (var q = 0; q < n; q++) {
+        J.fill(0);
+        plan.forEach(function (p) { if (t >= p.t0 && t < p.t0 + 2) {
+          for (var i = 0; i < N; i++) for (var j = 0; j < N; j++) if (p.test((i + 0.5) * dx, (j + 0.5) * dx)) J[i * N + j] = 0.2; } });
+        schritt();
+        if (v[P] > 0.5 && !oben) { akt.push(t); oben = true; } if (v[P] < 0.1) oben = false;
+      }
+      plan = plan.filter(function (p) { return t < p.t0 + 2; });
+    }
+    function male() {
+      var W = cv.width, H = cv.height, S = H - 40, x0 = 30, y0 = 10;
+      ctx.clearRect(0, 0, W, H); ctx.fillStyle = farbe('--surface'); ctx.fillRect(0, 0, W, H);
+      for (var i = 0; i < N; i++) for (var j = 0; j < N; j++) {
+        var k = i * N + j, o = 4 * ((N - 1 - j) * N + i);
+        if (narbe[k]) { bild.data[o] = bild.data[o + 1] = bild.data[o + 2] = 120; }
+        else { var c = Math.max(0, Math.min(255, Math.round(v[k] * 255))); bild.data[o] = PAL[3 * c]; bild.data[o + 1] = PAL[3 * c + 1]; bild.data[o + 2] = PAL[3 * c + 2]; }
+        bild.data[o + 3] = 255;
+      }
+      bildCtx.putImageData(bild, 0, 0);
+      ctx.imageSmoothingEnabled = true; ctx.drawImage(bildCv, x0, y0, S, S);
+      ctx.strokeStyle = farbe('--rule'); ctx.strokeRect(x0, y0, S, S);
+      var px = x0 + 25 / Lq * S, py = y0 + S - 25 / Lq * S;
+      ctx.beginPath(); ctx.arc(px, py, 6, 0, 2 * Math.PI); ctx.strokeStyle = farbe('--ink'); ctx.lineWidth = 2; ctx.stroke();
+      ctx.font = '20px "IBM Plex Sans", sans-serif'; ctx.fillStyle = farbe('--muted'); ctx.textAlign = 'center';
+      ctx.fillText('100 mm × 100 mm', x0 + S / 2, H - 8);
+      // color scale
+      var bx = x0 + S + 40, bh = S * 0.6, by = y0 + (S - bh) / 2;
+      for (i = 0; i < 100; i++) { var cc = Math.round(255 * (1 - i / 100)); ctx.fillStyle = 'rgb(' + PAL[3 * cc] + ',' + PAL[3 * cc + 1] + ',' + PAL[3 * cc + 2] + ')'; ctx.fillRect(bx, by + i * bh / 100, 24, bh / 100 + 1); }
+      ctx.strokeRect(bx, by, 24, bh); ctx.textAlign = 'left'; ctx.fillStyle = farbe('--muted');
+      ctx.fillText('v = 1', bx + 32, by + 8); ctx.fillText('v = 0', bx + 32, by + bh + 6);
+      ctx.fillStyle = farbe('--ink'); ctx.fillText('t = ' + fmt(t, 0), bx, y0 + 24); ctx.fillText('ms', bx, y0 + 50);
+      var per = akt.length > 2 ? akt[akt.length - 1] - akt[akt.length - 2] : NaN;
+      var erregt = false; for (k = 0; k < NN; k++) if (v[k] > 0.5) { erregt = true; break; }
+      el.querySelector('.zustand').innerHTML = !erregt ? 'The tissue is at rest. Click in the picture or start the S1-S2 protocol.'
+        : (t > 700 && isFinite(per) && per < 400) ? 'The tissue is excited again and again <b>without further stimuli</b>, every <b>' + fmt(per, 0) + ' ms</b> (circle: point (25, 25) mm).'
+        : 'An excitation wave travels through the tissue.';
+      el.querySelector('.werte').textContent = 'excitations at the point (25, 25): ' + akt.length + (isFinite(per) ? '\nlast interval: ' + fmt(per, 0) + ' ms' : '') +
+        '\nclick in the picture: ' + (sel.value === 'narbe' ? 'non-conducting region' : 'stimulus');
+    }
+    cv.addEventListener('click', function (e) {
+      var r = cv.getBoundingClientRect(), sx = cv.width / r.width, S = cv.height - 40;
+      var x = ((e.clientX - r.left) * sx - 30) / S * Lq, y = (1 - ((e.clientY - r.top) * sx - 10) / S) * Lq;
+      if (x < 0 || x > Lq || y < 0 || y > Lq) return;
+      if (sel.value === 'narbe') { for (var i = 0; i < N; i++) for (var j = 0; j < N; j++) { var X = (i + 0.5) * dx - x, Y = (j + 0.5) * dx - y; if (X * X + Y * Y < 36) narbe[i * N + j] = 1; } male(); }
+      else reizGebiet(function (X, Y) { return (X - x) * (X - x) + (Y - y) * (Y - y) < 9; }, t);
+      laeuft = true; takt();
+    });
+    var sicht = sichtbar(el, function () { if (laeuft) takt(); });
+    var aktiv = false;
+    function takt() { if (aktiv) return; aktiv = true; requestAnimationFrame(function f() {
+      if (!laeuft || !sicht()) { aktiv = false; return; }
+      rechne(wert(el, 'tempo')); zeige(el, 'tempo', fmt(wert(el, 'tempo'), 0) + ' ms/frame'); male(); requestAnimationFrame(f); }); }
+    knopf(el, 's1s2').addEventListener('click', function () { s1s2(); laeuft = true; takt(); });
+    knopf(el, 'null').addEventListener('click', function () { neu(false); male(); });
+    knopf(el, 'pause').addEventListener('click', function () { laeuft = !laeuft; this.textContent = laeuft ? 'Pause' : 'Resume'; if (laeuft) takt(); });
+    regler(el, 'tempo').addEventListener('input', function () { zeige(el, 'tempo', fmt(wert(el, 'tempo'), 0) + ' ms/frame'); });
+    zeige(el, 'tempo', fmt(wert(el, 'tempo'), 0) + ' ms/frame');
+    s1s2(); male(); takt();
+    return male;
+  }
+
   var APPS = { treppe: treppe, linear: linear, newton: newton, apd: apd, 'raeuber-beute': raeuberBeute, leslie: leslie, sir: sir,
-               euler: euler, fischerei: fischerei, phasenebene: phasenebene, linear2d: linear2d }, neuZeichnen = [];
+               euler: euler, fischerei: fischerei, phasenebene: phasenebene, linear2d: linear2d, welle: welle, spirale: spirale }, neuZeichnen = [];
   document.querySelectorAll('[data-app]').forEach(function (el) { var f = APPS[el.dataset.app]; if (f) neuZeichnen.push(f(el)); });
   function alle() { neuZeichnen.forEach(function (f) { f(); }); }
   if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', alle);

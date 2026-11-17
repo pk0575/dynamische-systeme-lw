@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>5.4 Spiralwellen in der Ebene – Dynamische Systeme in den Lebenswissenschaften</title>
+<meta name="description" content="Programme in Julia, MATLAB, Python und R zu Abschnitt 5.4 des Buchs Dynamische Systeme in den Lebenswissenschaften">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamische Systeme in den Lebenswissenschaften</a>
+  <nav aria-label="Kapitel"><a href="../index.html">Start</a> <a href="../kapitel1/index.html">Kapitel 1</a> <a href="../kapitel2/index.html">Kapitel 2</a> <a href="../kapitel3/index.html">Kapitel 3</a> <a href="../kapitel4/index.html">Kapitel 4</a> <a href="../kapitel5/index.html" aria-current="page">Kapitel 5</a> <a href="../en/kapitel5/abschnitt-5-4.html" lang="en" hreflang="en">English</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Abschnitte"><h2><a href="index.html">Kapitel 5</a></h2><ol><li><a href="abschnitt-5-1.html"><span class="nr">5.1</span><span>Vom Zellverbund zur Kabelgleichung</span></a></li><li><a href="abschnitt-5-2.html"><span class="nr">5.2</span><span>Wandernde Wellen</span></a></li><li><a href="abschnitt-5-3.html"><span class="nr">5.3</span><span>Kreisende Erregung</span></a></li><li><a href="abschnitt-5-4.html" aria-current="page"><span class="nr">5.4</span><span>Spiralwellen in der Ebene</span></a></li><li><a href="abschnitt-5-5.html"><span class="nr">5.5</span><span>Vom Gewebe zum ganzen Herzen</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Kapitel 5 · Ausblick: Erregungsausbreitung im Herzgewebe</p>
+      <h1><span class="num">5.4</span>Spiralwellen in der Ebene</h1>
+      <p>In einer Gewebeschicht tritt an die Stelle der zweiten Ableitung der Laplace-Operator Δv. Ein zweiter Reiz in teilweise refraktärem Gewebe erzeugt eine Spiralwelle, die das Gewebe ohne weitere Reize immer wieder erregt – ein Modell für eine Kammertachykardie.</p>
+      <p>Zu jeder Abbildung des Abschnitts finden Sie das Programm, das sie erzeugt. Ändern Sie Parameter und Startwerte und beobachten Sie, was passiert. Abbildungs- und Gleichungsnummern beziehen sich auf das Buch.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programmiersprache</legend>
+  <div class="seg" role="radiogroup" aria-label="Programmiersprache">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Gilt für alle Seiten. MATLAB-Programme laufen auch im kostenlosen GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>Auf dieser Seite</b><ul><li><a href="#spirale"><span class="abb">Abb. 5.5</span>Entstehung einer Spiralwelle</a></li><li><a href="#sonde"><span class="abb">Abb. 5.6</span>Eine Rhythmusstörung im Modell</a></li><li><a href="#app-spirale"><span class="abb">App</span>im Browser ausprobieren</a></li></ul></div>
+  
+<section class="fig" id="spirale">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 5.5</p>
+    <h2>Entstehung einer Spiralwelle</h2>
+    <p class="formel">∂v/∂t = D Δv + h v<sup>2</sup> (1 − v)/τ<sub>in</sub> − v/τ<sub>out</sub> + J(x, y, t)</p>
+    <p class="lead">Quadrat mit 100 mm Seitenlänge, Δx = 0.25 mm, Δt = 0.05 ms. Reiz S1 am linken Rand bei t = 0, Reiz S2 in der unteren Hälfte bei t = 380 ms. Die Rechnung dauert in Python etwa eine Minute, in Julia eine halbe Minute, in MATLAB und R einige Minuten.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/spirale.png" alt="Ergebnis des Programms spirale.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="spirale.jl" data-m="spirale.m" data-py="spirale.py" data-r="spirale.R">spirale.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/spirale.py" data-jl="code/spirale.jl" data-m="code/spirale.m" data-py="code/spirale.py" data-r="code/spirale.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 5.5: Entstehung einer Spiralwelle (Buch, Abschnitt 5.4, Gl. 5.6)</span>
+<span class="k"># Quadrat 100 mm x 100 mm, Reiz S1 am linken Rand bei t = 0, Reiz S2 in der unteren Hälfte bei t = 380 ms</span>
+<span class="k"># Die Rechnung dauert etwa eine halbe Minute.</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots, Statistics
+const tin = 0.3; const tout = 6.0; const topen = 100.0; const tclose = 115.0; const vgate = 0.13   <span class="k"># Parameter in ms</span>
+const D = 0.1; const dx = 0.25; const dt = 0.05; const Lq = 100.0         <span class="k"># mm^2/ms, mm, ms, Seitenlänge in mm</span>
+const N = round(Int, Lq / dx); const xs = dx .* ((1:N) .- 0.5)       <span class="k"># Gitterpunkte; erster Index x, zweiter Index y</span>
+
+function schritt!(v, h, vn, t)
+    <span class="k"># ein Euler-Schritt; Rand ohne Fluss (fehlender Nachbar = Zelle selbst); Reize S1 (linker Rand) und S2 (untere Hälfte)</span>
+    for j in 1:N, i in 1:N
+        vi = v[i, j]
+        lap = v[min(i + 1, N), j] + v[max(i - 1, 1), j] + v[i, min(j + 1, N)] + v[i, max(j - 1, 1)] - 4vi
+        J = (t &lt; 2.0 &amp;&amp; xs[i] &lt;= 1.0) || (380.0 &lt;= t &lt; 382.0 &amp;&amp; xs[j] &lt;= Lq / 2) ? 0.2 : 0.0
+        vn[i, j] = vi + dt * (h[i, j] * vi^2 * (1 - vi) / tin - vi / tout + D * lap / dx^2 + J)
+        h[i, j] += dt * (vi &lt; vgate ? (1 - h[i, j]) / topen : -h[i, j] / tclose)
+    end
+end
+
+function rechne(zeiten)
+    v = zeros(N, N); h = ones(N, N); vn = similar(v); bilder = Dict{Int, Matrix{Float64}}()
+    for n in 0:round(Int, 1200 / dt)
+        t = n * dt
+        for z in zeiten
+            abs(t - z) &lt; 1e-6 &amp;&amp; (bilder[z] = copy(v))
+        end
+        schritt!(v, h, vn, t); v, vn = vn, v
+    end
+    return bilder
+end
+
+zeiten = [100, 300, 390, 450, 550, 650, 800, 1000, 1200]
+bilder = rechne(zeiten)
+for z in zeiten
+    @printf(&quot;t = %4d ms: Anteil erregt (v &gt; 0.5) = %.3f\n&quot;, z, mean(bilder[z] .&gt; 0.5))
+end
+p = [heatmap(xs, xs, bilder[z]&#x27;, color = :reds, clims = (0, 1), title = &quot;t = $z ms&quot;, colorbar = false, aspect_ratio = 1) for z in zeiten]
+display(plot(p..., layout = (3, 3), size = (900, 900)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 5.5: Entstehung einer Spiralwelle (Buch, Abschnitt 5.4, Gl. 5.6)</span>
+<span class="k">% Quadrat 100 mm x 100 mm, Reiz S1 am linken Rand bei t = 0, Reiz S2 in der unteren Hälfte bei t = 380 ms</span>
+<span class="k">% Die Rechnung dauert etwa vier Minuten.</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+tin = 0.3; tout = 6; topen = 100; tclose = 115; vgate = 0.13;   <span class="k">% Parameter in ms</span>
+D = 0.1; dx = 0.25; dt = 0.05; Lq = 100;                        <span class="k">% mm^2/ms, mm, ms, Seitenlänge in mm</span>
+N = round(Lq / dx); xs = dx * ((1:N) - 0.5);
+[X, Y] = ndgrid(xs, xs);                                        <span class="k">% erster Index: x, zweiter Index: y</span>
+S1 = X &lt;= 1; S2 = Y &lt;= Lq / 2;
+v = zeros(N); h = ones(N); r = [1 1:N N];                       <span class="k">% r: Indizes mit gespiegeltem Rand (kein Fluss)</span>
+zeiten = [100 300 390 450 550 650 800 1000 1200]; bilder = zeros(N, N, 9);
+for n = 0:round(1200 / dt)
+    t = n * dt;
+    j = find(abs(zeiten - t) &lt; 1e-6); if ~isempty(j), bilder(:, :, j) = v; end
+    vp = v(r, r);
+    lap = vp(3:end, 2:end-1) + vp(1:end-2, 2:end-1) + vp(2:end-1, 3:end) + vp(2:end-1, 1:end-2) - 4 * v;
+    dv = h .* v.^2 .* (1 - v) / tin - v / tout + D * lap / dx^2;
+    if t &lt; 2, dv(S1) = dv(S1) + 0.2; end                        <span class="k">% Reiz S1</span>
+    if t &gt;= 380 &amp;&amp; t &lt; 382, dv(S2) = dv(S2) + 0.2; end          <span class="k">% Reiz S2</span>
+    dh = (v &lt; vgate) .* (1 - h) / topen - (v &gt;= vgate) .* h / tclose;
+    v = v + dt * dv; h = h + dt * dh;
+end
+for j = 1:9
+    B = bilder(:, :, j);
+    fprintf(&#x27;t = %4d ms: Anteil erregt (v &gt; 0.5) = %.3f\n&#x27;, zeiten(j), mean(B(:) &gt; 0.5));
+    subplot(3, 3, j); imagesc(xs, xs, B&#x27;, [0 1]); axis xy equal tight; title(sprintf(&#x27;t = %d ms&#x27;, zeiten(j)));
+end
+colormap(flipud(hot));</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 5.5: Entstehung einer Spiralwelle (Buch, Abschnitt 5.4, Gl. 5.6)</span>
+<span class="k"># Quadrat 100 mm x 100 mm, Reiz S1 am linken Rand bei t = 0, Reiz S2 in der unteren Hälfte bei t = 380 ms</span>
+<span class="k"># Die Rechnung dauert etwa eine Minute.</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+tin, tout, topen, tclose, vgate = 0.3, 6.0, 100.0, 115.0, 0.13      <span class="k"># Parameter in ms</span>
+D, dx, dt, Lq = 0.1, 0.25, 0.05, 100.0                               <span class="k"># mm^2/ms, mm, ms, Seitenlänge in mm</span>
+N = int(round(Lq / dx)); xs = dx * (np.arange(N) + 0.5)
+X, Y = np.meshgrid(xs, xs, indexing=&quot;ij&quot;)                            <span class="k"># erster Index: x, zweiter Index: y</span>
+S1, S2 = X &lt;= 1.0, Y &lt;= Lq / 2
+v = np.zeros((N, N)); h = np.ones((N, N))
+zeiten = (100, 300, 390, 450, 550, 650, 800, 1000, 1200); bilder = {}
+for n in range(int(round(1200 / dt)) + 1):
+    t = n * dt
+    if round(t, 6) in zeiten: bilder[round(t)] = v.copy()
+    vp = np.pad(v, 1, mode=&quot;edge&quot;)                                   <span class="k"># Rand ohne Fluss</span>
+    lap = vp[2:, 1:-1] + vp[:-2, 1:-1] + vp[1:-1, 2:] + vp[1:-1, :-2] - 4 * v
+    dv = h * v**2 * (1 - v) / tin - v / tout + D * lap / dx**2
+    if t &lt; 2.0: dv[S1] += 0.2                                        <span class="k"># Reiz S1</span>
+    if 380.0 &lt;= t &lt; 382.0: dv[S2] += 0.2                             <span class="k"># Reiz S2</span>
+    dh = np.where(v &lt; vgate, (1 - h) / topen, -h / tclose)
+    v = v + dt * dv; h = h + dt * dh
+for tz in zeiten:
+    print(f&quot;t = {tz:4d} ms: Anteil erregt (v &gt; 0.5) = {(bilder[tz] &gt; 0.5).mean():.3f}&quot;)
+fig, axs = plt.subplots(3, 3, figsize=(10, 10), sharex=True, sharey=True)
+for ax, tz in zip(axs.flat, zeiten):
+    ax.imshow(bilder[tz].T, origin=&quot;lower&quot;, extent=(0, Lq, 0, Lq), cmap=&quot;Reds&quot;, vmin=0, vmax=1)
+    ax.set_title(f&quot;t = {tz} ms&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 5.5: Entstehung einer Spiralwelle (Buch, Abschnitt 5.4, Gl. 5.6)</span>
+<span class="k"># Quadrat 100 mm x 100 mm, Reiz S1 am linken Rand bei t = 0, Reiz S2 in der unteren Hälfte bei t = 380 ms</span>
+<span class="k"># Die Rechnung dauert etwa fünf Minuten.</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+tin &lt;- 0.3; tout &lt;- 6; topen &lt;- 100; tclose &lt;- 115; vgate &lt;- 0.13   <span class="k"># Parameter in ms</span>
+D &lt;- 0.1; dx &lt;- 0.25; dt &lt;- 0.05; Lq &lt;- 100                         <span class="k"># mm^2/ms, mm, ms, Seitenlänge in mm</span>
+N &lt;- round(Lq / dx); xs &lt;- dx * ((1:N) - 0.5)
+X &lt;- matrix(xs, N, N); Y &lt;- t(X)                                     <span class="k"># erster Index: x, zweiter Index: y</span>
+S1 &lt;- X &lt;= 1; S2 &lt;- Y &lt;= Lq / 2
+v &lt;- matrix(0, N, N); h &lt;- matrix(1, N, N)
+vor &lt;- c(2:N, N); zur &lt;- c(1, 1:(N - 1))                             <span class="k"># Nachbarindizes, am Rand die Zelle selbst (kein Fluss)</span>
+zeiten &lt;- c(100, 300, 390, 450, 550, 650, 800, 1000, 1200); bilder &lt;- list()
+for (n in 0:round(1200 / dt)) {
+  t &lt;- n * dt
+  j &lt;- which(abs(zeiten - t) &lt; 1e-6); if (length(j)) bilder[[j]] &lt;- v
+  lap &lt;- v[vor, ] + v[zur, ] + v[, vor] + v[, zur] - 4 * v
+  dv &lt;- h * v^2 * (1 - v) / tin - v / tout + D * lap / dx^2
+  if (t &lt; 2) dv[S1] &lt;- dv[S1] + 0.2                                  <span class="k"># Reiz S1</span>
+  if (t &gt;= 380 &amp;&amp; t &lt; 382) dv[S2] &lt;- dv[S2] + 0.2                    <span class="k"># Reiz S2</span>
+  dh &lt;- ifelse(v &lt; vgate, (1 - h) / topen, -h / tclose)
+  v &lt;- v + dt * dv; h &lt;- h + dt * dh
+}
+weissrot &lt;- colorRampPalette(c(&quot;white&quot;, rgb(0.89, 0.44, 0.49), rgb(0.64, 0.08, 0.18), rgb(0.43, 0.04, 0.12)))(64)
+par(mfrow = c(3, 3), mar = c(2, 2, 2, 1))
+for (j in 1:9) {
+  cat(sprintf(&quot;t = %4d ms: Anteil erregt (v &gt; 0.5) = %.3f\n&quot;, zeiten[j], mean(bilder[[j]] &gt; 0.5)))
+  image(xs, xs, bilder[[j]], col = weissrot, zlim = c(0, 1), main = sprintf(&quot;t = %d ms&quot;, zeiten[j]), asp = 1)
+}</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>t =  100 ms: Anteil erregt (v &gt; 0.5) = 0.333
+t =  300 ms: Anteil erregt (v &gt; 0.5) = 0.662
+t =  390 ms: Anteil erregt (v &gt; 0.5) = 0.644
+t =  450 ms: Anteil erregt (v &gt; 0.5) = 0.467
+t =  550 ms: Anteil erregt (v &gt; 0.5) = 0.398
+t =  650 ms: Anteil erregt (v &gt; 0.5) = 0.658
+t =  800 ms: Anteil erregt (v &gt; 0.5) = 0.577
+t = 1000 ms: Anteil erregt (v &gt; 0.5) = 0.640
+t = 1200 ms: Anteil erregt (v &gt; 0.5) = 0.588</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="sonde">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 5.6</p>
+    <h2>Eine Rhythmusstörung im Modell</h2>
+    <p class="formel">v im Punkt (25, 25) mm,&ensp; 0 ≤ t ≤ 3000 ms</p>
+    <p class="lead">Nach den Reizen S1 und S2 folgen Aktionspotentiale im Abstand von etwa 200 ms, etwa 300 pro Minute. Sie dauern im Mittel 148 ms bei diastolischen Intervallen um 52 ms. Die Rechnung dauert in Python etwa drei Minuten, in MATLAB und R etwa zehn.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/sonde.png" alt="Ergebnis des Programms sonde.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="sonde.jl" data-m="sonde.m" data-py="sonde.py" data-r="sonde.R">sonde.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/sonde.py" data-jl="code/sonde.jl" data-m="code/sonde.m" data-py="code/sonde.py" data-r="code/sonde.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 5.6: Eine Rhythmusstörung im Modell (Buch, Abschnitt 5.4, Gl. 5.6)</span>
+<span class="k"># wie Abb. 5.5 bis t = 3000 ms; Verlauf von v im Punkt (25, 25) mm, Abstände, Dauer und diastolische Intervalle der Aktionspotentiale</span>
+<span class="k"># Die Rechnung dauert etwa eine Minute.</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots, Statistics
+const tin = 0.3; const tout = 6.0; const topen = 100.0; const tclose = 115.0; const vgate = 0.13   <span class="k"># Parameter in ms</span>
+const D = 0.1; const dx = 0.25; const dt = 0.05; const Lq = 100.0         <span class="k"># mm^2/ms, mm, ms, Seitenlänge in mm</span>
+const N = round(Int, Lq / dx); const xs = dx .* ((1:N) .- 0.5)       <span class="k"># Gitterpunkte; erster Index x, zweiter Index y</span>
+
+function schritt!(v, h, vn, t)
+    <span class="k"># ein Euler-Schritt; Rand ohne Fluss (fehlender Nachbar = Zelle selbst); Reize S1 (linker Rand) und S2 (untere Hälfte)</span>
+    for j in 1:N, i in 1:N
+        vi = v[i, j]
+        lap = v[min(i + 1, N), j] + v[max(i - 1, 1), j] + v[i, min(j + 1, N)] + v[i, max(j - 1, 1)] - 4vi
+        J = (t &lt; 2.0 &amp;&amp; xs[i] &lt;= 1.0) || (380.0 &lt;= t &lt; 382.0 &amp;&amp; xs[j] &lt;= Lq / 2) ? 0.2 : 0.0
+        vn[i, j] = vi + dt * (h[i, j] * vi^2 * (1 - vi) / tin - vi / tout + D * lap / dx^2 + J)
+        h[i, j] += dt * (vi &lt; vgate ? (1 - h[i, j]) / topen : -h[i, j] / tclose)
+    end
+end
+
+function rechne()
+    v = zeros(N, N); h = ones(N, N); vn = similar(v); i0 = floor(Int, 25 / dx) + 1
+    K = round(Int, 3000 / dt); spur = zeros(K)
+    for n in 0:K-1
+        schritt!(v, h, vn, n * dt); v, vn = vn, v
+        spur[n + 1] = v[i0, i0]
+    end
+    return spur
+end
+
+spur = rechne(); ts = dt .* collect(1:length(spur))         <span class="k"># wie dt * k in den anderen Sprachen</span>
+hoch(s) = [false; (spur[2:end] .&gt; s) .&amp; (spur[1:end-1] .&lt;= s)]
+akt = ts[hoch(0.5)]                                                  <span class="k"># v steigt über 0.5</span>
+auf = ts[hoch(0.1)]; ab = ts[[false; (spur[2:end] .&lt; 0.1) .&amp; (spur[1:end-1] .&gt;= 0.1)]]
+m = min(length(auf), length(ab)); apd = ab[1:m] .- auf[1:m]; di = auf[2:end] .- ab[1:length(auf)-1]
+abst = diff(akt)
+@printf(&quot;Abstände der Aktionspotentiale (ms): [%s]\n&quot;, join([@sprintf(&quot;%.1f&quot;, d) for d in abst], &quot; &quot;))
+@printf(&quot;ab dem 4. Abstand: Mittel %.0f ms,  APD im Mittel %.0f ms,  DI im Mittel %.0f ms\n&quot;, mean(abst[4:end]), mean(apd[5:end]), mean(di[5:end]))
+display(plot(ts, spur, color = RGB(0.64, 0.08, 0.18), lw = 1.5, legend = false, xlabel = &quot;t (ms)&quot;, ylabel = &quot;v bei (25, 25) mm&quot;, size = (900, 400)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 5.6: Eine Rhythmusstörung im Modell (Buch, Abschnitt 5.4, Gl. 5.6)</span>
+<span class="k">% wie Abb. 5.5 bis t = 3000 ms; Verlauf von v im Punkt (25, 25) mm, Abstände, Dauer und diastolische Intervalle der Aktionspotentiale</span>
+<span class="k">% Die Rechnung dauert etwa zehn Minuten.</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+tin = 0.3; tout = 6; topen = 100; tclose = 115; vgate = 0.13;   <span class="k">% Parameter in ms</span>
+D = 0.1; dx = 0.25; dt = 0.05; Lq = 100;                        <span class="k">% mm^2/ms, mm, ms, Seitenlänge in mm</span>
+N = round(Lq / dx); xs = dx * ((1:N) - 0.5);
+[X, Y] = ndgrid(xs, xs);
+S1 = X &lt;= 1; S2 = Y &lt;= Lq / 2;
+i0 = floor(25 / dx) + 1;                                        <span class="k">% Gitterpunkt bei (25, 25) mm</span>
+v = zeros(N); h = ones(N); r = [1 1:N N];
+K = round(3000 / dt); spur = zeros(1, K);
+for n = 0:K-1
+    t = n * dt;
+    vp = v(r, r);
+    lap = vp(3:end, 2:end-1) + vp(1:end-2, 2:end-1) + vp(2:end-1, 3:end) + vp(2:end-1, 1:end-2) - 4 * v;
+    dv = h .* v.^2 .* (1 - v) / tin - v / tout + D * lap / dx^2;
+    if t &lt; 2, dv(S1) = dv(S1) + 0.2; end
+    if t &gt;= 380 &amp;&amp; t &lt; 382, dv(S2) = dv(S2) + 0.2; end
+    dh = (v &lt; vgate) .* (1 - h) / topen - (v &gt;= vgate) .* h / tclose;
+    v = v + dt * dv; h = h + dt * dh;
+    spur(n + 1) = v(i0, i0);
+end
+ts = dt * (1:K);
+akt = ts([false, spur(2:end) &gt; 0.5 &amp; spur(1:end-1) &lt;= 0.5]);    <span class="k">% v steigt über 0.5</span>
+auf = ts([false, spur(2:end) &gt; 0.1 &amp; spur(1:end-1) &lt;= 0.1]); ab = ts([false, spur(2:end) &lt; 0.1 &amp; spur(1:end-1) &gt;= 0.1]);
+m = min(numel(auf), numel(ab)); apd = ab(1:m) - auf(1:m); di = auf(2:numel(auf)) - ab(1:numel(auf)-1);
+abst = diff(akt);
+fprintf(&#x27;Abstände der Aktionspotentiale (ms): [%s]\n&#x27;, strtrim(sprintf(&#x27; %.1f&#x27;, abst)));
+fprintf(&#x27;ab dem 4. Abstand: Mittel %.0f ms,  APD im Mittel %.0f ms,  DI im Mittel %.0f ms\n&#x27;, mean(abst(4:end)), mean(apd(5:end)), mean(di(5:end)));
+plot(ts, spur, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;LineWidth&#x27;, 1.5);
+xlabel(&#x27;t (ms)&#x27;); ylabel(&#x27;v bei (25, 25) mm&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 5.6: Eine Rhythmusstörung im Modell (Buch, Abschnitt 5.4, Gl. 5.6)</span>
+<span class="k"># wie Abb. 5.5 bis t = 3000 ms; Verlauf von v im Punkt (25, 25) mm, Abstände, Dauer und diastolische Intervalle der Aktionspotentiale</span>
+<span class="k"># Die Rechnung dauert etwa drei Minuten.</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+tin, tout, topen, tclose, vgate = 0.3, 6.0, 100.0, 115.0, 0.13      <span class="k"># Parameter in ms</span>
+D, dx, dt, Lq = 0.1, 0.25, 0.05, 100.0                               <span class="k"># mm^2/ms, mm, ms, Seitenlänge in mm</span>
+N = int(round(Lq / dx)); xs = dx * (np.arange(N) + 0.5)
+X, Y = np.meshgrid(xs, xs, indexing=&quot;ij&quot;)
+S1, S2 = X &lt;= 1.0, Y &lt;= Lq / 2
+i0 = int(25 / dx)                                                    <span class="k"># Gitterpunkt bei (25, 25) mm</span>
+v = np.zeros((N, N)); h = np.ones((N, N)); spur = []
+for n in range(int(round(3000 / dt))):
+    t = n * dt
+    vp = np.pad(v, 1, mode=&quot;edge&quot;)
+    lap = vp[2:, 1:-1] + vp[:-2, 1:-1] + vp[1:-1, 2:] + vp[1:-1, :-2] - 4 * v
+    dv = h * v**2 * (1 - v) / tin - v / tout + D * lap / dx**2
+    if t &lt; 2.0: dv[S1] += 0.2
+    if 380.0 &lt;= t &lt; 382.0: dv[S2] += 0.2
+    dh = np.where(v &lt; vgate, (1 - h) / topen, -h / tclose)
+    v = v + dt * dv; h = h + dt * dh
+    spur.append(v[i0, i0])
+spur = np.array(spur); ts = dt * np.arange(1, len(spur) + 1)
+akt = ts[1:][(spur[1:] &gt; 0.5) &amp; (spur[:-1] &lt;= 0.5)]                 <span class="k"># v steigt über 0.5</span>
+auf = ts[1:][(spur[1:] &gt; 0.1) &amp; (spur[:-1] &lt;= 0.1)]; ab = ts[1:][(spur[1:] &lt; 0.1) &amp; (spur[:-1] &gt;= 0.1)]
+apd = ab[:len(auf)] - auf[:len(ab)]; di = auf[1:] - ab[:len(auf) - 1]
+print(&quot;Abstände der Aktionspotentiale (ms):&quot;, np.round(np.diff(akt), 1))
+print(f&quot;ab dem 4. Abstand: Mittel {np.diff(akt)[3:].mean():.0f} ms,  APD im Mittel {apd[4:].mean():.0f} ms,  DI im Mittel {di[4:].mean():.0f} ms&quot;)
+plt.figure(figsize=(9, 4))
+plt.plot(ts, spur, color=(0.64, 0.08, 0.18), lw=1.5)
+plt.xlabel(&quot;t (ms)&quot;); plt.ylabel(&quot;v bei (25, 25) mm&quot;)
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 5.6: Eine Rhythmusstörung im Modell (Buch, Abschnitt 5.4, Gl. 5.6)</span>
+<span class="k"># wie Abb. 5.5 bis t = 3000 ms; Verlauf von v im Punkt (25, 25) mm, Abstände, Dauer und diastolische Intervalle der Aktionspotentiale</span>
+<span class="k"># Die Rechnung dauert etwa zehn Minuten.</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+tin &lt;- 0.3; tout &lt;- 6; topen &lt;- 100; tclose &lt;- 115; vgate &lt;- 0.13   <span class="k"># Parameter in ms</span>
+D &lt;- 0.1; dx &lt;- 0.25; dt &lt;- 0.05; Lq &lt;- 100                         <span class="k"># mm^2/ms, mm, ms, Seitenlänge in mm</span>
+N &lt;- round(Lq / dx); xs &lt;- dx * ((1:N) - 0.5)
+X &lt;- matrix(xs, N, N); Y &lt;- t(X)
+S1 &lt;- X &lt;= 1; S2 &lt;- Y &lt;= Lq / 2
+i0 &lt;- floor(25 / dx) + 1                                             <span class="k"># Gitterpunkt bei (25, 25) mm</span>
+v &lt;- matrix(0, N, N); h &lt;- matrix(1, N, N)
+vor &lt;- c(2:N, N); zur &lt;- c(1, 1:(N - 1))
+K &lt;- round(3000 / dt); spur &lt;- numeric(K)
+for (n in 0:(K - 1)) {
+  t &lt;- n * dt
+  lap &lt;- v[vor, ] + v[zur, ] + v[, vor] + v[, zur] - 4 * v
+  dv &lt;- h * v^2 * (1 - v) / tin - v / tout + D * lap / dx^2
+  if (t &lt; 2) dv[S1] &lt;- dv[S1] + 0.2
+  if (t &gt;= 380 &amp;&amp; t &lt; 382) dv[S2] &lt;- dv[S2] + 0.2
+  dh &lt;- ifelse(v &lt; vgate, (1 - h) / topen, -h / tclose)
+  v &lt;- v + dt * dv; h &lt;- h + dt * dh
+  spur[n + 1] &lt;- v[i0, i0]
+}
+ts &lt;- dt * (1:K)
+hoch &lt;- function(s) c(FALSE, spur[-1] &gt; s &amp; spur[-K] &lt;= s)
+akt &lt;- ts[hoch(0.5)]                                                 <span class="k"># v steigt über 0.5</span>
+auf &lt;- ts[hoch(0.1)]; ab &lt;- ts[c(FALSE, spur[-1] &lt; 0.1 &amp; spur[-K] &gt;= 0.1)]
+m &lt;- min(length(auf), length(ab)); apd &lt;- ab[1:m] - auf[1:m]; di &lt;- auf[-1] - ab[1:(length(auf) - 1)]
+abst &lt;- diff(akt)
+cat(sprintf(&quot;Abstände der Aktionspotentiale (ms): [%s]\n&quot;, paste(sprintf(&quot;%.1f&quot;, abst), collapse = &quot; &quot;)))
+cat(sprintf(&quot;ab dem 4. Abstand: Mittel %.0f ms,  APD im Mittel %.0f ms,  DI im Mittel %.0f ms\n&quot;, mean(abst[-(1:3)]), mean(apd[-(1:4)]), mean(di[-(1:4)])))
+plot(ts, spur, type = &quot;l&quot;, col = rgb(0.64, 0.08, 0.18), lwd = 1.5, xlab = &quot;t (ms)&quot;, ylab = &quot;v bei (25, 25) mm&quot;)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>Abstände der Aktionspotentiale (ms): [306.6 262.3 226.5 186.8 204.1 220.2 207.1 210.3 210.7 196.7 200.2 192.5
+ 172.5]
+ab dem 4. Abstand: Mittel 200 ms,  APD im Mittel 148 ms,  DI im Mittel 52 ms</code></pre></details>
+    </div>
+  </div>
+</section>
+  <section class="apps" id="app-spirale">
+  <div class="fig-head"><p class="eyebrow">Im Browser ausprobieren · ohne Installation</p><h2>Spiralwelle in der Ebene</h2><p class="lead">Gleichung (5.6) auf einem Quadrat von 100 mm Seitenlänge. Das S1-S2-Protokoll erzeugt eine Spirale wie in Abbildung 5.5. Setzen Sie per Klick eigene Reize oder nicht leitende Bereiche (Narben).</p></div>
+  <div class="app" data-app="spirale">
+    <canvas width="720" height="560" aria-label="Spiralwelle in der Ebene"></canvas>
+    <div class="regler"><label><span>Klick ins Bild setzt</span><select aria-label="Klick ins Bild"><option value="reiz">einen Reiz</option><option value="narbe">einen nicht leitenden Bereich</option></select></label><label><span>Tempo</span> <output data-o="tempo"></output><input type="range" data-r="tempo" min="2" max="16" step="1" value="8" aria-label="Tempo"></label><div class="knoepfe"><button type="button" data-k="s1s2">S1-S2-Protokoll</button><button type="button" data-k="null">Alles in Ruhe</button><button type="button" data-k="pause">Pause</button></div><p class="zustand"></p><pre class="werte"></pre></div>
+  </div>
+</section>
+  
+  <nav class="weiter" aria-label="Weiterblättern"><a href="abschnitt-5-3.html"><small>Zurück</small>5.3 Kreisende Erregung</a><a href="abschnitt-5-5.html"><small>Weiter</small>5.5 Vom Gewebe zum ganzen Herzen</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Begleitmaterial zum Buch „Dynamische Systeme in den Lebenswissenschaften“ von Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programme unter <a href="../LICENSE.txt">MIT-Lizenz</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

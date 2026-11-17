@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kapitel 5: Ausblick: Erregungsausbreitung im Herzgewebe – Dynamische Systeme in den Lebenswissenschaften</title>
+<meta name="description" content="Programme und Apps zu Kapitel 5 des Buchs Dynamische Systeme in den Lebenswissenschaften">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamische Systeme in den Lebenswissenschaften</a>
+  <nav aria-label="Kapitel"><a href="../index.html">Start</a> <a href="../kapitel1/index.html">Kapitel 1</a> <a href="../kapitel2/index.html">Kapitel 2</a> <a href="../kapitel3/index.html">Kapitel 3</a> <a href="../kapitel4/index.html">Kapitel 4</a> <a href="../kapitel5/index.html" aria-current="page">Kapitel 5</a> <a href="../en/kapitel5/index.html" lang="en" hreflang="en">English</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Abschnitte"><h2><a href="index.html">Kapitel 5</a></h2><ol><li><a href="abschnitt-5-1.html"><span class="nr">5.1</span><span>Vom Zellverbund zur Kabelgleichung</span></a></li><li><a href="abschnitt-5-2.html"><span class="nr">5.2</span><span>Wandernde Wellen</span></a></li><li><a href="abschnitt-5-3.html"><span class="nr">5.3</span><span>Kreisende Erregung</span></a></li><li><a href="abschnitt-5-4.html"><span class="nr">5.4</span><span>Spiralwellen in der Ebene</span></a></li><li><a href="abschnitt-5-5.html"><span class="nr">5.5</span><span>Vom Gewebe zum ganzen Herzen</span></a></li></ol></aside>
+<main>
+  <div class="intro"><div><p class="eyebrow">Kapitel 5</p><h1>Ausblick: Erregungsausbreitung im Herzgewebe</h1><p>Kabelgleichung, wandernde Wellen, kreisende Erregung, Spiralwellen und Herzmodelle in drei Dimensionen. Zu jedem Abschnitt gibt es die Programme zu allen berechneten Abbildungen, Apps zum Ausprobieren im Browser und die MATLAB-Apps der Vorlesung.</p>
+  <p><a href="kapitel5_programme.zip" download>Alle Programme zu Kapitel 5 herunterladen (ZIP)</a></p></div><fieldset class="lang">
+  <legend>Programmiersprache</legend>
+  <div class="seg" role="radiogroup" aria-label="Programmiersprache">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Gilt für alle Seiten. MATLAB-Programme laufen auch im kostenlosen GNU Octave.</small>
+</fieldset></div>
+  <ul class="abschnitte"><li><a href="abschnitt-5-1.html"><span class="nr">5.1</span><span class="t">Vom Zellverbund zur Kabelgleichung<small>Benachbarte Herzmuskelzellen sind über Gap Junctions gekoppelt. Lässt man den Abstand Δx der Zellen gegen null gehen, so wird aus dem System gewöhnlicher Differentialgleichungen die Kabelgleichung ∂v/∂t = D ∂<sup>2</sup>v/∂x<sup>2</sup> + … , eine partielle Differentialgleichung. Numerisch löst man sie wieder auf einem Gitter mit dem Euler-Verfahren; dabei muss Δt &lt; Δx<sup>2</sup>/(2D) gelten. Die Programme zu den Abschnitten 5.2 bis 5.4 zeigen, wie das geht.</small></span><span class="zahl">0 Abb.</span></a></li><li><a href="abschnitt-5-2.html"><span class="nr">5.2</span><span class="t">Wandernde Wellen<small>Auf einer Faser läuft die Erregung als Puls mit fester Form und Geschwindigkeit. Für die Front lässt sich die Geschwindigkeit c = √(D/(2τ<sub>in</sub>)) (1 − 3v<sub>s</sub>*) exakt angeben; sie wächst mit der Wurzel aus der Kopplung D. Die Programme verwenden D = 0.1 mm<sup>2</sup>/ms, Δx = 0.1 mm und Δt = 0.01 ms.</small></span><span class="zahl">2 Abb. · Apps</span></a></li><li><a href="abschnitt-5-3.html"><span class="nr">5.3</span><span class="t">Kreisende Erregung<small>Auf einem Ring läuft die Welle in eine Richtung und trifft nach einem Umlauf auf das Gewebe, das sie selbst erregt hat. Ist der Ring kürzer als etwa die Wellenlänge, so ist dieses Gewebe noch refraktär, und die Erregung erlischt.</small></span><span class="zahl">1 Abb.</span></a></li><li><a href="abschnitt-5-4.html"><span class="nr">5.4</span><span class="t">Spiralwellen in der Ebene<small>In einer Gewebeschicht tritt an die Stelle der zweiten Ableitung der Laplace-Operator Δv. Ein zweiter Reiz in teilweise refraktärem Gewebe erzeugt eine Spiralwelle, die das Gewebe ohne weitere Reize immer wieder erregt – ein Modell für eine Kammertachykardie.</small></span><span class="zahl">2 Abb. · Apps</span></a></li><li><a href="abschnitt-5-5.html"><span class="nr">5.5</span><span class="t">Vom Gewebe zum ganzen Herzen<small>Im Herzen breitet sich die Erregung dreidimensional aus, schneller längs der Fasern, deren Richtung sich durch die Herzwand dreht. Heutige Herzmodelle verbinden detaillierte Zellmodelle, das Bidomain-Modell und patientenspezifische Geometrien; die Simulation in Abbildung 5.7 des Buchs entstand mit der frei verfügbaren Software <a href="https://opencarp.org">openCARP</a> auf einem Laptop.</small></span><span class="zahl">0 Abb.</span></a></li></ul>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Begleitmaterial zum Buch „Dynamische Systeme in den Lebenswissenschaften“ von Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programme unter <a href="../LICENSE.txt">MIT-Lizenz</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

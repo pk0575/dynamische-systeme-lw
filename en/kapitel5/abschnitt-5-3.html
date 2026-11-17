@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>5.3 Circulating Excitation – Dynamical Systems in the Life Sciences</title>
+<meta name="description" content="Programs in Julia, MATLAB, Python, and R for Section 5.3 of the book Dynamical Systems in the Life Sciences">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamical Systems in the Life Sciences</a>
+  <nav aria-label="Chapters"><a href="../index.html">Home</a> <a href="../kapitel1/index.html">Chapter 1</a> <a href="../kapitel2/index.html">Chapter 2</a> <a href="../kapitel3/index.html">Chapter 3</a> <a href="../kapitel4/index.html">Chapter 4</a> <a href="../kapitel5/index.html" aria-current="page">Chapter 5</a> <a href="../../kapitel5/abschnitt-5-3.html" lang="de" hreflang="de">Deutsch</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Sections"><h2><a href="index.html">Chapter 5</a></h2><ol><li><a href="abschnitt-5-1.html"><span class="nr">5.1</span><span>From Coupled Cells to the Cable Equation</span></a></li><li><a href="abschnitt-5-2.html"><span class="nr">5.2</span><span>Traveling Waves</span></a></li><li><a href="abschnitt-5-3.html" aria-current="page"><span class="nr">5.3</span><span>Circulating Excitation</span></a></li><li><a href="abschnitt-5-4.html"><span class="nr">5.4</span><span>Spiral Waves in the Plane</span></a></li><li><a href="abschnitt-5-5.html"><span class="nr">5.5</span><span>From Tissue to the Whole Heart</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Chapter 5 · Outlook: Propagation of Excitation in Cardiac Tissue</p>
+      <h1><span class="num">5.3</span>Circulating Excitation</h1>
+      <p>On a ring the wave travels in one direction and, after one round trip, meets the tissue it excited itself. If the ring is shorter than about the wavelength, this tissue is still refractory and the excitation dies out.</p>
+      <p>For each figure of the section you will find the program that produces it. Change parameters and initial values and observe what happens. Figure and equation numbers refer to the book.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programming language</legend>
+  <div class="seg" role="radiogroup" aria-label="Programming language">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Applies to all pages. MATLAB programs also run in the free GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>On this page</b><ul><li><a href="#ring"><span class="abb">Fig. 5.4</span>Circulating excitation on a ring</a></li></ul></div>
+  
+<section class="fig" id="ring">
+  <header class="fig-head">
+    <p class="eyebrow">Fig. 5.4</p>
+    <h2>Circulating excitation on a ring</h2>
+    <p class="formel">v(0, t) = v(L, t),&ensp; Δx = 0.2 mm,&ensp; Δt = 0.02 ms</p>
+    <p class="lead">For L = 100 mm the excitation circulates with a round-trip time of about 350 ms; for L = 65 mm it dies out. The program also determines the critical length: from L = 69 mm on, the excitation circulates.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/ring.png" alt="Output of the program ring.py" loading="lazy">
+      <figcaption>This is the result of running the Python program. Julia, MATLAB, and R give the same numbers.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="ring.jl" data-m="ring.m" data-py="ring.py" data-r="ring.R">ring.py</span>
+        <button type="button" class="copy">Copy</button>
+        <a class="dl" href="code/ring.py" data-jl="code/ring.jl" data-m="code/ring.m" data-py="code/ring.py" data-r="code/ring.R" download>Download</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Fig. 5.4: Circulating excitation on a ring (book, Section 5.3, Eq. 5.2)</span>
+<span class="k"># Initial state: piece of length L behind the front of a fiber stimulated at its end; L = 100 mm circulates, L = 65 mm dies out</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+using Printf, Plots
+tin = 0.3; tout = 6.0; topen = 100.0; tclose = 115.0; vgate = 0.13   <span class="k"># parameters in ms</span>
+D = 0.1; dx = 0.2; dt = 0.02                                         <span class="k"># mm^2/ms, mm, ms</span>
+
+function euler(v, h, lap)
+    dv = h .* v.^2 .* (1 .- v) ./ tin .- v ./ tout .+ D .* lap ./ dx^2
+    dh = ifelse.(v .&lt; vgate, (1 .- h) ./ topen, -h ./ tclose)
+    return v .+ dt .* dv, h .+ dt .* dh
+end
+
+<span class="k"># stimulate a long fiber (250 mm) at the left until the front (v &gt; 0.5) is at 200 mm</span>
+function faser()
+    N = round(Int, 250 / dx) + 1; x = dx .* (0:N-1); v = zeros(N); h = ones(N); n = 0; lap = zeros(N)
+    while !any(v .&gt; 0.5) || maximum(x[v .&gt; 0.5]) &lt; 200
+        lap[2:end-1] .= v[3:end] .- 2 .* v[2:end-1] .+ v[1:end-2]; lap[1] = v[2] - v[1]; lap[end] = v[end-1] - v[end]
+        v, h = euler(v, h, lap)
+        n * dt &lt; 2.0 &amp;&amp; (v[x .&lt;= 1.0] .+= dt * 0.2)                  <span class="k"># stimulus J = 0.2 for 2 ms</span>
+        n += 1
+    end
+    return v, h, findlast(v .&gt; 0.5)
+end
+vF, hF, iF = faser()
+
+function ring(L, T; alle = 10)
+    <span class="k"># ring of length L; returns v every &#x27;alle&#x27; time steps and the times at which v reaches 0.5 at the middle of the ring</span>
+    M = round(Int, L / dx); v = vF[iF-M+1:iF]; h = hF[iF-M+1:iF]
+    bild = Vector{Vector{Float64}}(); akt = Float64[]; oben = false; mitte = M ÷ 2 + 1
+    for k in 0:round(Int, T / dt)-1
+        k % alle == 0 &amp;&amp; push!(bild, copy(v))
+        v, h = euler(v, h, circshift(v, 1) .- 2 .* v .+ circshift(v, -1))
+        if v[mitte] &gt; 0.5 &amp;&amp; !oben; push!(akt, (k + 1) * dt); oben = true; end
+        v[mitte] &lt; 0.1 &amp;&amp; (oben = false)
+    end
+    return bild, akt, maximum(v)
+end
+
+bilder = []
+for L in (100, 65)
+    B, akt, vmax = ring(L, 1500.0)
+    @printf(&quot;L = %d mm: round-trip times [%s] ms, the excitation %s\n&quot;, L, join([@sprintf(&quot;%.1f&quot;, d) for d in diff(akt)], &quot; &quot;), vmax &gt; 0.5 ? &quot;circulates&quot; : &quot;dies out&quot;)
+    push!(bilder, heatmap(range(0, L, length = length(B[1])), range(0, 1500, length = length(B)), reduce(hcat, B)&#x27;, color = :reds,
+                          clims = (0, 1), title = &quot;L = $L mm&quot;, xlabel = &quot;position on the ring (mm)&quot;, ylabel = &quot;t (ms)&quot;))
+end
+for L in 66:70                                                       <span class="k"># critical length</span>
+    B, akt, vmax = ring(L, 800.0, alle = 10^9)
+    @printf(&quot;L = %d mm: %s\n&quot;, L, vmax &gt; 0.5 ? &quot;circulates&quot; : &quot;dies out&quot;)
+end
+display(plot(bilder..., layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Fig. 5.4: Circulating excitation on a ring (book, Section 5.3, Eq. 5.2)</span>
+<span class="k">% Initial state: piece of length L behind the front of a fiber stimulated at its end; L = 100 mm circulates, L = 65 mm dies out</span>
+<span class="k">% (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+tin = 0.3; tout = 6; topen = 100; tclose = 115; vgate = 0.13;   <span class="k">% parameters in ms</span>
+D = 0.1; dx = 0.2; dt = 0.02;                                   <span class="k">% mm^2/ms, mm, ms</span>
+<span class="k">% stimulate a long fiber (250 mm) at the left until the front (v &gt; 0.5) is at 200 mm</span>
+N = round(250 / dx) + 1; x = dx * (0:N-1); vF = zeros(1, N); hF = ones(1, N); n = 0;
+while ~any(vF &gt; 0.5) || max(x(vF &gt; 0.5)) &lt; 200
+    lap = [vF(2) - vF(1), vF(3:end) - 2 * vF(2:end-1) + vF(1:end-2), vF(end-1) - vF(end)];
+    dv = hF .* vF.^2 .* (1 - vF) / tin - vF / tout + D * lap / dx^2;
+    dh = (vF &lt; vgate) .* (1 - hF) / topen - (vF &gt;= vgate) .* hF / tclose;
+    vF = vF + dt * dv; hF = hF + dt * dh;
+    if n * dt &lt; 2, vF(x &lt;= 1) = vF(x &lt;= 1) + dt * 0.2; end       <span class="k">% stimulus J = 0.2 for 2 ms</span>
+    n = n + 1;
+end
+iF = find(vF &gt; 0.5, 1, &#x27;last&#x27;);
+<span class="k">% rings: length, computing time, picture yes/no</span>
+faelle = [100 1500 1; 65 1500 1; 66 800 0; 67 800 0; 68 800 0; 69 800 0; 70 800 0];
+for f = 1:size(faelle, 1)
+    L = faelle(f, 1); T = faelle(f, 2); M = round(L / dx);
+    v = vF(iF-M+1:iF); h = hF(iF-M+1:iF);
+    K = round(T / dt); bild = zeros(K / 10, M); akt = []; oben = false; mitte = floor(M / 2) + 1;
+    for k = 0:K-1
+        if faelle(f, 3) &amp;&amp; mod(k, 10) == 0, bild(k / 10 + 1, :) = v; end
+        lap = [v(end), v(1:end-1)] - 2 * v + [v(2:end), v(1)];   <span class="k">% ring: neighbors cyclic</span>
+        dv = h .* v.^2 .* (1 - v) / tin - v / tout + D * lap / dx^2;
+        dh = (v &lt; vgate) .* (1 - h) / topen - (v &gt;= vgate) .* h / tclose;
+        v = v + dt * dv; h = h + dt * dh;
+        if v(mitte) &gt; 0.5 &amp;&amp; ~oben, akt(end + 1) = (k + 1) * dt; oben = true; end
+        if v(mitte) &lt; 0.1, oben = false; end
+    end
+    if max(v) &gt; 0.5, txt = &#x27;circulates&#x27;; else, txt = &#x27;dies out&#x27;; end
+    if faelle(f, 3)
+        fprintf(&#x27;L = %d mm: round-trip times [%s] ms, the excitation %s\n&#x27;, L, strtrim(sprintf(&#x27; %.1f&#x27;, diff(akt))), txt);
+        subplot(1, 2, f);
+        imagesc([0 L], [0 T], bild); axis xy; colormap(flipud(hot)); caxis([0 1]);
+        title(sprintf(&#x27;L = %d mm&#x27;, L)); xlabel(&#x27;position on the ring (mm)&#x27;); ylabel(&#x27;t (ms)&#x27;);
+    else
+        fprintf(&#x27;L = %d mm: %s\n&#x27;, L, txt);
+    end
+end</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Fig. 5.4: Circulating excitation on a ring (book, Section 5.3, Eq. 5.2)</span>
+<span class="k"># Initial state: piece of length L behind the front of a fiber stimulated at its end; L = 100 mm circulates, L = 65 mm dies out</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+tin, tout, topen, tclose, vgate = 0.3, 6.0, 100.0, 115.0, 0.13      <span class="k"># parameters in ms</span>
+D, dx, dt = 0.1, 0.2, 0.02                                           <span class="k"># mm^2/ms, mm, ms</span>
+
+def euler(v, h, lap):
+    dv = h * v**2 * (1 - v) / tin - v / tout + D * lap / dx**2
+    dh = np.where(v &lt; vgate, (1 - h) / topen, -h / tclose)
+    return v + dt * dv, h + dt * dh
+
+<span class="k"># stimulate a long fiber (250 mm) at the left until the front (v &gt; 0.5) is at 200 mm</span>
+N = int(round(250 / dx)) + 1; x = dx * np.arange(N); vF = np.zeros(N); hF = np.ones(N); n = 0
+while not (vF &gt; 0.5).any() or x[vF &gt; 0.5].max() &lt; 200:
+    lap = np.empty(N); lap[1:-1] = vF[2:] - 2 * vF[1:-1] + vF[:-2]; lap[0] = vF[1] - vF[0]; lap[-1] = vF[-2] - vF[-1]
+    vF, hF = euler(vF, hF, lap)
+    if n * dt &lt; 2.0: vF[x &lt;= 1.0] += dt * 0.2                        <span class="k"># stimulus J = 0.2 for 2 ms</span>
+    n += 1
+iF = np.where(vF &gt; 0.5)[0].max()
+
+def ring(L, T, alle=10):
+    &quot;&quot;&quot;Ring of length L; returns v every &#x27;alle&#x27; time steps and the times at which v reaches 0.5 at the middle of the ring.&quot;&quot;&quot;
+    M = int(round(L / dx)); v = vF[iF - M + 1:iF + 1].copy(); h = hF[iF - M + 1:iF + 1].copy()
+    bild, akt, oben = [], [], False
+    for k in range(int(round(T / dt))):
+        if k % alle == 0: bild.append(v.copy())
+        v, h = euler(v, h, np.roll(v, 1) - 2 * v + np.roll(v, -1))
+        if v[M // 2] &gt; 0.5 and not oben: akt.append((k + 1) * dt); oben = True
+        if v[M // 2] &lt; 0.1: oben = False
+    return np.array(bild), np.array(akt), v.max()
+
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5), sharey=True)
+for ax, L in zip(axs, (100.0, 65.0)):
+    B, akt, vmax = ring(L, 1500.0)
+    print(f&quot;L = {L:.0f} mm: round-trip times {np.round(np.diff(akt), 1)} ms, &quot; + (&quot;the excitation circulates&quot; if vmax &gt; 0.5 else &quot;the excitation dies out&quot;))
+    ax.imshow(B, origin=&quot;lower&quot;, aspect=&quot;auto&quot;, extent=(0, L, 0, 1500), cmap=&quot;Reds&quot;, vmin=0, vmax=1)
+    ax.set_title(f&quot;L = {L:.0f} mm&quot;); ax.set_xlabel(&quot;position on the ring (mm)&quot;)
+axs[0].set_ylabel(&quot;t (ms)&quot;)
+for L in range(66, 71):                                              <span class="k"># critical length</span>
+    B, akt, vmax = ring(float(L), 800.0, alle=10**9)
+    print(f&quot;L = {L} mm: &quot; + (&quot;circulates&quot; if vmax &gt; 0.5 else &quot;dies out&quot;))
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Fig. 5.4: Circulating excitation on a ring (book, Section 5.3, Eq. 5.2)</span>
+<span class="k"># Initial state: piece of length L behind the front of a fiber stimulated at its end; L = 100 mm circulates, L = 65 mm dies out</span>
+<span class="k"># (c) 2026 Philipp Kügler · Program for the book &quot;Dynamical Systems in the Life Sciences&quot; · MIT License (see LICENSE)</span>
+tin &lt;- 0.3; tout &lt;- 6; topen &lt;- 100; tclose &lt;- 115; vgate &lt;- 0.13   <span class="k"># parameters in ms</span>
+D &lt;- 0.1; dx &lt;- 0.2; dt &lt;- 0.02                                     <span class="k"># mm^2/ms, mm, ms</span>
+euler &lt;- function(v, h, lap) {
+  dv &lt;- h * v^2 * (1 - v) / tin - v / tout + D * lap / dx^2
+  dh &lt;- ifelse(v &lt; vgate, (1 - h) / topen, -h / tclose)
+  list(v = v + dt * dv, h = h + dt * dh)
+}
+<span class="k"># stimulate a long fiber (250 mm) at the left until the front (v &gt; 0.5) is at 200 mm</span>
+N &lt;- round(250 / dx) + 1; x &lt;- dx * (0:(N - 1)); vF &lt;- numeric(N); hF &lt;- rep(1, N); n &lt;- 0; innen &lt;- 2:(N - 1)
+while (!any(vF &gt; 0.5) || max(x[vF &gt; 0.5]) &lt; 200) {
+  lap &lt;- c(vF[2] - vF[1], vF[innen + 1] - 2 * vF[innen] + vF[innen - 1], vF[N - 1] - vF[N])
+  z &lt;- euler(vF, hF, lap); vF &lt;- z$v; hF &lt;- z$h
+  if (n * dt &lt; 2) vF[x &lt;= 1] &lt;- vF[x &lt;= 1] + dt * 0.2               <span class="k"># stimulus J = 0.2 for 2 ms</span>
+  n &lt;- n + 1
+}
+iF &lt;- max(which(vF &gt; 0.5))
+
+ring &lt;- function(L, T, alle = 10) {
+  <span class="k"># ring of length L; returns v every &#x27;alle&#x27; time steps and the times at which v reaches 0.5 at the middle of the ring</span>
+  M &lt;- round(L / dx); v &lt;- vF[(iF - M + 1):iF]; h &lt;- hF[(iF - M + 1):iF]
+  bild &lt;- list(); akt &lt;- c(); oben &lt;- FALSE; mitte &lt;- M %/% 2 + 1; vor &lt;- c(2:M, 1); zur &lt;- c(M, 1:(M - 1))
+  for (k in 0:(round(T / dt) - 1)) {
+    if (k %% alle == 0) bild[[length(bild) + 1]] &lt;- v
+    z &lt;- euler(v, h, v[zur] - 2 * v + v[vor]); v &lt;- z$v; h &lt;- z$h
+    if (v[mitte] &gt; 0.5 &amp;&amp; !oben) { akt &lt;- c(akt, (k + 1) * dt); oben &lt;- TRUE }
+    if (v[mitte] &lt; 0.1) oben &lt;- FALSE
+  }
+  list(bild = bild, akt = akt, vmax = max(v))
+}
+
+weissrot &lt;- colorRampPalette(c(&quot;white&quot;, rgb(0.89, 0.44, 0.49), rgb(0.64, 0.08, 0.18), rgb(0.43, 0.04, 0.12)))(64)
+par(mfrow = c(1, 2))
+for (L in c(100, 65)) {
+  r &lt;- ring(L, 1500)
+  cat(sprintf(&quot;L = %d mm: round-trip times [%s] ms, the excitation %s\n&quot;, L, paste(sprintf(&quot;%.1f&quot;, diff(r$akt)), collapse = &quot; &quot;),
+              if (r$vmax &gt; 0.5) &quot;circulates&quot; else &quot;dies out&quot;))
+  B &lt;- do.call(rbind, r$bild)
+  image(seq(0, L, length.out = ncol(B)), seq(0, 1500, length.out = nrow(B)), t(B), col = weissrot, zlim = c(0, 1),
+        main = sprintf(&quot;L = %d mm&quot;, L), xlab = &quot;position on the ring (mm)&quot;, ylab = &quot;t (ms)&quot;)
+}
+for (L in 66:70) {                                                   <span class="k"># critical length</span>
+  r &lt;- ring(L, 800, alle = 1e9)
+  cat(sprintf(&quot;L = %d mm: %s\n&quot;, L, if (r$vmax &gt; 0.5) &quot;circulates&quot; else &quot;dies out&quot;))
+}</code></pre>
+      <details class="out" open><summary>Output in the command window</summary><pre><code>L = 100 mm: round-trip times [201.1 344.3 351.2 346.7] ms, the excitation circulates
+L = 65 mm: round-trip times [] ms, the excitation dies out
+L = 66 mm: dies out
+L = 67 mm: dies out
+L = 68 mm: dies out
+L = 69 mm: circulates
+L = 70 mm: circulates</code></pre></details>
+    </div>
+  </div>
+</section>
+  
+  
+  <nav class="weiter" aria-label="Page navigation"><a href="abschnitt-5-2.html"><small>Previous</small>5.2 Traveling Waves</a><a href="abschnitt-5-4.html"><small>Next</small>5.4 Spiral Waves in the Plane</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Companion website to the book “Dynamical Systems in the Life Sciences” by Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programs under the <a href="../LICENSE.txt">MIT License</a> · <a href="../../impressum.html" hreflang="de">Legal notice (German)</a> · <a href="../../datenschutz.html" hreflang="de">Privacy policy (German)</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

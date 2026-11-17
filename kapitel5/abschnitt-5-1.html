@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>5.1 Vom Zellverbund zur Kabelgleichung – Dynamische Systeme in den Lebenswissenschaften</title>
+<meta name="description" content="Programme in Julia, MATLAB, Python und R zu Abschnitt 5.1 des Buchs Dynamische Systeme in den Lebenswissenschaften">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamische Systeme in den Lebenswissenschaften</a>
+  <nav aria-label="Kapitel"><a href="../index.html">Start</a> <a href="../kapitel1/index.html">Kapitel 1</a> <a href="../kapitel2/index.html">Kapitel 2</a> <a href="../kapitel3/index.html">Kapitel 3</a> <a href="../kapitel4/index.html">Kapitel 4</a> <a href="../kapitel5/index.html" aria-current="page">Kapitel 5</a> <a href="../en/kapitel5/abschnitt-5-1.html" lang="en" hreflang="en">English</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Abschnitte"><h2><a href="index.html">Kapitel 5</a></h2><ol><li><a href="abschnitt-5-1.html" aria-current="page"><span class="nr">5.1</span><span>Vom Zellverbund zur Kabelgleichung</span></a></li><li><a href="abschnitt-5-2.html"><span class="nr">5.2</span><span>Wandernde Wellen</span></a></li><li><a href="abschnitt-5-3.html"><span class="nr">5.3</span><span>Kreisende Erregung</span></a></li><li><a href="abschnitt-5-4.html"><span class="nr">5.4</span><span>Spiralwellen in der Ebene</span></a></li><li><a href="abschnitt-5-5.html"><span class="nr">5.5</span><span>Vom Gewebe zum ganzen Herzen</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Kapitel 5 · Ausblick: Erregungsausbreitung im Herzgewebe</p>
+      <h1><span class="num">5.1</span>Vom Zellverbund zur Kabelgleichung</h1>
+      <p>Benachbarte Herzmuskelzellen sind über Gap Junctions gekoppelt. Lässt man den Abstand Δx der Zellen gegen null gehen, so wird aus dem System gewöhnlicher Differentialgleichungen die Kabelgleichung ∂v/∂t = D ∂<sup>2</sup>v/∂x<sup>2</sup> + … , eine partielle Differentialgleichung. Numerisch löst man sie wieder auf einem Gitter mit dem Euler-Verfahren; dabei muss Δt &lt; Δx<sup>2</sup>/(2D) gelten. Die Programme zu den Abschnitten 5.2 bis 5.4 zeigen, wie das geht.</p>
+      <p>Zu jeder Abbildung des Abschnitts finden Sie das Programm, das sie erzeugt. Ändern Sie Parameter und Startwerte und beobachten Sie, was passiert. Abbildungs- und Gleichungsnummern beziehen sich auf das Buch.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programmiersprache</legend>
+  <div class="seg" role="radiogroup" aria-label="Programmiersprache">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Gilt für alle Seiten. MATLAB-Programme laufen auch im kostenlosen GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>Auf dieser Seite</b><ul></ul></div>
+  
+  
+  
+  <nav class="weiter" aria-label="Weiterblättern"><a href="abschnitt-5-2.html"><small>Weiter</small>5.2 Wandernde Wellen</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Begleitmaterial zum Buch „Dynamische Systeme in den Lebenswissenschaften“ von Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programme unter <a href="../LICENSE.txt">MIT-Lizenz</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>

@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>5.2 Wandernde Wellen – Dynamische Systeme in den Lebenswissenschaften</title>
+<meta name="description" content="Programme in Julia, MATLAB, Python und R zu Abschnitt 5.2 des Buchs Dynamische Systeme in den Lebenswissenschaften">
+<link rel="stylesheet" href="../assets/fonts/schriften.css">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<header class="band"><div class="inner gutter">
+  <a class="book" href="../index.html">Dynamische Systeme in den Lebenswissenschaften</a>
+  <nav aria-label="Kapitel"><a href="../index.html">Start</a> <a href="../kapitel1/index.html">Kapitel 1</a> <a href="../kapitel2/index.html">Kapitel 2</a> <a href="../kapitel3/index.html">Kapitel 3</a> <a href="../kapitel4/index.html">Kapitel 4</a> <a href="../kapitel5/index.html" aria-current="page">Kapitel 5</a> <a href="../en/kapitel5/abschnitt-5-2.html" lang="en" hreflang="en">English</a></nav>
+</div></header>
+<div class="layout gutter">
+<aside class="seitenleiste" aria-label="Abschnitte"><h2><a href="index.html">Kapitel 5</a></h2><ol><li><a href="abschnitt-5-1.html"><span class="nr">5.1</span><span>Vom Zellverbund zur Kabelgleichung</span></a></li><li><a href="abschnitt-5-2.html" aria-current="page"><span class="nr">5.2</span><span>Wandernde Wellen</span></a></li><li><a href="abschnitt-5-3.html"><span class="nr">5.3</span><span>Kreisende Erregung</span></a></li><li><a href="abschnitt-5-4.html"><span class="nr">5.4</span><span>Spiralwellen in der Ebene</span></a></li><li><a href="abschnitt-5-5.html"><span class="nr">5.5</span><span>Vom Gewebe zum ganzen Herzen</span></a></li></ol></aside>
+<main>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Kapitel 5 · Ausblick: Erregungsausbreitung im Herzgewebe</p>
+      <h1><span class="num">5.2</span>Wandernde Wellen</h1>
+      <p>Auf einer Faser läuft die Erregung als Puls mit fester Form und Geschwindigkeit. Für die Front lässt sich die Geschwindigkeit c = √(D/(2τ<sub>in</sub>)) (1 − 3v<sub>s</sub>*) exakt angeben; sie wächst mit der Wurzel aus der Kopplung D. Die Programme verwenden D = 0.1 mm<sup>2</sup>/ms, Δx = 0.1 mm und Δt = 0.01 ms.</p>
+      <p>Zu jeder Abbildung des Abschnitts finden Sie das Programm, das sie erzeugt. Ändern Sie Parameter und Startwerte und beobachten Sie, was passiert. Abbildungs- und Gleichungsnummern beziehen sich auf das Buch.</p>
+    </div>
+    <fieldset class="lang">
+  <legend>Programmiersprache</legend>
+  <div class="seg" role="radiogroup" aria-label="Programmiersprache">
+    <label><input type="radio" name="sprache" value="jl"><span>Julia</span></label>
+    <label><input type="radio" name="sprache" value="m"><span>MATLAB</span></label>
+    <label><input type="radio" name="sprache" value="py" checked><span>Python</span></label>
+    <label><input type="radio" name="sprache" value="r"><span>R</span></label>
+  </div>
+  <small>Gilt für alle Seiten. MATLAB-Programme laufen auch im kostenlosen GNU Octave.</small>
+</fieldset>
+  </div>
+  <div class="inhalt"><b>Auf dieser Seite</b><ul><li><a href="#faser"><span class="abb">Abb. 5.2</span>Ein Puls auf der Faser</a></li><li><a href="#geschwindigkeit"><span class="abb">Abb. 5.3</span>Leitungsgeschwindigkeit und Kopplung</a></li><li><a href="#app-welle"><span class="abb">App</span>im Browser ausprobieren</a></li></ul></div>
+  
+<section class="fig" id="faser">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 5.2</p>
+    <h2>Ein Puls auf der Faser</h2>
+    <p class="formel">∂v/∂t = D ∂<sup>2</sup>v/∂x<sup>2</sup> + h v<sup>2</sup> (1 − v)/τ<sub>in</sub> − v/τ<sub>out</sub> + J(x, t)</p>
+    <p class="lead">Reiz am linken Ende einer 150 mm langen Faser. Aus den Zeitpunkten, zu denen v bei 25 und 75 mm den Wert 0.5 erreicht, ergibt sich c ≈ 0.34 mm/ms; mit APD ≈ 227 ms ist die Wellenlänge etwa 77 mm.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot breit">
+      <img src="bilder/faser.png" alt="Ergebnis des Programms faser.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="faser.jl" data-m="faser.m" data-py="faser.py" data-r="faser.R">faser.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/faser.py" data-jl="code/faser.jl" data-m="code/faser.m" data-py="code/faser.py" data-r="code/faser.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 5.2: Ein Puls auf der Faser (Buch, Abschnitt 5.2, Gl. 5.2)</span>
+<span class="k"># Kabelgleichung mit dem Mitchell-Schaeffer-Modell, Faser 150 mm, Reiz am linken Ende; Linienmethode mit dem Euler-Verfahren</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+tin = 0.3; tout = 6.0; topen = 100.0; tclose = 115.0; vgate = 0.13   <span class="k"># Parameter in ms</span>
+D = 0.1; dx = 0.1; dt = 0.01                                         <span class="k"># D in mm^2/ms, Gitterabstand in mm, Zeitschritt in ms</span>
+L = 150.0; T = 500.0
+N = round(Int, L / dx) + 1; x = dx .* (0:N-1)
+v = zeros(N); h = ones(N)
+reiz = x .&lt;= 1.0                                                     <span class="k"># Reiz J = 0.2 auf dem ersten Millimeter für 2 ms</span>
+zeiten = [100.0, 250.0, 400.0]; schnapp = Dict{Int, Vector{Float64}}()
+K = round(Int, T / dt); s25 = zeros(K); s75 = zeros(K); t_akt = fill(NaN, N)
+lap = zeros(N)
+for n in 0:K-1
+    t = n * dt
+    for z in zeiten
+        abs(t - z) &lt; 1e-6 &amp;&amp; (schnapp[round(Int, z)] = copy(v))
+    end
+    lap[2:end-1] .= v[3:end] .- 2 .* v[2:end-1] .+ v[1:end-2]
+    lap[1] = v[2] - v[1]; lap[end] = v[end-1] - v[end]               <span class="k"># Rand ohne Fluss</span>
+    dv = h .* v.^2 .* (1 .- v) ./ tin .- v ./ tout .+ D .* lap ./ dx^2
+    t &lt; 2.0 &amp;&amp; (dv[reiz] .+= 0.2)
+    dh = ifelse.(v .&lt; vgate, (1 .- h) ./ topen, -h ./ tclose)
+    global v = v .+ dt .* dv; global h = h .+ dt .* dh
+    neu = isnan.(t_akt) .&amp; (v .&gt; 0.5); t_akt[neu] .= t + dt          <span class="k"># Zeitpunkt, an dem v erstmals 0.5 erreicht</span>
+    s25[n + 1] = v[251]; s75[n + 1] = v[751]
+end
+c = (x[751] - x[251]) / (t_akt[751] - t_akt[251])
+ts = dt .* collect(1:K); a = ts[s75 .&gt; 0.1]; apd = a[end] - a[1]
+@printf(&quot;v = 0.5 bei x = 25 mm nach %.1f ms, bei x = 75 mm nach %.1f ms\n&quot;, t_akt[251], t_akt[751])
+@printf(&quot;Leitungsgeschwindigkeit c = %.4f mm/ms,  APD = %.1f ms,  Wellenlänge c APD = %.1f mm\n&quot;, c, apd, c * apd)
+farben = [RGB(0.89, 0.44, 0.49), RGB(0.64, 0.08, 0.18), RGB(0.43, 0.04, 0.12)]
+p1 = plot(xlabel = &quot;x (mm)&quot;, ylabel = &quot;v(x, t)&quot;)
+for (j, z) in enumerate((100, 250, 400))
+    plot!(p1, x, schnapp[z], color = farben[j], lw = 2, label = &quot;t = $z ms&quot;)
+end
+p2 = plot(ts, s25, color = farben[3], lw = 2, label = &quot;x = 25 mm&quot;, xlabel = &quot;t (ms)&quot;, ylabel = &quot;v(x, t)&quot;)
+plot!(p2, ts, s75, color = farben[1], lw = 2, label = &quot;x = 75 mm&quot;)
+display(plot(p1, p2, layout = (1, 2), size = (900, 420)))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 5.2: Ein Puls auf der Faser (Buch, Abschnitt 5.2, Gl. 5.2)</span>
+<span class="k">% Kabelgleichung mit dem Mitchell-Schaeffer-Modell, Faser 150 mm, Reiz am linken Ende; Linienmethode mit dem Euler-Verfahren</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+tin = 0.3; tout = 6; topen = 100; tclose = 115; vgate = 0.13;   <span class="k">% Parameter in ms</span>
+D = 0.1; dx = 0.1; dt = 0.01;                                   <span class="k">% D in mm^2/ms, Gitterabstand in mm, Zeitschritt in ms</span>
+L = 150; T = 500;
+N = round(L / dx) + 1; x = dx * (0:N-1);
+v = zeros(1, N); h = ones(1, N);
+reiz = x &lt;= 1;                                                  <span class="k">% Reiz J = 0.2 auf dem ersten Millimeter für 2 ms</span>
+schnapp = zeros(3, N); zeiten = [100 250 400];
+K = round(T / dt); s25 = zeros(1, K); s75 = zeros(1, K); t_akt = nan(1, N);
+for n = 0:K-1
+    t = n * dt;
+    j = find(abs(zeiten - t) &lt; 1e-6); if ~isempty(j), schnapp(j, :) = v; end
+    lap = [v(2) - v(1), v(3:end) - 2 * v(2:end-1) + v(1:end-2), v(end-1) - v(end)];   <span class="k">% Rand ohne Fluss</span>
+    dv = h .* v.^2 .* (1 - v) / tin - v / tout + D * lap / dx^2;
+    if t &lt; 2, dv(reiz) = dv(reiz) + 0.2; end
+    dh = (v &lt; vgate) .* (1 - h) / topen - (v &gt;= vgate) .* h / tclose;
+    v = v + dt * dv; h = h + dt * dh;
+    neu = isnan(t_akt) &amp; v &gt; 0.5; t_akt(neu) = t + dt;          <span class="k">% Zeitpunkt, an dem v erstmals 0.5 erreicht</span>
+    s25(n + 1) = v(251); s75(n + 1) = v(751);
+end
+c = (x(751) - x(251)) / (t_akt(751) - t_akt(251));
+ts = dt * (1:K); a = ts(s75 &gt; 0.1); apd = a(end) - a(1);
+fprintf(&#x27;v = 0.5 bei x = 25 mm nach %.1f ms, bei x = 75 mm nach %.1f ms\n&#x27;, t_akt(251), t_akt(751));
+fprintf(&#x27;Leitungsgeschwindigkeit c = %.4f mm/ms,  APD = %.1f ms,  Wellenlänge c APD = %.1f mm\n&#x27;, c, apd, c * apd);
+farben = [0.89 0.44 0.49; 0.64 0.08 0.18; 0.43 0.04 0.12];
+subplot(1, 2, 1); hold on
+for j = 1:3, plot(x, schnapp(j, :), &#x27;Color&#x27;, farben(j, :), &#x27;LineWidth&#x27;, 2); end
+hold off; xlabel(&#x27;x (mm)&#x27;); ylabel(&#x27;v(x, t)&#x27;); legend(&#x27;t = 100 ms&#x27;, &#x27;t = 250 ms&#x27;, &#x27;t = 400 ms&#x27;);
+subplot(1, 2, 2);
+plot(ts, s25, &#x27;Color&#x27;, farben(3, :), &#x27;LineWidth&#x27;, 2); hold on
+plot(ts, s75, &#x27;Color&#x27;, farben(1, :), &#x27;LineWidth&#x27;, 2); hold off
+xlabel(&#x27;t (ms)&#x27;); ylabel(&#x27;v(x, t)&#x27;); legend(&#x27;x = 25 mm&#x27;, &#x27;x = 75 mm&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 5.2: Ein Puls auf der Faser (Buch, Abschnitt 5.2, Gl. 5.2)</span>
+<span class="k"># Kabelgleichung mit dem Mitchell-Schaeffer-Modell, Faser 150 mm, Reiz am linken Ende; Linienmethode mit dem Euler-Verfahren</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+tin, tout, topen, tclose, vgate = 0.3, 6.0, 100.0, 115.0, 0.13      <span class="k"># Parameter in ms</span>
+D, dx, dt = 0.1, 0.1, 0.01                                           <span class="k"># D in mm^2/ms, Gitterabstand in mm, Zeitschritt in ms</span>
+L, T = 150.0, 500.0
+N = int(round(L / dx)) + 1; x = dx * np.arange(N)
+v = np.zeros(N); h = np.ones(N)
+reiz = x &lt;= 1.0                                                      <span class="k"># Reiz J = 0.2 auf dem ersten Millimeter für 2 ms</span>
+schnapp = {}; s25, s75 = [], []; t_akt = np.full(N, np.nan)
+for n in range(int(round(T / dt))):
+    t = n * dt
+    if round(t, 6) in (100.0, 250.0, 400.0): schnapp[round(t)] = v.copy()
+    lap = np.empty(N)
+    lap[1:-1] = v[2:] - 2 * v[1:-1] + v[:-2]
+    lap[0] = v[1] - v[0]; lap[-1] = v[-2] - v[-1]                    <span class="k"># Rand ohne Fluss</span>
+    dv = h * v**2 * (1 - v) / tin - v / tout + D * lap / dx**2
+    if t &lt; 2.0: dv[reiz] += 0.2
+    dh = np.where(v &lt; vgate, (1 - h) / topen, -h / tclose)
+    v = v + dt * dv; h = h + dt * dh
+    neu = np.isnan(t_akt) &amp; (v &gt; 0.5); t_akt[neu] = t + dt           <span class="k"># Zeitpunkt, an dem v erstmals 0.5 erreicht</span>
+    s25.append(v[250]); s75.append(v[750])
+i25, i75 = 250, 750
+c = (x[i75] - x[i25]) / (t_akt[i75] - t_akt[i25])
+ts = dt * np.arange(1, len(s75) + 1); s75 = np.array(s75); a = ts[s75 &gt; 0.1]
+apd = a[-1] - a[0]
+print(f&quot;v = 0.5 bei x = 25 mm nach {t_akt[i25]:.1f} ms, bei x = 75 mm nach {t_akt[i75]:.1f} ms&quot;)
+print(f&quot;Leitungsgeschwindigkeit c = {c:.4f} mm/ms,  APD = {apd:.1f} ms,  Wellenlänge c APD = {c * apd:.1f} mm&quot;)
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.5))
+for tz, farbe in zip((100, 250, 400), [(0.89, 0.44, 0.49), (0.64, 0.08, 0.18), (0.43, 0.04, 0.12)]):
+    axs[0].plot(x, schnapp[tz], color=farbe, lw=2, label=f&quot;t = {tz} ms&quot;)
+axs[0].set_xlabel(&quot;x (mm)&quot;); axs[0].set_ylabel(&quot;v(x, t)&quot;); axs[0].legend()
+axs[1].plot(ts, s25, color=(0.43, 0.04, 0.12), lw=2, label=&quot;x = 25 mm&quot;)
+axs[1].plot(ts, s75, color=(0.89, 0.44, 0.49), lw=2, label=&quot;x = 75 mm&quot;)
+axs[1].set_xlabel(&quot;t (ms)&quot;); axs[1].set_ylabel(&quot;v(x, t)&quot;); axs[1].legend()
+plt.tight_layout()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 5.2: Ein Puls auf der Faser (Buch, Abschnitt 5.2, Gl. 5.2)</span>
+<span class="k"># Kabelgleichung mit dem Mitchell-Schaeffer-Modell, Faser 150 mm, Reiz am linken Ende; Linienmethode mit dem Euler-Verfahren</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+tin &lt;- 0.3; tout &lt;- 6; topen &lt;- 100; tclose &lt;- 115; vgate &lt;- 0.13   <span class="k"># Parameter in ms</span>
+D &lt;- 0.1; dx &lt;- 0.1; dt &lt;- 0.01                                     <span class="k"># D in mm^2/ms, Gitterabstand in mm, Zeitschritt in ms</span>
+L &lt;- 150; T &lt;- 500
+N &lt;- round(L / dx) + 1; x &lt;- dx * (0:(N - 1))
+v &lt;- numeric(N); h &lt;- rep(1, N)
+reiz &lt;- x &lt;= 1                                                       <span class="k"># Reiz J = 0.2 auf dem ersten Millimeter für 2 ms</span>
+zeiten &lt;- c(100, 250, 400); schnapp &lt;- matrix(0, 3, N)
+K &lt;- round(T / dt); s25 &lt;- numeric(K); s75 &lt;- numeric(K); t_akt &lt;- rep(NA, N)
+innen &lt;- 2:(N - 1)
+for (n in 0:(K - 1)) {
+  t &lt;- n * dt
+  j &lt;- which(abs(zeiten - t) &lt; 1e-6); if (length(j)) schnapp[j, ] &lt;- v
+  lap &lt;- c(v[2] - v[1], v[innen + 1] - 2 * v[innen] + v[innen - 1], v[N - 1] - v[N])   <span class="k"># Rand ohne Fluss</span>
+  dv &lt;- h * v^2 * (1 - v) / tin - v / tout + D * lap / dx^2
+  if (t &lt; 2) dv[reiz] &lt;- dv[reiz] + 0.2
+  dh &lt;- ifelse(v &lt; vgate, (1 - h) / topen, -h / tclose)
+  v &lt;- v + dt * dv; h &lt;- h + dt * dh
+  neu &lt;- is.na(t_akt) &amp; v &gt; 0.5; t_akt[neu] &lt;- t + dt                <span class="k"># Zeitpunkt, an dem v erstmals 0.5 erreicht</span>
+  s25[n + 1] &lt;- v[251]; s75[n + 1] &lt;- v[751]
+}
+c &lt;- (x[751] - x[251]) / (t_akt[751] - t_akt[251])
+ts &lt;- dt * (1:K); a &lt;- ts[s75 &gt; 0.1]; apd &lt;- a[length(a)] - a[1]
+cat(sprintf(&quot;v = 0.5 bei x = 25 mm nach %.1f ms, bei x = 75 mm nach %.1f ms\n&quot;, t_akt[251], t_akt[751]))
+cat(sprintf(&quot;Leitungsgeschwindigkeit c = %.4f mm/ms,  APD = %.1f ms,  Wellenlänge c APD = %.1f mm\n&quot;, c, apd, c * apd))
+farben &lt;- c(rgb(0.89, 0.44, 0.49), rgb(0.64, 0.08, 0.18), rgb(0.43, 0.04, 0.12))
+par(mfrow = c(1, 2))
+plot(x, schnapp[1, ], type = &quot;l&quot;, col = farben[1], lwd = 2, ylim = c(0, 1), xlab = &quot;x (mm)&quot;, ylab = &quot;v(x, t)&quot;)
+for (j in 2:3) lines(x, schnapp[j, ], col = farben[j], lwd = 2)
+legend(&quot;topright&quot;, legend = sprintf(&quot;t = %d ms&quot;, zeiten), col = farben, lwd = 2)
+plot(ts, s25, type = &quot;l&quot;, col = farben[3], lwd = 2, ylim = c(0, 1), xlab = &quot;t (ms)&quot;, ylab = &quot;v(x, t)&quot;)
+lines(ts, s75, col = farben[1], lwd = 2)
+legend(&quot;topright&quot;, legend = c(&quot;x = 25 mm&quot;, &quot;x = 75 mm&quot;), col = farben[c(3, 1)], lwd = 2)</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>v = 0.5 bei x = 25 mm nach 73.4 ms, bei x = 75 mm nach 220.6 ms
+Leitungsgeschwindigkeit c = 0.3396 mm/ms,  APD = 226.9 ms,  Wellenlänge c APD = 77.1 mm</code></pre></details>
+    </div>
+  </div>
+</section>
+<section class="fig" id="geschwindigkeit">
+  <header class="fig-head">
+    <p class="eyebrow">Abb. 5.3</p>
+    <h2>Leitungsgeschwindigkeit und Kopplung</h2>
+    <p class="formel">c = √(D/(2τ<sub>in</sub>)) (1 − 3v<sub>s</sub>*)</p>
+    <p class="lead">Simulationen für fünf Werte von D und die Formel. Die Simulation liegt etwa 1 % darunter, weil sich die Kanäle schon während des Anstiegs zu schließen beginnen.</p>
+  </header>
+  <div class="fig-body">
+    <figure class="plot schmal">
+      <img src="bilder/geschwindigkeit.png" alt="Ergebnis des Programms geschwindigkeit.py" loading="lazy">
+      <figcaption>So sieht das Ergebnis aus, wenn Sie das Python-Programm ausführen. Julia, MATLAB und R liefern dieselben Zahlen.</figcaption>
+    </figure>
+    <div class="code">
+      <div class="bar">
+        <span class="file" data-jl="geschwindigkeit.jl" data-m="geschwindigkeit.m" data-py="geschwindigkeit.py" data-r="geschwindigkeit.R">geschwindigkeit.py</span>
+        <button type="button" class="copy">Kopieren</button>
+        <a class="dl" href="code/geschwindigkeit.py" data-jl="code/geschwindigkeit.jl" data-m="code/geschwindigkeit.m" data-py="code/geschwindigkeit.py" data-r="code/geschwindigkeit.R" download>Herunterladen</a>
+      </div>
+      <pre class="pane" data-lang="jl" hidden><code><span class="k"># Abb. 5.3: Leitungsgeschwindigkeit und Kopplung (Buch, Abschnitt 5.2, Gl. 5.5)</span>
+<span class="k"># Simulation der Kabelgleichung für fünf Werte von D und die Formel c = sqrt(D/(2 tin)) (1 - 3 vs)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+using Printf, Plots
+tin = 0.3; tout = 6.0; topen = 100.0; tclose = 115.0; vgate = 0.13   <span class="k"># Parameter in ms</span>
+hc = 4 * tin / tout
+vs = (1 - sqrt(1 - hc)) / 2                                          <span class="k"># Schwelle für h = 1</span>
+formel(D) = sqrt(D / (2 * tin)) * (1 - 3 * vs)
+
+function geschwindigkeit(D; dx = 0.1, dt = 0.01, L = 60.0)
+    <span class="k"># Faser der Länge L, Reiz am linken Ende; c aus den Zeitpunkten, an denen v bei 20 und 50 mm den Wert 0.5 erreicht</span>
+    N = round(Int, L / dx) + 1; v = zeros(N); h = ones(N); reiz = dx .* (0:N-1) .&lt;= 1.0
+    i1 = round(Int, 20 / dx) + 1; i2 = round(Int, 50 / dx) + 1; t1 = NaN; t2 = NaN; n = 0; lap = zeros(N)
+    while isnan(t2)
+        lap[2:end-1] .= v[3:end] .- 2 .* v[2:end-1] .+ v[1:end-2]; lap[1] = v[2] - v[1]; lap[end] = v[end-1] - v[end]
+        dv = h .* v.^2 .* (1 .- v) ./ tin .- v ./ tout .+ D .* lap ./ dx^2
+        n * dt &lt; 2.0 &amp;&amp; (dv[reiz] .+= 0.2)
+        dh = ifelse.(v .&lt; vgate, (1 .- h) ./ topen, -h ./ tclose)
+        v = v .+ dt .* dv; h = h .+ dt .* dh; n += 1
+        isnan(t1) &amp;&amp; v[i1] &gt; 0.5 &amp;&amp; (t1 = n * dt)
+        isnan(t2) &amp;&amp; v[i2] &gt; 0.5 &amp;&amp; (t2 = n * dt)
+    end
+    return 30.0 / (t2 - t1)
+end
+
+Ds = [0.025, 0.05, 0.1, 0.2, 0.4]
+cs = [geschwindigkeit(D) for D in Ds]
+for (D, c) in zip(Ds, cs)
+    @printf(&quot;D = %5.3f:  Simulation c = %.4f,  Formel c = %.4f mm/ms\n&quot;, D, c, formel(D))
+end
+Dd = range(0, 0.45, length = 300)
+plot(Dd, formel.(Dd), color = RGB(0, 0.447, 0.741), lw = 2.5, label = &quot;Formel&quot;, xlabel = &quot;D (mm²/ms)&quot;, ylabel = &quot;c (mm/ms)&quot;, legend = :bottomright)
+display(scatter!(Ds, cs, color = RGB(0.64, 0.08, 0.18), ms = 6, label = &quot;Simulation&quot;))</code></pre>
+      <pre class="pane" data-lang="m" hidden><code><span class="k">% Abb. 5.3: Leitungsgeschwindigkeit und Kopplung (Buch, Abschnitt 5.2, Gl. 5.5)</span>
+<span class="k">% Simulation der Kabelgleichung für fünf Werte von D und die Formel c = sqrt(D/(2 tin)) (1 - 3 vs)</span>
+<span class="k">% (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+tin = 0.3; tout = 6; topen = 100; tclose = 115; vgate = 0.13;   <span class="k">% Parameter in ms</span>
+hc = 4 * tin / tout;
+vs = (1 - sqrt(1 - hc)) / 2;                                    <span class="k">% Schwelle für h = 1</span>
+formel = @(D) sqrt(D / (2 * tin)) * (1 - 3 * vs);
+dx = 0.1; dt = 0.01; L = 60;
+Ds = [0.025 0.05 0.1 0.2 0.4]; cs = zeros(size(Ds));
+for k = 1:numel(Ds)
+    D = Ds(k);                                                  <span class="k">% Faser der Länge L, Reiz am linken Ende</span>
+    N = round(L / dx) + 1; v = zeros(1, N); h = ones(1, N); reiz = dx * (0:N-1) &lt;= 1;
+    i1 = round(20 / dx) + 1; i2 = round(50 / dx) + 1; t1 = NaN; t2 = NaN; n = 0;
+    while isnan(t2)
+        lap = [v(2) - v(1), v(3:end) - 2 * v(2:end-1) + v(1:end-2), v(end-1) - v(end)];
+        dv = h .* v.^2 .* (1 - v) / tin - v / tout + D * lap / dx^2;
+        if n * dt &lt; 2, dv(reiz) = dv(reiz) + 0.2; end
+        dh = (v &lt; vgate) .* (1 - h) / topen - (v &gt;= vgate) .* h / tclose;
+        v = v + dt * dv; h = h + dt * dh; n = n + 1;
+        if isnan(t1) &amp;&amp; v(i1) &gt; 0.5, t1 = n * dt; end
+        if isnan(t2) &amp;&amp; v(i2) &gt; 0.5, t2 = n * dt; end
+    end
+    cs(k) = 30 / (t2 - t1);                                     <span class="k">% c aus den Zeitpunkten bei 20 und 50 mm</span>
+    fprintf(&#x27;D = %5.3f:  Simulation c = %.4f,  Formel c = %.4f mm/ms\n&#x27;, D, cs(k), formel(D));
+end
+Dd = linspace(0, 0.45, 300);
+plot(Dd, formel(Dd), &#x27;Color&#x27;, [0 0.447 0.741], &#x27;LineWidth&#x27;, 2.5); hold on
+plot(Ds, cs, &#x27;o&#x27;, &#x27;Color&#x27;, [0.64 0.08 0.18], &#x27;MarkerFaceColor&#x27;, [0.64 0.08 0.18], &#x27;MarkerSize&#x27;, 8); hold off
+xlabel(&#x27;D (mm^2/ms)&#x27;); ylabel(&#x27;c (mm/ms)&#x27;); legend(&#x27;Formel&#x27;, &#x27;Simulation&#x27;, &#x27;Location&#x27;, &#x27;southeast&#x27;);</code></pre>
+      <pre class="pane" data-lang="py"><code><span class="k"># Abb. 5.3: Leitungsgeschwindigkeit und Kopplung (Buch, Abschnitt 5.2, Gl. 5.5)</span>
+<span class="k"># Simulation der Kabelgleichung für fünf Werte von D und die Formel c = sqrt(D/(2 tin)) (1 - 3 vs)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+import numpy as np
+import matplotlib.pyplot as plt
+tin, tout, topen, tclose, vgate = 0.3, 6.0, 100.0, 115.0, 0.13      <span class="k"># Parameter in ms</span>
+hc = 4 * tin / tout
+vs = (1 - np.sqrt(1 - hc)) / 2                                       <span class="k"># Schwelle für h = 1</span>
+formel = lambda D: np.sqrt(D / (2 * tin)) * (1 - 3 * vs)
+
+def geschwindigkeit(D, dx=0.1, dt=0.01, L=60.0):
+    &quot;&quot;&quot;Faser der Länge L, Reiz am linken Ende; c aus den Zeitpunkten, an denen v bei 20 und 50 mm den Wert 0.5 erreicht.&quot;&quot;&quot;
+    N = int(round(L / dx)) + 1; v = np.zeros(N); h = np.ones(N); reiz = dx * np.arange(N) &lt;= 1.0
+    i1, i2 = int(round(20 / dx)), int(round(50 / dx)); t1 = t2 = None; n = 0
+    while t2 is None:
+        lap = np.empty(N); lap[1:-1] = v[2:] - 2 * v[1:-1] + v[:-2]; lap[0] = v[1] - v[0]; lap[-1] = v[-2] - v[-1]
+        dv = h * v**2 * (1 - v) / tin - v / tout + D * lap / dx**2
+        if n * dt &lt; 2.0: dv[reiz] += 0.2
+        dh = np.where(v &lt; vgate, (1 - h) / topen, -h / tclose)
+        v = v + dt * dv; h = h + dt * dh; n += 1
+        if t1 is None and v[i1] &gt; 0.5: t1 = n * dt
+        if t2 is None and v[i2] &gt; 0.5: t2 = n * dt
+    return 30.0 / (t2 - t1)
+
+Ds = [0.025, 0.05, 0.1, 0.2, 0.4]
+cs = [geschwindigkeit(D) for D in Ds]
+for D, c in zip(Ds, cs):
+    print(f&quot;D = {D:5.3f}:  Simulation c = {c:.4f},  Formel c = {formel(D):.4f} mm/ms&quot;)
+Dd = np.linspace(0, 0.45, 300)
+plt.figure(figsize=(7, 4.5))
+plt.plot(Dd, formel(Dd), color=(0, 0.447, 0.741), lw=2.5, label=&quot;Formel&quot;)
+plt.plot(Ds, cs, &quot;o&quot;, color=(0.64, 0.08, 0.18), ms=8, label=&quot;Simulation&quot;)
+plt.xlabel(&quot;D (mm²/ms)&quot;); plt.ylabel(&quot;c (mm/ms)&quot;); plt.legend()
+plt.show()</code></pre>
+      <pre class="pane" data-lang="r" hidden><code><span class="k"># Abb. 5.3: Leitungsgeschwindigkeit und Kopplung (Buch, Abschnitt 5.2, Gl. 5.5)</span>
+<span class="k"># Simulation der Kabelgleichung für fünf Werte von D und die Formel c = sqrt(D/(2 tin)) (1 - 3 vs)</span>
+<span class="k"># (c) 2026 Philipp Kügler · Programm zum Buch „Dynamische Systeme in den Lebenswissenschaften“ · MIT-Lizenz (siehe LICENSE)</span>
+tin &lt;- 0.3; tout &lt;- 6; topen &lt;- 100; tclose &lt;- 115; vgate &lt;- 0.13   <span class="k"># Parameter in ms</span>
+hc &lt;- 4 * tin / tout
+vs &lt;- (1 - sqrt(1 - hc)) / 2                                         <span class="k"># Schwelle für h = 1</span>
+formel &lt;- function(D) sqrt(D / (2 * tin)) * (1 - 3 * vs)
+
+geschwindigkeit &lt;- function(D, dx = 0.1, dt = 0.01, L = 60) {
+  <span class="k"># Faser der Länge L, Reiz am linken Ende; c aus den Zeitpunkten, an denen v bei 20 und 50 mm den Wert 0.5 erreicht</span>
+  N &lt;- round(L / dx) + 1; v &lt;- numeric(N); h &lt;- rep(1, N); reiz &lt;- dx * (0:(N - 1)) &lt;= 1; innen &lt;- 2:(N - 1)
+  i1 &lt;- round(20 / dx) + 1; i2 &lt;- round(50 / dx) + 1; t1 &lt;- NA; t2 &lt;- NA; n &lt;- 0
+  while (is.na(t2)) {
+    lap &lt;- c(v[2] - v[1], v[innen + 1] - 2 * v[innen] + v[innen - 1], v[N - 1] - v[N])
+    dv &lt;- h * v^2 * (1 - v) / tin - v / tout + D * lap / dx^2
+    if (n * dt &lt; 2) dv[reiz] &lt;- dv[reiz] + 0.2
+    dh &lt;- ifelse(v &lt; vgate, (1 - h) / topen, -h / tclose)
+    v &lt;- v + dt * dv; h &lt;- h + dt * dh; n &lt;- n + 1
+    if (is.na(t1) &amp;&amp; v[i1] &gt; 0.5) t1 &lt;- n * dt
+    if (is.na(t2) &amp;&amp; v[i2] &gt; 0.5) t2 &lt;- n * dt
+  }
+  30 / (t2 - t1)
+}
+
+Ds &lt;- c(0.025, 0.05, 0.1, 0.2, 0.4)
+cs &lt;- sapply(Ds, geschwindigkeit)
+for (k in seq_along(Ds)) cat(sprintf(&quot;D = %5.3f:  Simulation c = %.4f,  Formel c = %.4f mm/ms\n&quot;, Ds[k], cs[k], formel(Ds[k])))
+Dd &lt;- seq(0, 0.45, length.out = 300)
+plot(Dd, formel(Dd), type = &quot;l&quot;, col = rgb(0, 0.447, 0.741), lwd = 2.5, ylim = c(0, 0.8), xlab = &quot;D (mm²/ms)&quot;, ylab = &quot;c (mm/ms)&quot;)
+points(Ds, cs, pch = 19, col = rgb(0.64, 0.08, 0.18), cex = 1.5)
+legend(&quot;bottomright&quot;, legend = c(&quot;Formel&quot;, &quot;Simulation&quot;), col = c(rgb(0, 0.447, 0.741), rgb(0.64, 0.08, 0.18)), lwd = c(2.5, NA), pch = c(NA, 19))</code></pre>
+      <details class="out" open><summary>Ausgabe im Befehlsfenster</summary><pre><code>D = 0.025:  Simulation c = 0.1689,  Formel c = 0.1718 mm/ms
+D = 0.050:  Simulation c = 0.2397,  Formel c = 0.2430 mm/ms
+D = 0.100:  Simulation c = 0.3396,  Formel c = 0.3436 mm/ms
+D = 0.200:  Simulation c = 0.4807,  Formel c = 0.4859 mm/ms
+D = 0.400:  Simulation c = 0.6801,  Formel c = 0.6872 mm/ms</code></pre></details>
+    </div>
+  </div>
+</section>
+  <section class="apps" id="app-welle">
+  <div class="fig-head"><p class="eyebrow">Im Browser ausprobieren · ohne Installation</p><h2>Erregungswelle auf Faser und Ring</h2><p class="lead">Kabelgleichung (5.2) mit dem Mitchell-Schaeffer-Modell. Ändern Sie die Kopplung D: Die Geschwindigkeit wächst mit √D. Auf dem Ring kreist die Erregung nur, wenn der Ring lang genug ist.</p></div>
+  <div class="app" data-app="welle">
+    <canvas width="720" height="560" aria-label="Erregungswelle auf Faser und Ring"></canvas>
+    <div class="regler"><label><span>Geometrie</span><select aria-label="Geometrie"><option value="faser">Faser (150 mm)</option><option value="ring">Ring</option></select></label><label><span>Kopplung D</span> <output data-o="D"></output><input type="range" data-r="D" min="0.025" max="0.4" step="0.005" value="0.1" aria-label="Kopplung D"></label><label><span>Ringlänge L</span> <output data-o="L"></output><input type="range" data-r="L" min="40" max="150" step="1" value="100" aria-label="Ringlänge L"></label><div class="knoepfe"><button type="button" data-k="reiz">Reiz / Neustart</button><button type="button" data-k="pause">Pause</button></div><p class="zustand"></p><pre class="werte"></pre></div>
+  </div>
+</section>
+  
+  <nav class="weiter" aria-label="Weiterblättern"><a href="abschnitt-5-1.html"><small>Zurück</small>5.1 Vom Zellverbund zur Kabelgleichung</a><a href="abschnitt-5-3.html"><small>Weiter</small>5.3 Kreisende Erregung</a></nav>
+</main>
+</div>
+<footer class="fuss"><div class="inner gutter">
+  <span>Begleitmaterial zum Buch „Dynamische Systeme in den Lebenswissenschaften“ von Philipp Kügler</span>
+  <span>© 2026 Philipp Kügler · Programme unter <a href="../LICENSE.txt">MIT-Lizenz</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></span>
+</div></footer>
+<script src="../assets/seite.js"></script>
+<script src="../assets/apps.js"></script>
+</body>
+</html>
